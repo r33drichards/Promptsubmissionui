@@ -170,7 +170,7 @@ describe('BackendClient API Boundaries', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions', {
         repo: 'test/repo',
-        targetBranch: 'main',
+        target_branch: 'main',
         prompt: 'Create new feature',
       });
       expect(newSession).toMatchObject({

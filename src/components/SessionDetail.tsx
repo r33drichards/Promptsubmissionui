@@ -75,7 +75,7 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm">{message.role === 'user' ? 'You' : 'Assistant'}</span>
                   <span className="text-xs text-gray-500">
-                    {message.timestamp.toLocaleString()}
+                    {message.createdAt.toLocaleString()}
                   </span>
                 </div>
                 <p className="text-sm">{message.content}</p>
