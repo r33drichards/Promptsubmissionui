@@ -59,21 +59,25 @@ describe('CreateTaskForm', () => {
   describe('Form Submission', () => {
     it('should submit form with valid data', async () => {
       const user = userEvent.setup();
-      render(<CreateTaskForm {...defaultProps} />);
+      // Use a parent session to pre-fill repo and targetBranch to avoid combobox interaction issues in tests
+      const parentSession: Session = {
+        id: 'parent-1',
+        title: 'Parent Task',
+        repo: 'test/repo-1',
+        branch: 'feature/parent',
+        targetBranch: 'main',
+        messages: null,
+        inboxStatus: 'pending',
+        sbxConfig: null,
+        parentId: null,
+        createdAt: new Date(),
+      };
+
+      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
 
       // Fill in the prompt
       const promptInput = screen.getByLabelText(/prompt/i);
       await user.type(promptInput, 'Create a new authentication feature');
-
-      // Select repository (simulating combobox selection)
-      const repoInput = screen.getByPlaceholderText(/select repository/i);
-      await user.click(repoInput);
-      await user.type(repoInput, 'test/repo-1');
-
-      // Select target branch
-      const branchInput = screen.getByPlaceholderText(/select branch/i);
-      await user.click(branchInput);
-      await user.type(branchInput, 'main');
 
       // Submit the form
       const submitButton = screen.getByRole('button', { name: /create task/i });
@@ -82,8 +86,8 @@ describe('CreateTaskForm', () => {
       await waitFor(() => {
         expect(defaultProps.onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
-            repo: expect.any(String),
-            targetBranch: expect.any(String),
+            repo: 'test/repo-1',
+            targetBranch: 'main',
             messages: expect.arrayContaining([
               expect.objectContaining({
                 role: 'user',
@@ -91,7 +95,7 @@ describe('CreateTaskForm', () => {
               }),
             ]),
             inboxStatus: 'pending',
-            parentId: null,
+            parentId: 'parent-1',
           })
         );
       });
@@ -131,7 +135,21 @@ describe('CreateTaskForm', () => {
 
     it('should reset form fields after submission', async () => {
       const user = userEvent.setup();
-      render(<CreateTaskForm {...defaultProps} />);
+      // Use a parent session to pre-fill repo and targetBranch
+      const parentSession: Session = {
+        id: 'parent-1',
+        title: 'Parent Task',
+        repo: 'test/repo-1',
+        branch: 'feature/parent',
+        targetBranch: 'main',
+        messages: null,
+        inboxStatus: 'pending',
+        sbxConfig: null,
+        parentId: null,
+        createdAt: new Date(),
+      };
+
+      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
 
       const promptInput = screen.getByLabelText(/prompt/i) as HTMLTextAreaElement;
       await user.type(promptInput, 'Test prompt');

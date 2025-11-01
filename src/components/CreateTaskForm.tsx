@@ -79,6 +79,7 @@ export function CreateTaskForm({
             <div className="space-y-2">
               <Label htmlFor="repo">Repository</Label>
               <RepositoryCombobox
+                id="repo"
                 value={repo}
                 onChange={setRepo}
                 repositories={repositories}
@@ -87,7 +88,7 @@ export function CreateTaskForm({
 
             <div className="space-y-2">
               <Label htmlFor="targetBranch">Target Branch (for PR)</Label>
-              <BranchCombobox value={targetBranch} onChange={setTargetBranch} branches={branches} />
+              <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
             </div>
           </div>
         </div>

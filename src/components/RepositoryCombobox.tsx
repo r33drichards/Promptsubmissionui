@@ -16,15 +16,17 @@ interface RepositoryComboboxProps {
   value: string;
   onChange: (value: string) => void;
   repositories: string[];
+  id?: string;
 }
 
-export function RepositoryCombobox({ value, onChange, repositories }: RepositoryComboboxProps) {
+export function RepositoryCombobox({ value, onChange, repositories, id }: RepositoryComboboxProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant="outline"
           role="combobox"
           aria-expanded={open}
