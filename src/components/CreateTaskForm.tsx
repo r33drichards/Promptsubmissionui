@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
@@ -23,7 +22,6 @@ export function CreateTaskForm({
   repositories,
   branches,
 }: CreateTaskFormProps) {
-  const [title, setTitle] = useState('');
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.targetBranch || 'main');
   const [prompt, setPrompt] = useState('');
@@ -31,25 +29,22 @@ export function CreateTaskForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      title,
+      title: '', // Will be auto-generated from prompt
       repo,
       branch: '', // Will be auto-generated
       targetBranch,
-      messages: prompt
-        ? [
-            {
-              id: `m-${Date.now()}`,
-              role: 'user',
-              content: prompt,
-              timestamp: new Date(),
-            },
-          ]
-        : null,
+      messages: [
+        {
+          id: `m-${Date.now()}`,
+          role: 'user',
+          content: prompt,
+          timestamp: new Date(),
+        },
+      ],
       inboxStatus: 'pending',
       sbxConfig: null,
       parentId: parentSession?.id || null,
     });
-    setTitle('');
     setRepo('');
     setTargetBranch('main');
     setPrompt('');
@@ -70,12 +65,13 @@ export function CreateTaskForm({
         <div className="flex-1 overflow-auto p-4">
           <div className="space-y-6 max-w-2xl">
             <div className="space-y-2">
-              <Label htmlFor="title">Task Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Deploy multi-mcp project to virtual machines"
+              <Label htmlFor="prompt">Prompt</Label>
+              <Textarea
+                id="prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe what you want Claude Code to do..."
+                className="min-h-[200px]"
                 required
               />
             </div>
@@ -93,17 +89,6 @@ export function CreateTaskForm({
               <Label htmlFor="targetBranch">Target Branch (for PR)</Label>
               <BranchCombobox value={targetBranch} onChange={setTargetBranch} branches={branches} />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt (Optional)</Label>
-              <Textarea
-                id="prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe what you want Claude Code to do..."
-                className="min-h-[200px]"
-              />
-            </div>
           </div>
         </div>
 
@@ -111,7 +96,7 @@ export function CreateTaskForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" disabled={!title || !repo || !targetBranch}>
+          <Button type="submit" disabled={!prompt || !repo || !targetBranch}>
             Create Task
           </Button>
         </div>
