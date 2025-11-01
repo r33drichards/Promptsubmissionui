@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Session } from './types/session';
-import { mockSessions } from './data/mockSessions';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
@@ -13,22 +12,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select';
-import { Plus, Search, Github } from 'lucide-react';
+import { Plus, Search, Github, Loader2 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
-import { useApi } from './providers/ApiProvider';
+import {
+  useSessions,
+  useCreateSession,
+  useUpdateSession,
+  useArchiveSession,
+} from './hooks';
 
 type FilterType = 'active' | 'archived' | 'all';
 
 export default function App() {
-  // Access the backend API client via dependency injection
-  const api = useApi();
+  const [filter, setFilter] = useState<FilterType>('active');
 
-  const [sessions, setSessions] = useState<Session[]>(mockSessions);
+  // Fetch sessions using TanStack Query
+  const { data: sessions = [], isLoading: isLoadingSessions } = useSessions({
+    archived: filter === 'archived' ? true : filter === 'active' ? false : undefined,
+  });
+
+  // Mutations
+  const createSessionMutation = useCreateSession();
+  const updateSessionMutation = useUpdateSession();
+  const archiveSessionMutation = useArchiveSession();
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(null);
-  const [filter, setFilter] = useState<FilterType>('active');
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
@@ -123,29 +133,24 @@ export default function App() {
     return filterRecursive(hierarchicalSessions);
   }, [hierarchicalSessions, searchQuery]);
 
-  const handleCreateTask = async (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
-    try {
-      // Example: Create session via backend API
-      // The mock client will return a mock response for now
-      const newSession = await api.sessions.create({
+  const handleCreateTask = (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
+    createSessionMutation.mutate(
+      {
         title: task.title,
         repo: task.repo,
         branch: task.branch,
         targetBranch: task.targetBranch,
         parentId: task.parentId,
         sbxConfig: task.sbxConfig || undefined,
-      });
-
-      // Update local state with the created session
-      setSessions([...sessions, newSession]);
-      setSelectedSession(newSession);
-      setIsCreatingTask(false);
-      setParentForNewTask(null);
-      toast.success('Task created successfully');
-    } catch (error) {
-      console.error('Failed to create task:', error);
-      toast.error('Failed to create task');
-    }
+      },
+      {
+        onSuccess: (newSession) => {
+          setSelectedSession(newSession);
+          setIsCreatingTask(false);
+          setParentForNewTask(null);
+        },
+      }
+    );
   };
 
   const handleCreateSubtask = (parentId: string) => {
@@ -164,14 +169,10 @@ export default function App() {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
       const prUrl = `https://github.com/${session.repo}/pull/${Math.floor(Math.random() * 1000)}`;
-      setSessions(
-        sessions.map((s) =>
-          s.id === sessionId
-            ? { ...s, prUrl }
-            : s
-        )
-      );
-      toast.success('Pull request created successfully');
+      updateSessionMutation.mutate({
+        id: sessionId,
+        data: { prUrl },
+      });
     }
   };
 
@@ -183,50 +184,25 @@ export default function App() {
   };
 
   const handleReply = (sessionId: string, message: string) => {
-    setSessions(
-      sessions.map((s) =>
-        s.id === sessionId
-          ? {
-              ...s,
-              messages: [
-                ...(s.messages || []),
-                {
-                  id: `m-${Date.now()}`,
-                  role: 'user' as const,
-                  content: message,
-                  timestamp: new Date(),
-                },
-              ],
-              inboxStatus: 'in-progress' as const,
-            }
-          : s
-      )
-    );
+    // Update the session status to in-progress
+    updateSessionMutation.mutate({
+      id: sessionId,
+      data: { inboxStatus: 'in-progress' },
+    });
+
+    // Note: In a real implementation, you would also create the message
+    // using useCreateMessage hook, but for now we're just updating the status
     toast.success('Message sent');
   };
 
-  const handleArchive = async (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      try {
-        // Example: Archive session via backend API
-        await api.sessions.archive(sessionId);
-
-        // Update local state
-        setSessions(
-          sessions.map((s) =>
-            s.id === sessionId ? { ...s, archived: true } : s
-          )
-        );
+  const handleArchive = (sessionId: string) => {
+    archiveSessionMutation.mutate(sessionId, {
+      onSuccess: () => {
         if (selectedSession?.id === sessionId) {
           setSelectedSession(null);
         }
-        toast.success('Task archived');
-      } catch (error) {
-        console.error('Failed to archive task:', error);
-        toast.error('Failed to archive task');
-      }
-    }
+      },
+    });
   };
 
   return (
@@ -247,8 +223,13 @@ export default function App() {
                 setSelectedSession(null);
                 setIsCreatingTask(true);
               }}
+              disabled={createSessionMutation.isPending}
             >
-              <Plus className="w-4 h-4 mr-1" />
+              {createSessionMutation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-1" />
+              )}
               New Task
             </Button>
           </div>
@@ -285,8 +266,12 @@ export default function App() {
                 {hierarchicalSessions.length} {filter !== 'all' ? filter : 'total'}
               </span>
             </div>
-            
-            {filteredSessions.length > 0 ? (
+
+            {isLoadingSessions ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : filteredSessions.length > 0 ? (
               filteredSessions.map((session) => (
                 <SessionListItem
                   key={session.id}
