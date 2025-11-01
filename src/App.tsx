@@ -15,10 +15,14 @@ import {
 } from './components/ui/select';
 import { Plus, Search, Github } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { useApi } from './providers/ApiProvider';
 
 type FilterType = 'active' | 'archived' | 'all';
 
 export default function App() {
+  // Access the backend API client via dependency injection
+  const api = useApi();
+
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -119,17 +123,29 @@ export default function App() {
     return filterRecursive(hierarchicalSessions);
   }, [hierarchicalSessions, searchQuery]);
 
-  const handleCreateTask = (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
-    const newSession: Session = {
-      ...task,
-      id: `${Date.now()}`,
-      createdAt: new Date(),
-    };
-    setSessions([...sessions, newSession]);
-    setSelectedSession(newSession);
-    setIsCreatingTask(false);
-    setParentForNewTask(null);
-    toast.success('Task created successfully');
+  const handleCreateTask = async (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
+    try {
+      // Example: Create session via backend API
+      // The mock client will return a mock response for now
+      const newSession = await api.sessions.create({
+        title: task.title,
+        repo: task.repo,
+        branch: task.branch,
+        targetBranch: task.targetBranch,
+        parentId: task.parentId,
+        sbxConfig: task.sbxConfig || undefined,
+      });
+
+      // Update local state with the created session
+      setSessions([...sessions, newSession]);
+      setSelectedSession(newSession);
+      setIsCreatingTask(false);
+      setParentForNewTask(null);
+      toast.success('Task created successfully');
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      toast.error('Failed to create task');
+    }
   };
 
   const handleCreateSubtask = (parentId: string) => {
@@ -189,18 +205,27 @@ export default function App() {
     toast.success('Message sent');
   };
 
-  const handleArchive = (sessionId: string) => {
+  const handleArchive = async (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
-      setSessions(
-        sessions.map((s) =>
-          s.id === sessionId ? { ...s, archived: true } : s
-        )
-      );
-      if (selectedSession?.id === sessionId) {
-        setSelectedSession(null);
+      try {
+        // Example: Archive session via backend API
+        await api.sessions.archive(sessionId);
+
+        // Update local state
+        setSessions(
+          sessions.map((s) =>
+            s.id === sessionId ? { ...s, archived: true } : s
+          )
+        );
+        if (selectedSession?.id === sessionId) {
+          setSelectedSession(null);
+        }
+        toast.success('Task archived');
+      } catch (error) {
+        console.error('Failed to archive task:', error);
+        toast.error('Failed to archive task');
       }
-      toast.success('Task archived');
     }
   };
 
