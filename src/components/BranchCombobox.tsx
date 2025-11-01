@@ -16,15 +16,17 @@ interface BranchComboboxProps {
   value: string;
   onChange: (value: string) => void;
   branches: string[];
+  id?: string;
 }
 
-export function BranchCombobox({ value, onChange, branches }: BranchComboboxProps) {
+export function BranchCombobox({ value, onChange, branches, id }: BranchComboboxProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant="outline"
           role="combobox"
           aria-expanded={open}

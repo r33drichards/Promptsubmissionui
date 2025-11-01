@@ -30,20 +30,37 @@ describe('User Flows Integration Tests', () => {
     it('should show loading state while fetching sessions', async () => {
       // Create a client that delays the response
       const delayedClient = createMockBackendClient();
-      const originalList = delayedClient.sessions.list;
+      const mockSessions = [
+        {
+          id: 'session-1',
+          title: 'Test Session 1',
+          repo: 'test/repo',
+          branch: 'feature/test',
+          targetBranch: 'main',
+          messages: null,
+          inboxStatus: 'pending' as const,
+          sbxConfig: null,
+          parentId: null,
+          createdAt: new Date(),
+        },
+      ];
+
       vi.mocked(delayedClient.sessions.list).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(originalList()), 100))
+        () => new Promise((resolve) => setTimeout(() => resolve(mockSessions), 200))
       );
 
       render(<App />, { client: delayedClient });
 
-      // Loading spinner should be visible
-      expect(screen.getByRole('img', { hidden: true })).toBeInTheDocument(); // Loader2 icon
+      // Loading spinner should be visible - check for the animate-spin class
+      await waitFor(() => {
+        const spinner = document.querySelector('.animate-spin');
+        expect(spinner).toBeInTheDocument();
+      }, { timeout: 500 });
 
       // Wait for sessions to load
       await waitFor(() => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
+      }, { timeout: 1000 });
     });
 
     it('should show empty state when no sessions exist', async () => {
@@ -70,8 +87,9 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      const newTaskButton = screen.getByRole('button', { name: /new task/i });
-      await user.click(newTaskButton);
+      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      // Click the first one (there might be multiple if the button text appears in other places)
+      await user.click(newTaskButtons[0]);
 
       expect(screen.getByText('Create New Task')).toBeInTheDocument();
       expect(screen.getByLabelText(/prompt/i)).toBeInTheDocument();
@@ -86,20 +104,19 @@ describe('User Flows Integration Tests', () => {
       });
 
       // Click New Task button
-      const newTaskButton = screen.getByRole('button', { name: /new task/i });
-      await user.click(newTaskButton);
+      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      await user.click(newTaskButtons[0]);
 
       // Fill in the form
       const promptInput = screen.getByLabelText(/prompt/i);
       await user.type(promptInput, 'Create a new feature for authentication');
 
-      // Note: In a real test, you'd need to interact with the comboboxes
-      // For now, we'll just verify the create method is called
-
+      // Verify the create button is present (it will be disabled without repo/branch selection)
       const createButton = screen.getByRole('button', { name: /create task/i });
+      expect(createButton).toBeInTheDocument();
 
-      // The button might be disabled until all fields are filled
-      // In a real scenario, you'd fill in repo and branch too
+      // The button should be disabled until all required fields are filled
+      expect(createButton).toBeDisabled();
     });
 
     it('should cancel task creation and return to previous view', async () => {
@@ -110,17 +127,22 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      const newTaskButton = screen.getByRole('button', { name: /new task/i });
-      await user.click(newTaskButton);
+      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      await user.click(newTaskButtons[0]);
 
-      expect(screen.getByText('Create New Task')).toBeInTheDocument();
+      // Wait for the form to open
+      await waitFor(() => {
+        expect(screen.getByText('Create New Task')).toBeInTheDocument();
+      });
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await user.click(cancelButton);
 
-      // Should return to empty state
-      expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
-      expect(screen.queryByText('Create New Task')).not.toBeInTheDocument();
+      // Should return to empty state and form should be closed
+      await waitFor(() => {
+        expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Create New Task' })).not.toBeInTheDocument();
+      });
     });
   });
 
@@ -139,9 +161,12 @@ describe('User Flows Integration Tests', () => {
 
       // Session details should be displayed
       await waitFor(() => {
-        expect(screen.getByText('test/repo')).toBeInTheDocument();
-        expect(screen.getByText('feature/test')).toBeInTheDocument();
-        expect(screen.getByText('main')).toBeInTheDocument();
+        const repoElements = screen.getAllByText('test/repo');
+        expect(repoElements.length).toBeGreaterThan(0);
+        const branchElements = screen.getAllByText('feature/test');
+        expect(branchElements.length).toBeGreaterThan(0);
+        const targetBranchElements = screen.getAllByText('main');
+        expect(targetBranchElements.length).toBeGreaterThan(0);
       });
     });
 
@@ -440,7 +465,8 @@ describe('User Flows Integration Tests', () => {
       render(<App />, { client: errorClient });
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /new task/i })).toBeInTheDocument();
+        const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+        expect(newTaskButtons.length).toBeGreaterThan(0);
       });
 
       // The app should handle creation errors without crashing

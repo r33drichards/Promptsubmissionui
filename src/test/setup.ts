@@ -40,3 +40,10 @@ global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
 } as any;
+
+// Mock scrollIntoView (required for cmdk/Command component)
+Element.prototype.scrollIntoView = vi.fn();
+
+// Mock HTMLElement.prototype.hasPointerCapture
+HTMLElement.prototype.hasPointerCapture = vi.fn();
+HTMLElement.prototype.scrollIntoView = vi.fn();
