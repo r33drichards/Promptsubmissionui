@@ -25,7 +25,6 @@ export function CreateTaskForm({
 }: CreateTaskFormProps) {
   const [title, setTitle] = useState('');
   const [repo, setRepo] = useState(parentSession?.repo || '');
-  const [branch, setBranch] = useState(parentSession?.branch || 'main');
   const [targetBranch, setTargetBranch] = useState(parentSession?.targetBranch || 'main');
   const [prompt, setPrompt] = useState('');
 
@@ -34,7 +33,7 @@ export function CreateTaskForm({
     onSubmit({
       title,
       repo,
-      branch,
+      branch: '', // Will be auto-generated
       targetBranch,
       messages: prompt
         ? [
@@ -52,7 +51,6 @@ export function CreateTaskForm({
     });
     setTitle('');
     setRepo('');
-    setBranch('main');
     setTargetBranch('main');
     setPrompt('');
   };
@@ -92,11 +90,6 @@ export function CreateTaskForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="branch">Current Branch</Label>
-              <BranchCombobox value={branch} onChange={setBranch} branches={branches} />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="targetBranch">Target Branch (for PR)</Label>
               <BranchCombobox value={targetBranch} onChange={setTargetBranch} branches={branches} />
             </div>
@@ -118,7 +111,7 @@ export function CreateTaskForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" disabled={!title || !repo || !branch || !targetBranch}>
+          <Button type="submit" disabled={!title || !repo || !targetBranch}>
             Create Task
           </Button>
         </div>
