@@ -3,7 +3,7 @@ import { useApi } from '../providers/ApiProvider';
 import { Session } from '../types/session';
 import { CreateSessionData, UpdateSessionData } from '../services/api/types';
 import { queryKeys } from './queryKeys';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 /**
  * Hook to create a new session.

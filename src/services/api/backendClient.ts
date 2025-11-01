@@ -8,6 +8,66 @@ import {
 } from './types';
 
 /**
+ * Converts snake_case string to camelCase
+ */
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * Converts camelCase string to snake_case
+ */
+function camelToSnake(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Recursively converts object keys from snake_case to camelCase
+ */
+function keysToCamel(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(keysToCamel);
+  }
+
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    return Object.keys(obj).reduce((acc, key) => {
+      const camelKey = snakeToCamel(key);
+      acc[camelKey] = keysToCamel(obj[key]);
+      return acc;
+    }, {} as any);
+  }
+
+  return obj;
+}
+
+/**
+ * Recursively converts object keys from camelCase to snake_case
+ */
+function keysToSnake(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(keysToSnake);
+  }
+
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    return Object.keys(obj).reduce((acc, key) => {
+      const snakeKey = camelToSnake(key);
+      acc[snakeKey] = keysToSnake(obj[key]);
+      return acc;
+    }, {} as any);
+  }
+
+  return obj;
+}
+
+/**
  * Implementation of the BackendClient interface.
  * Uses dependency injection to accept any HTTP client implementation.
  */
@@ -16,54 +76,52 @@ export class BackendClientImpl implements BackendClient {
 
   sessions = {
     list: async (params?: ListSessionsParams): Promise<Session[]> => {
-      const response = await this.httpClient.get<Session[]>('/sessions', {
+      const response = await this.httpClient.get<any[]>('/api/sessions', {
         params,
       });
       return this.deserializeSessions(response.data);
     },
 
     get: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.get<Session>(`/sessions/${id}`);
+      const response = await this.httpClient.get<any>(`/api/sessions/${id}`);
       return this.deserializeSession(response.data);
     },
 
     create: async (data: CreateSessionData): Promise<Session> => {
-      const response = await this.httpClient.post<Session>('/sessions', data);
+      const snakeData = keysToSnake(data);
+      const response = await this.httpClient.post<any>('/api/sessions', snakeData);
       return this.deserializeSession(response.data);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
-      const response = await this.httpClient.patch<Session>(`/sessions/${id}`, data);
+      const snakeData = keysToSnake(data);
+      const response = await this.httpClient.patch<any>(`/api/sessions/${id}`, snakeData);
       return this.deserializeSession(response.data);
     },
 
     delete: async (id: string): Promise<void> => {
-      await this.httpClient.delete(`/sessions/${id}`);
+      await this.httpClient.delete(`/api/sessions/${id}`);
     },
 
     archive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.patch<Session>(`/sessions/${id}`, {
-        archived: true,
-      });
+      const response = await this.httpClient.post<any>(`/api/sessions/${id}/archive`);
       return this.deserializeSession(response.data);
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.patch<Session>(`/sessions/${id}`, {
-        archived: false,
-      });
+      const response = await this.httpClient.post<any>(`/api/sessions/${id}/unarchive`);
       return this.deserializeSession(response.data);
     },
   };
 
   messages = {
     list: async (sessionId: string): Promise<Message[]> => {
-      const response = await this.httpClient.get<Message[]>(`/sessions/${sessionId}/messages`);
+      const response = await this.httpClient.get<any[]>(`/api/sessions/${sessionId}/messages`);
       return this.deserializeMessages(response.data);
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
-      const response = await this.httpClient.post<Message>(`/sessions/${sessionId}/messages`, {
+      const response = await this.httpClient.post<any>(`/api/sessions/${sessionId}/messages`, {
         content,
       });
       return this.deserializeMessage(response.data);
@@ -71,14 +129,15 @@ export class BackendClientImpl implements BackendClient {
   };
 
   /**
-   * Deserializes a single session, converting date strings to Date objects
+   * Deserializes a single session, converting snake_case to camelCase and date strings to Date objects
    */
   private deserializeSession(session: any): Session {
+    const camelSession = keysToCamel(session);
     return {
-      ...session,
-      createdAt: new Date(session.createdAt),
-      messages: session.messages ? this.deserializeMessages(session.messages) : null,
-      children: session.children ? this.deserializeSessions(session.children) : undefined,
+      ...camelSession,
+      createdAt: new Date(camelSession.createdAt),
+      messages: camelSession.messages ? this.deserializeMessages(camelSession.messages) : null,
+      children: camelSession.children ? this.deserializeSessions(camelSession.children) : undefined,
     };
   }
 
@@ -90,12 +149,13 @@ export class BackendClientImpl implements BackendClient {
   }
 
   /**
-   * Deserializes a single message, converting date strings to Date objects
+   * Deserializes a single message, converting snake_case to camelCase and date strings to Date objects
    */
   private deserializeMessage(message: any): Message {
+    const camelMessage = keysToCamel(message);
     return {
-      ...message,
-      timestamp: new Date(message.timestamp),
+      ...camelMessage,
+      createdAt: new Date(camelMessage.createdAt),
     };
   }
 

@@ -8,7 +8,7 @@ import {
 import { useApi } from '../providers/ApiProvider';
 import { Message } from '../types/session';
 import { queryKeys } from './queryKeys';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 /**
  * Hook to fetch messages for a specific session.

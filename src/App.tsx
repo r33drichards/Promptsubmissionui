@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from './components/ui/select';
 import { Plus, Search, Github, Loader2 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import {
   useSessions,
   useCreateSession,
