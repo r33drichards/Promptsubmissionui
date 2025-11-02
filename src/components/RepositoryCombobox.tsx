@@ -72,6 +72,10 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
             placeholder="Search GitHub repositories..."
             value={searchQuery}
             onValueChange={setSearchQuery}
+            autoComplete="off"
+            data-1p-ignore="true"
+            data-lpignore="true"
+            data-form-type="other"
           />
           <CommandList>
             {isLoading && (
