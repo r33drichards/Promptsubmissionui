@@ -32,7 +32,7 @@ interface ApiProviderProps {
  *   <App />
  * </ApiProvider>
  *
- * // Or inject a custom client
+ * // Or inject a custom client with custom URL
  * const backendClient = new PromptBackendClient('http://localhost:8000');
  * <ApiProvider client={backendClient}>
  *   <App />

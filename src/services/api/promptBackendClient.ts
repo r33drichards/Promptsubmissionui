@@ -16,7 +16,7 @@ export class PromptBackendClient implements BackendClient {
 
   constructor(basePath?: string) {
     const config = new Configuration({
-      basePath: basePath || 'http://localhost:8000',
+      basePath: basePath || 'https://prompt-backend-production.up.railway.app',
     });
     this.api = new DefaultApi(config);
   }
