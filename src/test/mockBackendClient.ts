@@ -57,13 +57,13 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
       id: 'msg-1',
       role: 'user',
       content: 'Test user message',
-      timestamp: new Date('2025-01-01T10:05:00Z'),
+      createdAt: new Date('2025-01-01T10:05:00Z'),
     },
     {
       id: 'msg-2',
       role: 'assistant',
       content: 'Test assistant response',
-      timestamp: new Date('2025-01-01T10:06:00Z'),
+      createdAt: new Date('2025-01-01T10:06:00Z'),
     },
   ];
 
@@ -80,13 +80,13 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
       create: vi.fn().mockImplementation((data) => {
         const newSession: Session = {
           id: `test-session-${Date.now()}`,
-          title: data.prompt.slice(0, 50),
+          title: data.title,
           repo: data.repo,
-          branch: `claude/task-${Date.now()}`,
+          branch: data.branch,
           targetBranch: data.targetBranch,
           messages: [],
           inboxStatus: 'pending',
-          sbxConfig: null,
+          sbxConfig: data.sbxConfig || null,
           parentId: data.parentId || null,
           createdAt: new Date(),
           archived: false,
@@ -124,7 +124,7 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
           id: `msg-${Date.now()}`,
           role: 'user',
           content,
-          timestamp: new Date(),
+          createdAt: new Date(),
         };
         return Promise.resolve(newMessage);
       }),

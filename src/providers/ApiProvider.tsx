@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { BackendClient } from '../services/api/types';
 import { BackendClientImpl } from '../services/api/backendClient';
+import { PromptBackendClient } from '../services/api/promptBackendClient';
 import { MockHttpClient } from '../services/http/mockClient';
 
 /**
@@ -12,6 +13,8 @@ const ApiContext = createContext<BackendClient | null>(null);
 interface ApiProviderProps {
   children: ReactNode;
   client?: BackendClient;
+  useMock?: boolean;
+  backendUrl?: string;
 }
 
 /**
@@ -19,22 +22,35 @@ interface ApiProviderProps {
  *
  * @example
  * ```tsx
- * // Use with default mock client
+ * // Use with real backend client
  * <ApiProvider>
  *   <App />
  * </ApiProvider>
  *
+ * // Use with mock client for testing
+ * <ApiProvider useMock={true}>
+ *   <App />
+ * </ApiProvider>
+ *
  * // Or inject a custom client
- * const httpClient = new RealHttpClient();
- * const backendClient = new BackendClientImpl(httpClient);
+ * const backendClient = new PromptBackendClient('http://localhost:8000');
  * <ApiProvider client={backendClient}>
  *   <App />
  * </ApiProvider>
  * ```
  */
-export const ApiProvider: React.FC<ApiProviderProps> = ({ children, client }) => {
-  // Use provided client or create a default one with mock HTTP client
-  const backendClient = client ?? new BackendClientImpl(new MockHttpClient());
+export const ApiProvider: React.FC<ApiProviderProps> = ({
+  children,
+  client,
+  useMock = false,
+  backendUrl
+}) => {
+  // Use provided client, or create appropriate client based on useMock flag
+  const backendClient = client ?? (
+    useMock
+      ? new BackendClientImpl(new MockHttpClient())
+      : new PromptBackendClient(backendUrl)
+  );
 
   return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
 };
