@@ -383,16 +383,17 @@ describe('RepositoryCombobox', () => {
       );
 
       // Open and search
-      await user.click(screen.getByRole('combobox'));
+      const triggerButton = screen.getByText('Select repository...');
+      await user.click(triggerButton);
 
       const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
       await user.type(searchInput, 'react');
 
-      // Close by clicking outside (click the button again)
-      await user.click(screen.getByRole('combobox'));
+      // Close by clicking the button again
+      await user.click(triggerButton);
 
       // Re-open
-      await user.click(screen.getByRole('combobox'));
+      await user.click(triggerButton);
 
       // Search input should be empty
       const newSearchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
