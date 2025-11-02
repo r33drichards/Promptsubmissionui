@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 export interface GitHubRepo {
   id: number;
@@ -27,12 +28,45 @@ interface UseGitHubRepoSearchResult {
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
+async function searchGitHubRepositories(query: string, signal?: AbortSignal): Promise<GitHubRepo[]> {
+  const searchQuery = encodeURIComponent(query.trim());
+  const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
+
+  const response = await fetch(url, {
+    signal,
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error('GitHub API rate limit exceeded. Please try again later.');
+    }
+    throw new Error(`GitHub API error: ${response.statusText}`);
+  }
+
+  const data: GitHubSearchResponse = await response.json();
+  return data.items;
+}
+
 export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
-  const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: (query: string) => {
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      return searchGitHubRepositories(query, controller.signal);
+    },
+    onError: (error: Error) => {
+      // Silently ignore abort errors
+      if (error.name === 'AbortError') {
+        return;
+      }
+    },
+  });
 
   const search = useCallback((query: string) => {
     // Cancel any pending requests
@@ -47,58 +81,15 @@ export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
 
     // Clear results if query is empty or too short
     if (!query || query.trim().length < 2) {
-      setRepos([]);
-      setError(null);
-      setIsLoading(false);
+      mutation.reset();
       return;
     }
 
     // Debounce the search
-    debounceTimerRef.current = setTimeout(async () => {
-      setIsLoading(true);
-      setError(null);
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      try {
-        const searchQuery = encodeURIComponent(query.trim());
-        const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
-
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 403) {
-            throw new Error('GitHub API rate limit exceeded. Please try again later.');
-          }
-          throw new Error(`GitHub API error: ${response.statusText}`);
-        }
-
-        const data: GitHubSearchResponse = await response.json();
-        setRepos(data.items);
-        setError(null);
-      } catch (err) {
-        if (err instanceof Error) {
-          if (err.name === 'AbortError') {
-            // Request was cancelled, do nothing
-            return;
-          }
-          setError(err.message);
-        } else {
-          setError('Failed to search repositories');
-        }
-        setRepos([]);
-      } finally {
-        setIsLoading(false);
-        abortControllerRef.current = null;
-      }
+    debounceTimerRef.current = setTimeout(() => {
+      mutation.mutate(query);
     }, 300); // Debounce delay
-  }, []);
+  }, [mutation]);
 
   const clear = useCallback(() => {
     if (abortControllerRef.current) {
@@ -107,10 +98,8 @@ export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    setRepos([]);
-    setError(null);
-    setIsLoading(false);
-  }, []);
+    mutation.reset();
+  }, [mutation]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -125,9 +114,9 @@ export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
   }, []);
 
   return {
-    repos,
-    isLoading,
-    error,
+    repos: mutation.data ?? [],
+    isLoading: mutation.isPending,
+    error: mutation.error?.message ?? null,
     search,
     clear,
   };
