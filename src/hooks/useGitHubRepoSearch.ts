@@ -89,7 +89,8 @@ export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
     debounceTimerRef.current = setTimeout(() => {
       mutation.mutate(query);
     }, 300); // Debounce delay
-  }, [mutation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const clear = useCallback(() => {
     if (abortControllerRef.current) {
@@ -99,7 +100,8 @@ export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
       clearTimeout(debounceTimerRef.current);
     }
     mutation.reset();
-  }, [mutation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
