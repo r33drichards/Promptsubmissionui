@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import debounce from 'lodash.debounce';
 
 export interface GitHubRepo {
   id: number;
@@ -18,22 +19,13 @@ interface GitHubSearchResponse {
   total_count: number;
 }
 
-interface UseGitHubRepoSearchResult {
-  repos: GitHubRepo[];
-  isLoading: boolean;
-  error: string | null;
-  search: (query: string) => void;
-  clear: () => void;
-}
-
 const GITHUB_API_BASE = 'https://api.github.com';
 
-async function searchGitHubRepositories(query: string, signal?: AbortSignal): Promise<GitHubRepo[]> {
+async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
   const searchQuery = encodeURIComponent(query.trim());
   const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
 
   const response = await fetch(url, {
-    signal,
     headers: {
       'Accept': 'application/vnd.github.v3+json',
     },
@@ -50,75 +42,40 @@ async function searchGitHubRepositories(query: string, signal?: AbortSignal): Pr
   return data.items;
 }
 
-export function useGitHubRepoSearch(): UseGitHubRepoSearchResult {
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+export function useGitHubRepoSearch() {
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const mutation = useMutation({
-    mutationFn: (query: string) => {
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      return searchGitHubRepositories(query, controller.signal);
-    },
-    onError: (error: Error) => {
-      // Silently ignore abort errors
-      if (error.name === 'AbortError') {
-        return;
-      }
-    },
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['githubRepos', debouncedQuery],
+    queryFn: () => searchGitHubRepositories(debouncedQuery),
+    enabled: debouncedQuery.trim().length >= 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const search = useCallback((query: string) => {
-    // Cancel any pending requests
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Clear any pending debounce
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Clear results if query is empty or too short
-    if (!query || query.trim().length < 2) {
-      mutation.reset();
-      return;
-    }
-
-    // Debounce the search
-    debounceTimerRef.current = setTimeout(() => {
-      mutation.mutate(query);
-    }, 300); // Debounce delay
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const clear = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    mutation.reset();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+  const debouncedSetQuery = useMemo(
+    () => debounce((query: string) => {
+      if (query && query.trim().length >= 2) {
+        setDebouncedQuery(query);
+      } else {
+        setDebouncedQuery('');
       }
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
+    }, 300),
+    []
+  );
+
+  const search = (query: string) => {
+    debouncedSetQuery(query);
+  };
+
+  const clear = () => {
+    debouncedSetQuery.cancel();
+    setDebouncedQuery('');
+  };
 
   return {
-    repos: mutation.data ?? [],
-    isLoading: mutation.isPending,
-    error: mutation.error?.message ?? null,
+    repos: data ?? [],
+    isLoading,
+    error: error?.message ?? null,
     search,
     clear,
   };

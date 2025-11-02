@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from './ui/utils';
 import { Button } from './ui/button';
@@ -25,22 +25,18 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const [searchQuery, setSearchQuery] = useState('');
   const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
 
-  // Trigger GitHub search when search query changes
-  useEffect(() => {
-    if (searchQuery.trim().length >= 2) {
-      search(searchQuery);
-    } else {
-      clear();
-    }
-  }, [searchQuery, search, clear]);
+  const handleSearchChange = (newQuery: string) => {
+    setSearchQuery(newQuery);
+    search(newQuery);
+  };
 
-  // Clear search when popover closes
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
       setSearchQuery('');
       clear();
     }
-  }, [open, clear]);
+  };
 
   // Filter recent repositories based on search query
   const filteredRecentRepos = repositories.filter((repo) =>
@@ -53,7 +49,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const showEmpty = !hasRecentRepos && !hasGitHubRepos && !isLoading && searchQuery.trim().length >= 2;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -71,7 +67,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
           <CommandInput
             placeholder="Search GitHub repositories..."
             value={searchQuery}
-            onValueChange={setSearchQuery}
+            onValueChange={handleSearchChange}
           />
           <CommandList>
             {isLoading && (
