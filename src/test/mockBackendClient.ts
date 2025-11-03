@@ -19,7 +19,7 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      archived: false,
+      sessionStatus: 'Active',
     },
     {
       id: 'test-session-2',
@@ -32,7 +32,7 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-02T10:00:00Z'),
-      archived: false,
+      sessionStatus: 'Active',
       diffStats: { additions: 10, deletions: 5 },
     },
     {
@@ -46,7 +46,7 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-03T10:00:00Z'),
-      archived: false,
+      sessionStatus: 'Active',
       diffStats: { additions: 25, deletions: 8 },
       prUrl: 'https://github.com/test/repo/pull/123',
     },
@@ -89,7 +89,7 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
           sbxConfig: data.sbxConfig || null,
           parentId: data.parentId || null,
           createdAt: new Date(),
-          archived: false,
+          sessionStatus: 'Active',
         };
         return Promise.resolve(newSession);
       }),
@@ -107,14 +107,14 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
         if (!session) {
           return Promise.reject(new Error('Session not found'));
         }
-        return Promise.resolve({ ...session, archived: true });
+        return Promise.resolve({ ...session, sessionStatus: 'Archived' as const });
       }),
       unarchive: vi.fn().mockImplementation((id: string) => {
         const session = mockSessions.find(s => s.id === id);
         if (!session) {
           return Promise.reject(new Error('Session not found'));
         }
-        return Promise.resolve({ ...session, archived: false });
+        return Promise.resolve({ ...session, sessionStatus: 'Active' as const });
       }),
     },
     messages: {
