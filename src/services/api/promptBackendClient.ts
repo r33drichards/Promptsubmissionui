@@ -1,5 +1,5 @@
-import { DefaultApi, Configuration } from '@wholelottahoopla/prompt-backend-client';
-import { Session, Message } from '../../types/session';
+import { DefaultApi, Configuration, SessionStatus as SDKSessionStatus } from '@wholelottahoopla/prompt-backend-client';
+import { Session, Message, SessionStatus } from '../../types/session';
 import {
   BackendClient,
   CreateSessionData,
@@ -60,6 +60,8 @@ export class PromptBackendClient implements BackendClient {
           messages: currentSession.messages,
           sbxConfig: currentSession.sbxConfig,
           parent: currentSession.parentId,
+          title: data.title !== undefined ? data.title : currentSession.title,
+          sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
         },
       });
       return this.deserializeSession(response.session);
@@ -70,11 +72,11 @@ export class PromptBackendClient implements BackendClient {
     },
 
     archive: async (id: string): Promise<Session> => {
-      return this.update(id, { archived: true });
+      return this.update(id, { sessionStatus: 'Archived' });
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      return this.update(id, { archived: false });
+      return this.update(id, { sessionStatus: 'Active' });
     },
   };
 
@@ -149,7 +151,7 @@ export class PromptBackendClient implements BackendClient {
       createdAt: session.createdAt ? new Date(session.createdAt) : new Date(),
       diffStats: session.diffStats,
       prUrl: session.prUrl,
-      archived: session.archived || false,
+      sessionStatus: session.sessionStatus || 'Active',
       children: session.children ? this.deserializeSessions(session.children) : undefined,
     };
   }

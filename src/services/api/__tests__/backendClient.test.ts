@@ -262,7 +262,7 @@ describe('BackendClient API Boundaries', () => {
           inbox_status: 'pending',
           sbx_config: null,
           parent_id: null,
-          archived: true,
+          session_status: 'Archived',
           created_at: '2025-01-01T10:00:00Z',
         },
         status: 200,
@@ -275,7 +275,7 @@ describe('BackendClient API Boundaries', () => {
       const archived = await backendClient.sessions.archive('session-1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions/session-1/archive');
-      expect(archived.archived).toBe(true);
+      expect(archived.sessionStatus).toBe('Archived');
     });
   });
 
@@ -292,7 +292,7 @@ describe('BackendClient API Boundaries', () => {
           inbox_status: 'pending',
           sbx_config: null,
           parent_id: null,
-          archived: false,
+          session_status: 'Active',
           created_at: '2025-01-01T10:00:00Z',
         },
         status: 200,
@@ -305,7 +305,7 @@ describe('BackendClient API Boundaries', () => {
       const unarchived = await backendClient.sessions.unarchive('session-1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions/session-1/unarchive');
-      expect(unarchived.archived).toBe(false);
+      expect(unarchived.sessionStatus).toBe('Active');
     });
   });
 

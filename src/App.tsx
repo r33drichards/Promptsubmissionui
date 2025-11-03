@@ -27,9 +27,7 @@ export default function App() {
   const [filter, setFilter] = useState<FilterType>('active');
 
   // Fetch sessions using TanStack Query
-  const { data: sessions = [], isLoading: isLoadingSessions } = useSessions({
-    archived: filter === 'archived' ? true : filter === 'active' ? false : undefined,
-  });
+  const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
 
   // Mutations
   const createSessionMutation = useCreateSession();
@@ -84,9 +82,9 @@ export default function App() {
     // Filter sessions based on filter type
     let filteredSessions = sessions;
     if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => !s.archived);
+      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
     } else if (filter === 'archived') {
-      filteredSessions = sessions.filter((s) => s.archived);
+      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
     }
     // 'all' shows everything
 

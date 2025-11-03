@@ -1,4 +1,5 @@
 export type InboxStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
+export type SessionStatus = 'Active' | 'Archived';
 
 export interface Session {
   id: string;
@@ -17,7 +18,7 @@ export interface Session {
   prUrl?: string;
   createdAt: Date;
   children?: Session[];
-  archived?: boolean;
+  sessionStatus: SessionStatus;
 }
 
 export interface Message {
