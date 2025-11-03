@@ -71,6 +71,16 @@ export class PromptBackendClient implements BackendClient {
         updateSessionInput: updateInput,
       });
       console.log('[PromptBackendClient] Update response:', response);
+
+      // If the backend doesn't return the session, construct it from our data
+      if (!response.session) {
+        console.log('[PromptBackendClient] No session in response, constructing from current data');
+        return {
+          ...currentSession,
+          ...data,
+        };
+      }
+
       return this.deserializeSession(response.session);
     },
 
