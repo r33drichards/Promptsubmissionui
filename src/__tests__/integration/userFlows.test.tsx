@@ -325,7 +325,7 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Archiving Sessions', () => {
-    it('should archive a session, make API call, and refetch list', async () => {
+    it('should archive a session, make API call, refetch list, and remove from active view', async () => {
       const user = userEvent.setup();
 
       // Track the number of times list is called
@@ -465,20 +465,15 @@ describe('User Flows Integration Tests', () => {
         expect(customClient.sessions.list).toHaveBeenCalledTimes(2);
       }, { timeout: 3000 });
 
-      // Since we removed the filter, archived sessions remain visible in the list
-      // Verify all sessions including the archived one are still visible
+      // Verify the archived session is no longer visible in the active view
+      // (the default filter is "Active", so archived sessions should be hidden)
       await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
       }, { timeout: 3000 });
 
       // Verify other sessions are still visible
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
       expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
-
-      // Verify the count shows all sessions (no filtering)
-      await waitFor(() => {
-        expect(screen.getByText(/3 total/i)).toBeInTheDocument();
-      });
     });
 
     it('should handle archive errors gracefully', async () => {
@@ -600,11 +595,39 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Session Count Display', () => {
-    it('should display correct session count', async () => {
+    it('should display filter buttons', async () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByText(/3 total/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^active$/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^archived$/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
+      });
+    });
+
+    it('should filter sessions when clicking filter buttons', async () => {
+      const user = userEvent.setup();
+      render(<App />, { client: mockClient });
+
+      // Wait for sessions to load
+      await waitFor(() => {
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+      });
+
+      // All active sessions should be visible by default
+      expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+
+      // Click "All" filter
+      const allButton = screen.getByRole('button', { name: /^all$/i });
+      await user.click(allButton);
+
+      // All sessions should still be visible
+      await waitFor(() => {
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+        expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+        expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
       });
     });
   });

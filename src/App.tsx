@@ -16,9 +16,12 @@ import {
   useArchiveSession,
 } from './hooks';
 
+type FilterType = 'active' | 'archived' | 'all';
+
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [filter, setFilter] = useState<FilterType>('active');
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -83,18 +86,27 @@ function AppLayout() {
       .map(([branch]) => branch);
   }, [sessions]);
 
-  // Build hierarchical structure
+  // Build hierarchical structure with filtering
   const hierarchicalSessions = useMemo(() => {
     const sessionMap = new Map<string, Session>();
     const rootSessions: Session[] = [];
 
+    // Filter sessions based on filter type
+    let filteredSessions = sessions;
+    if (filter === 'active') {
+      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
+    } else if (filter === 'archived') {
+      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
+    }
+    // 'all' shows everything
+
     // First pass: create a map of all sessions
-    sessions.forEach((session) => {
+    filteredSessions.forEach((session) => {
       sessionMap.set(session.id, { ...session, children: [] });
     });
 
     // Second pass: build hierarchy
-    sessions.forEach((session) => {
+    filteredSessions.forEach((session) => {
       const sessionWithChildren = sessionMap.get(session.id)!;
       if (session.parentId) {
         const parent = sessionMap.get(session.parentId);
@@ -109,7 +121,7 @@ function AppLayout() {
     });
 
     return rootSessions;
-  }, [sessions]);
+  }, [sessions, filter]);
 
   // Sort sessions by created date (newest first)
   const sortedSessions = useMemo(() => {
@@ -254,9 +266,38 @@ function AppLayout() {
           <div className="p-2">
             <div className="flex items-center justify-between px-2 py-1 mb-2">
               <span className="text-xs text-gray-500">Sessions</span>
-              <span className="text-xs text-gray-400">
-                {sortedSessions.length} total
-              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setFilter('active')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'active'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setFilter('archived')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'archived'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Archived
+                </button>
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'all'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  All
+                </button>
+              </div>
             </div>
 
             {isLoadingSessions ? (
