@@ -113,9 +113,23 @@ export default function App() {
     return rootSessions;
   }, [sessions, filter]);
 
+  // Sort sessions by created date (newest first)
+  const sortedSessions = useMemo(() => {
+    const sortByDate = (sessions: Session[]): Session[] => {
+      return sessions
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .map((session) => ({
+          ...session,
+          children: session.children ? sortByDate(session.children) : [],
+        }));
+    };
+
+    return sortByDate([...hierarchicalSessions]);
+  }, [hierarchicalSessions]);
+
   // Filter sessions based on search
   const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return hierarchicalSessions;
+    if (!searchQuery.trim()) return sortedSessions;
 
     const filterRecursive = (sessions: Session[]): Session[] => {
       return sessions
@@ -130,8 +144,8 @@ export default function App() {
         }));
     };
 
-    return filterRecursive(hierarchicalSessions);
-  }, [hierarchicalSessions, searchQuery]);
+    return filterRecursive(sortedSessions);
+  }, [sortedSessions, searchQuery]);
 
   const handleCreateTask = (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
     createSessionMutation.mutate(
@@ -263,7 +277,7 @@ export default function App() {
             <div className="flex items-center justify-between px-2 py-1 mb-2">
               <span className="text-xs text-gray-500">Sessions</span>
               <span className="text-xs text-gray-400">
-                {hierarchicalSessions.length} {filter !== 'all' ? filter : 'total'}
+                {sortedSessions.length} {filter !== 'all' ? filter : 'total'}
               </span>
             </div>
 
