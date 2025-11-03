@@ -35,14 +35,29 @@ export class PromptBackendClient implements BackendClient {
     },
 
     create: async (data: CreateSessionData): Promise<Session> => {
+      // Store repo, branch, and targetBranch in sbxConfig since they're not part of the backend schema
+      const enhancedSbxConfig = {
+        ...(data.sbxConfig || {}),
+        repo: data.repo,
+        branch: data.branch,
+        targetBranch: data.targetBranch,
+      };
+
+      // Create the session with basic required fields
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
-          inboxStatus: this.mapInboxStatus(data.title ? 'pending' : 'pending'),
+          inboxStatus: this.mapInboxStatus('pending'),
           messages: null,
-          sbxConfig: data.sbxConfig || null,
+          sbxConfig: enhancedSbxConfig,
           parent: data.parentId || null,
         },
       });
+
+      // If title is provided, update the session with it
+      if (data.title && response.session?.id) {
+        return this.sessions.update(response.session.id, { title: data.title });
+      }
+
       return this.deserializeSession(response.session);
     },
 
@@ -163,12 +178,18 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single session from the backend format
    */
   private deserializeSession(session: any): Session {
+    // Extract repo, branch, and targetBranch from sbxConfig if they exist there
+    const sbxConfig = session.sbxConfig || {};
+    const repo = session.repo || sbxConfig.repo || '';
+    const branch = session.branch || sbxConfig.branch || '';
+    const targetBranch = session.targetBranch || sbxConfig.targetBranch || 'main';
+
     return {
       id: session.id || '',
       title: session.title || '',
-      repo: session.repo || '',
-      branch: session.branch || '',
-      targetBranch: session.targetBranch || 'main',
+      repo,
+      branch,
+      targetBranch,
       messages: session.messages ? this.deserializeMessages(session.messages) : null,
       inboxStatus: this.unmapInboxStatus(session.inboxStatus || 'Pending'),
       sbxConfig: session.sbxConfig || null,
