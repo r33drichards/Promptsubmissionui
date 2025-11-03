@@ -25,7 +25,7 @@ export function CreateTaskForm({
   branches,
 }: CreateTaskFormProps) {
   const [repo, setRepo] = useState(parentSession?.repo || '');
-  const [targetBranch, setTargetBranch] = useState(parentSession?.targetBranch || 'main');
+  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || 'main');
   const [prompt, setPrompt] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {

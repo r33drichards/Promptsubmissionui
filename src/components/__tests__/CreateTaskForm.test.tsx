@@ -87,7 +87,7 @@ describe('CreateTaskForm', () => {
         expect(defaultProps.onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             repo: 'test/repo-1',
-            targetBranch: 'main',
+            targetBranch: 'feature/parent',
             messages: expect.objectContaining({
               content: 'Create a new authentication feature',
             }),
@@ -158,7 +158,7 @@ describe('CreateTaskForm', () => {
       });
     });
 
-    it('should inherit repo and targetBranch from parent session', async () => {
+    it('should inherit repo and parent branch as targetBranch from parent session', async () => {
       const user = userEvent.setup();
       const parentSession: Session = {
         id: 'parent-1',
@@ -185,7 +185,7 @@ describe('CreateTaskForm', () => {
         expect(defaultProps.onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             repo: 'test/inherited-repo',
-            targetBranch: 'develop',
+            targetBranch: 'feature/parent',
           })
         );
       });
