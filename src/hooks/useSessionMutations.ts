@@ -36,8 +36,11 @@ export function useCreateSession(
   return useMutation({
     mutationFn: (data: CreateSessionData) => api.sessions.create(data),
     onSuccess: (newSession, variables, context) => {
-      // Invalidate and refetch session lists
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
+      // Invalidate and immediately refetch session lists to update the sidebar
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active' // Ensures active queries are refetched immediately
+      });
 
       // Optionally set the data in the cache for the new session
       queryClient.setQueryData(queryKeys.sessions.detail(newSession.id), newSession);
@@ -112,8 +115,11 @@ export function useUpdateSession(
       // Update the cache with the server response
       queryClient.setQueryData(queryKeys.sessions.detail(updatedSession.id), updatedSession);
 
-      // Invalidate session lists to reflect changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
+      // Invalidate session lists to reflect changes in the sidebar
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active'
+      });
 
       toast.success('Task updated successfully');
 
@@ -177,7 +183,10 @@ export function useArchiveSession(
     },
     onSuccess: (archivedSession, id, context) => {
       queryClient.setQueryData(queryKeys.sessions.detail(archivedSession.id), archivedSession);
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active'
+      });
 
       toast.success('Task archived');
 
@@ -222,7 +231,10 @@ export function useUnarchiveSession(
     mutationFn: (id: string) => api.sessions.unarchive(id),
     onSuccess: (unarchivedSession, id, context) => {
       queryClient.setQueryData(queryKeys.sessions.detail(unarchivedSession.id), unarchivedSession);
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active'
+      });
 
       toast.success('Task unarchived');
 
@@ -262,8 +274,11 @@ export function useDeleteSession(
       // Remove the session from the cache
       queryClient.removeQueries({ queryKey: queryKeys.sessions.detail(id) });
 
-      // Invalidate session lists
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
+      // Invalidate session lists to update the sidebar
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active'
+      });
 
       toast.success('Task deleted');
 
