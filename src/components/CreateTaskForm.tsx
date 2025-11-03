@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Session } from '../types/session';
 import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
@@ -96,8 +97,22 @@ export function CreateTaskForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="targetBranch">Target Branch (for PR)</Label>
-              <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
+              <Label htmlFor="targetBranch">
+                Target Branch (for PR)
+                {parentSession && (
+                  <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
+                )}
+              </Label>
+              {parentSession ? (
+                <Input
+                  id="targetBranch"
+                  value={targetBranch}
+                  disabled
+                  className="bg-muted cursor-not-allowed"
+                />
+              ) : (
+                <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
+              )}
             </div>
           </div>
         </div>
