@@ -16,7 +16,7 @@ export class PromptBackendClient implements BackendClient {
 
   constructor(basePath?: string) {
     const config = new Configuration({
-      basePath: basePath || 'https://prompt-backend-production.up.railway.app',
+      basePath: basePath || import.meta.env.VITE_BACKEND_URL || 'https://prompt-backend-production.up.railway.app',
     });
     this.api = new DefaultApi(config);
   }
