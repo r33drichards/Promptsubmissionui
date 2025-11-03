@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
-import githubSearchRepos from 'github-search-repos';
 
 export interface GitHubRepo {
   id: number;
@@ -20,21 +19,27 @@ interface GitHubSearchResponse {
   total_count: number;
 }
 
-async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
-  const searchQuery = query.trim();
+const GITHUB_API_BASE = 'https://api.github.com';
 
-  try {
-    const data: GitHubSearchResponse = await githubSearchRepos(searchQuery, undefined, 'stars');
-    return data.items;
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('rate limit') || error.message.includes('403')) {
-        throw new Error('GitHub API rate limit exceeded. Please try again later.');
-      }
-      throw new Error(`GitHub API error: ${error.message}`);
+async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
+  const searchQuery = encodeURIComponent(query.trim());
+  const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error('GitHub API rate limit exceeded. Please try again later.');
     }
-    throw error;
+    throw new Error(`GitHub API error: ${response.statusText}`);
   }
+
+  const data: GitHubSearchResponse = await response.json();
+  return data.items;
 }
 
 export function useGitHubRepoSearch() {
