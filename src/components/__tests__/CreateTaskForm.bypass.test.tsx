@@ -29,6 +29,7 @@ describe('CreateTaskForm - Bypass Attempts', () => {
     vi.mocked(hooks.useGitHubBranches).mockReturnValue({
       branches: mockBranches,
       branchData: [],
+      defaultBranch: 'main',
       isLoading: false,
       error: null,
     });

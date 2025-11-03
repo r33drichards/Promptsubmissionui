@@ -9,6 +9,12 @@ export interface GitHubBranch {
   protected: boolean;
 }
 
+export interface GitHubRepoInfo {
+  default_branch: string;
+  name: string;
+  full_name: string;
+}
+
 const GITHUB_API_BASE = 'https://api.github.com';
 
 async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
@@ -38,8 +44,35 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
   return data;
 }
 
+async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {
+  if (!repo || !repo.includes('/')) {
+    throw new Error('Invalid repository format. Expected "owner/repo"');
+  }
+
+  const url = `${GITHUB_API_BASE}/repos/${repo}`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error('GitHub API rate limit exceeded. Please try again later.');
+    }
+    if (response.status === 404) {
+      throw new Error('Repository not found or you do not have access to it.');
+    }
+    throw new Error(`GitHub API error: ${response.statusText}`);
+  }
+
+  const data: GitHubRepoInfo = await response.json();
+  return data;
+}
+
 export function useGitHubBranches(repo: string) {
-  const { data, isLoading, error } = useQuery({
+  const { data: branchesData, isLoading: isLoadingBranches, error: branchesError } = useQuery({
     queryKey: ['githubBranches', repo],
     queryFn: () => fetchGitHubBranches(repo),
     enabled: !!repo && repo.includes('/'),
@@ -47,10 +80,19 @@ export function useGitHubBranches(repo: string) {
     retry: 1,
   });
 
+  const { data: repoInfo, isLoading: isLoadingRepo, error: repoError } = useQuery({
+    queryKey: ['githubRepo', repo],
+    queryFn: () => fetchGitHubRepoInfo(repo),
+    enabled: !!repo && repo.includes('/'),
+    staleTime: 5 * 60 * 1000, // 5 minutes - repo info changes even less frequently
+    retry: 1,
+  });
+
   return {
-    branches: data?.map(b => b.name) ?? [],
-    branchData: data ?? [],
-    isLoading,
-    error: error?.message ?? null,
+    branches: branchesData?.map(b => b.name) ?? [],
+    branchData: branchesData ?? [],
+    defaultBranch: repoInfo?.default_branch ?? null,
+    isLoading: isLoadingBranches || isLoadingRepo,
+    error: branchesError?.message ?? repoError?.message ?? null,
   };
 }

@@ -24,26 +24,19 @@ export function CreateTaskForm({
   repositories,
 }: CreateTaskFormProps) {
   const [repo, setRepo] = useState(parentSession?.repo || '');
-  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || 'main');
+  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
   const [prompt, setPrompt] = useState('');
 
   // Fetch branches from GitHub API based on selected repository
-  const { branches, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
+  const { branches, defaultBranch, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
 
-  // Update targetBranch when branches are loaded and current value is not in the list
+  // Update targetBranch when repository changes and default branch is loaded
   useEffect(() => {
-    if (branches.length > 0 && !parentSession) {
-      // If current targetBranch is not in the list, default to 'main', 'master', or first branch
-      if (!branches.includes(targetBranch)) {
-        const defaultBranch = branches.includes('main')
-          ? 'main'
-          : branches.includes('master')
-          ? 'master'
-          : branches[0];
-        setTargetBranch(defaultBranch);
-      }
+    if (defaultBranch && !parentSession && !targetBranch) {
+      // Use GitHub's configured default branch
+      setTargetBranch(defaultBranch);
     }
-  }, [branches, targetBranch, parentSession]);
+  }, [defaultBranch, parentSession, targetBranch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +90,10 @@ export function CreateTaskForm({
                 onChange={(newRepo) => {
                   console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
                   setRepo(newRepo);
+                  // Reset targetBranch when repo changes so useEffect can set it to the new repo's default
+                  if (!parentSession) {
+                    setTargetBranch('');
+                  }
                 }}
                 repositories={repositories}
               />
