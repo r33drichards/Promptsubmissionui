@@ -35,15 +35,47 @@ export class PromptBackendClient implements BackendClient {
     },
 
     create: async (data: CreateSessionData): Promise<Session> => {
+      console.log('[PromptBackendClient] Creating session with data:', data);
+
+      // Store repo, branch, and targetBranch in sbxConfig since they're not part of the backend schema
+      const enhancedSbxConfig = {
+        ...(data.sbxConfig || {}),
+        repo: data.repo,
+        branch: data.branch,
+        targetBranch: data.targetBranch,
+      };
+
+      // Create the session with basic required fields
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
-          inboxStatus: this.mapInboxStatus(data.title ? 'pending' : 'pending'),
+          inboxStatus: this.mapInboxStatus('pending'),
           messages: null,
-          sbxConfig: data.sbxConfig || null,
+          sbxConfig: enhancedSbxConfig,
           parent: data.parentId || null,
         },
       });
-      return this.deserializeSession(response.session);
+
+      console.log('[PromptBackendClient] Create response:', response);
+
+      if (!response || !response.id) {
+        console.error('[PromptBackendClient] Invalid response structure:', response);
+        throw new Error('Failed to create session: Invalid response from backend');
+      }
+
+      // If title is provided, update the session with it
+      if (data.title) {
+        try {
+          const updatedSession = await this.sessions.update(response.id, { title: data.title });
+          console.log('[PromptBackendClient] Session updated with title:', updatedSession);
+          return updatedSession;
+        } catch (error) {
+          console.error('[PromptBackendClient] Failed to update title:', error);
+          // If update fails, fetch the session without title
+        }
+      }
+
+      // Fetch the full session data
+      return this.sessions.get(response.id);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
@@ -72,16 +104,8 @@ export class PromptBackendClient implements BackendClient {
       });
       console.log('[PromptBackendClient] Update response:', response);
 
-      // If the backend doesn't return the session, construct it from our data
-      if (!response.session) {
-        console.log('[PromptBackendClient] No session in response, constructing from current data');
-        return {
-          ...currentSession,
-          ...data,
-        };
-      }
-
-      return this.deserializeSession(response.session);
+      // Fetch the updated session data
+      return this.sessions.get(id);
     },
 
     delete: async (id: string): Promise<void> => {
@@ -163,12 +187,22 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single session from the backend format
    */
   private deserializeSession(session: any): Session {
+    if (!session) {
+      throw new Error('Cannot deserialize null or undefined session');
+    }
+
+    // Extract repo, branch, and targetBranch from sbxConfig if they exist there
+    const sbxConfig = session.sbxConfig || {};
+    const repo = session.repo || sbxConfig.repo || '';
+    const branch = session.branch || sbxConfig.branch || '';
+    const targetBranch = session.targetBranch || sbxConfig.targetBranch || 'main';
+
     return {
       id: session.id || '',
       title: session.title || '',
-      repo: session.repo || '',
-      branch: session.branch || '',
-      targetBranch: session.targetBranch || 'main',
+      repo,
+      branch,
+      targetBranch,
       messages: session.messages ? this.deserializeMessages(session.messages) : null,
       inboxStatus: this.unmapInboxStatus(session.inboxStatus || 'Pending'),
       sbxConfig: session.sbxConfig || null,

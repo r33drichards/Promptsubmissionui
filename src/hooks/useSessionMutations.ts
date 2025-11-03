@@ -36,14 +36,24 @@ export function useCreateSession(
   return useMutation({
     mutationFn: (data: CreateSessionData) => api.sessions.create(data),
     onSuccess: (newSession, variables, context) => {
-      // Invalidate and immediately refetch session lists to update the sidebar
+      // Set the new session in the detail cache
+      queryClient.setQueryData(queryKeys.sessions.detail(newSession.id), newSession);
+
+      // Optimistically add the new session to all list caches
+      queryClient.setQueriesData(
+        { queryKey: queryKeys.sessions.lists() },
+        (oldSessions: Session[] | undefined) => {
+          if (!oldSessions) return [newSession];
+          // Add the new session to the beginning of the list
+          return [newSession, ...oldSessions];
+        }
+      );
+
+      // Invalidate and refetch to ensure consistency with backend
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active' // Ensures active queries are refetched immediately
+        refetchType: 'active'
       });
-
-      // Optionally set the data in the cache for the new session
-      queryClient.setQueryData(queryKeys.sessions.detail(newSession.id), newSession);
 
       toast.success('Task created successfully');
 
