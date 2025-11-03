@@ -50,7 +50,7 @@ export class PromptBackendClient implements BackendClient {
       console.log('[PromptBackendClient] Updating session:', id, 'with data:', data);
 
       // Get the current session first to merge with update data
-      const currentSession = await this.get(id);
+      const currentSession = await this.sessions.get(id);
       console.log('[PromptBackendClient] Current session:', currentSession);
 
       const updateInput = {
