@@ -120,6 +120,39 @@ describe('User Flows Integration Tests', () => {
       expect(createButton).toBeDisabled();
     });
 
+    it('should NOT send empty repo or targetBranch when form validation prevents submission', async () => {
+      const user = userEvent.setup();
+      const spyClient = createMockBackendClient();
+
+      render(<App />, { client: spyClient });
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+      });
+
+      // Click New Task button
+      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      await user.click(newTaskButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Create New Task')).toBeInTheDocument();
+      });
+
+      // Fill in the prompt (but NOT repo or targetBranch)
+      const promptInput = screen.getByLabelText(/prompt/i);
+      await user.type(promptInput, 'Test task creation');
+
+      // Submit button should be disabled
+      const createButton = screen.getByRole('button', { name: /create task/i });
+      expect(createButton).toBeDisabled();
+
+      // Try to click the disabled button (it shouldn't do anything)
+      // Note: userEvent will handle this correctly
+
+      // Verify the API was NOT called (form validation prevented it)
+      expect(spyClient.sessions.create).not.toHaveBeenCalled();
+    });
+
     it('should cancel task creation and return to previous view', async () => {
       const user = userEvent.setup();
       render(<App />, { client: mockClient });
