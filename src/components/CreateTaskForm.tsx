@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Session } from '../types/session';
 import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
 import { BranchCombobox } from './BranchCombobox';
+import { MonacoEditor } from './MonacoEditor';
 import { X } from 'lucide-react';
 
 interface CreateTaskFormProps {
@@ -70,49 +70,51 @@ export function CreateTaskForm({
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
         <div className="flex-1 overflow-auto p-4">
-          <div className="space-y-6 max-w-2xl">
+          <div className="space-y-4">
+            {/* Repository and Target Branch side by side at the top */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="repo" className="text-sm">Repository</Label>
+                <RepositoryCombobox
+                  id="repo"
+                  value={repo}
+                  onChange={(newRepo) => {
+                    console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
+                    setRepo(newRepo);
+                  }}
+                  repositories={repositories}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="targetBranch" className="text-sm">
+                  Target Branch (for PR)
+                  {parentSession && (
+                    <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
+                  )}
+                </Label>
+                {parentSession ? (
+                  <Input
+                    id="targetBranch"
+                    value={targetBranch}
+                    disabled
+                    className="bg-muted cursor-not-allowed"
+                  />
+                ) : (
+                  <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
+                )}
+              </div>
+            </div>
+
+            {/* Monaco Editor for Prompt */}
             <div className="space-y-2">
               <Label htmlFor="prompt">Prompt</Label>
-              <Textarea
-                id="prompt"
+              <MonacoEditor
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(value) => setPrompt(value || '')}
                 placeholder="Describe what you want Claude Code to do..."
-                className="min-h-[200px]"
-                required
+                height="400px"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="repo">Repository</Label>
-              <RepositoryCombobox
-                id="repo"
-                value={repo}
-                onChange={(newRepo) => {
-                  console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
-                  setRepo(newRepo);
-                }}
-                repositories={repositories}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="targetBranch">
-                Target Branch (for PR)
-                {parentSession && (
-                  <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
-                )}
-              </Label>
-              {parentSession ? (
-                <Input
-                  id="targetBranch"
-                  value={targetBranch}
-                  disabled
-                  className="bg-muted cursor-not-allowed"
-                />
-              ) : (
-                <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
-              )}
             </div>
           </div>
         </div>
