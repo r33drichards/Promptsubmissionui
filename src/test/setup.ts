@@ -1,6 +1,19 @@
 import '@testing-library/jest-dom';
 import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import React from 'react';
+
+// Mock Monaco Editor component for tests
+vi.mock('../components/MonacoEditor', () => ({
+  MonacoEditor: ({ value, onChange, placeholder }: any) =>
+    React.createElement('textarea', {
+      'aria-label': 'Prompt',
+      value,
+      onChange: (e: any) => onChange(e.target.value),
+      placeholder,
+      required: true,
+    })
+}));
 
 // Cleanup after each test
 afterEach(() => {
