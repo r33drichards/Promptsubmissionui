@@ -81,7 +81,7 @@ export class PromptBackendClient implements BackendClient {
     archive: async (id: string): Promise<Session> => {
       console.log('[PromptBackendClient] Archiving session:', id);
       try {
-        const result = await this.update(id, { sessionStatus: 'Archived' });
+        const result = await this.sessions.update(id, { sessionStatus: 'Archived' });
         console.log('[PromptBackendClient] Archive successful:', result);
         return result;
       } catch (error) {
@@ -91,7 +91,7 @@ export class PromptBackendClient implements BackendClient {
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      return this.update(id, { sessionStatus: 'Active' });
+      return this.sessions.update(id, { sessionStatus: 'Active' });
     },
   };
 
