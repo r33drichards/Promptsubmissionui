@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { Session } from './types/session';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
@@ -23,7 +24,9 @@ import {
 
 type FilterType = 'active' | 'archived' | 'all';
 
-export default function App() {
+function AppLayout() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterType>('active');
 
   // Fetch sessions using TanStack Query
@@ -33,7 +36,22 @@ export default function App() {
   const createSessionMutation = useCreateSession();
   const updateSessionMutation = useUpdateSession();
   const archiveSessionMutation = useArchiveSession();
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+
+  // Derive selectedSession from URL parameter
+  const selectedSession = useMemo(() => {
+    if (!id) return null;
+    return sessions.find(s => s.id === id) || null;
+  }, [id, sessions]);
+
+  // Handle invalid session IDs
+  useEffect(() => {
+    // Only check after sessions have loaded
+    if (!isLoadingSessions && id && !selectedSession) {
+      toast.error('Session not found');
+      navigate('/');
+    }
+  }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(null);
@@ -157,7 +175,7 @@ export default function App() {
       },
       {
         onSuccess: (newSession) => {
-          setSelectedSession(newSession);
+          navigate(`/session/${newSession.id}`);
           setIsCreatingTask(false);
           setParentForNewTask(null);
         },
@@ -168,13 +186,14 @@ export default function App() {
   const handleCreateSubtask = (parentId: string) => {
     const parent = sessions.find((s) => s.id === parentId);
     setParentForNewTask(parent || null);
-    setSelectedSession(null);
+    navigate('/');
     setIsCreatingTask(true);
   };
 
   const handleCancelCreate = () => {
     setIsCreatingTask(false);
     setParentForNewTask(null);
+    // Don't navigate - stay on current URL
   };
 
   const handleCreatePR = (sessionId: string) => {
@@ -214,7 +233,7 @@ export default function App() {
       onSuccess: () => {
         console.log('[App] Archive mutation succeeded');
         if (selectedSession?.id === sessionId) {
-          setSelectedSession(null);
+          navigate('/');
         }
       },
     });
@@ -235,7 +254,7 @@ export default function App() {
               size="sm"
               onClick={() => {
                 setParentForNewTask(null);
-                setSelectedSession(null);
+                navigate('/');
                 setIsCreatingTask(true);
               }}
               disabled={createSessionMutation.isPending}
@@ -292,7 +311,7 @@ export default function App() {
                   key={session.id}
                   session={session}
                   isActive={selectedSession?.id === session.id}
-                  onSelect={setSelectedSession}
+                  onSelect={(session) => navigate(`/session/${session.id}`)}
                   onCreateSubtask={handleCreateSubtask}
                   onArchive={handleArchive}
                 />
@@ -331,7 +350,7 @@ export default function App() {
                 variant="outline"
                 onClick={() => {
                   setParentForNewTask(null);
-                  setSelectedSession(null);
+                  navigate('/');
                   setIsCreatingTask(true);
                 }}
               >
@@ -343,5 +362,14 @@ export default function App() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AppLayout />} />
+      <Route path="/session/:id" element={<AppLayout />} />
+    </Routes>
   );
 }

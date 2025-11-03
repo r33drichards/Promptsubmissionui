@@ -1,6 +1,7 @@
 import { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { ApiProvider } from '@/providers/ApiProvider';
 import { BackendClient } from '@/services/api/types';
 
@@ -34,9 +35,11 @@ export function TestProviders({ children, client, queryClient }: TestProvidersPr
   const testQueryClient = queryClient || createTestQueryClient();
 
   return (
-    <QueryClientProvider client={testQueryClient}>
-      <ApiProvider client={client}>{children}</ApiProvider>
-    </QueryClientProvider>
+    <MemoryRouter>
+      <QueryClientProvider client={testQueryClient}>
+        <ApiProvider client={client}>{children}</ApiProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
   );
 }
 
