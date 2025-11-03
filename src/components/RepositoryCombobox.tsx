@@ -25,12 +25,16 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const [searchQuery, setSearchQuery] = useState('');
   const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
 
+  console.log('[RepositoryCombobox] Render - value:', value, 'repositories:', repositories);
+
   const handleSearchChange = (newQuery: string) => {
+    console.log('[RepositoryCombobox] handleSearchChange - newQuery:', newQuery);
     setSearchQuery(newQuery);
     search(newQuery);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    console.log('[RepositoryCombobox] handleOpenChange - newOpen:', newOpen);
     setOpen(newOpen);
     if (!newOpen) {
       setSearchQuery('');
@@ -92,7 +96,11 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                     key={`recent-${repo}`}
                     value={repo}
                     onSelect={(currentValue) => {
-                      onChange(currentValue === value ? '' : currentValue);
+                      console.log('[RepositoryCombobox] Recent repo selected - currentValue:', currentValue, 'value:', value, 'repo:', repo);
+                      // Use `repo` instead of `currentValue` because cmdk lowercases the value
+                      const newValue = repo === value ? '' : repo;
+                      console.log('[RepositoryCombobox] Calling onChange with:', newValue);
+                      onChange(newValue);
                       setOpen(false);
                     }}
                   >
@@ -115,7 +123,10 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                     key={`github-${repo.id}`}
                     value={repo.full_name}
                     onSelect={(currentValue) => {
-                      onChange(currentValue);
+                      console.log('[RepositoryCombobox] GitHub repo selected - currentValue:', currentValue, 'repo.full_name:', repo.full_name);
+                      // Use `repo.full_name` instead of `currentValue` because cmdk lowercases the value
+                      console.log('[RepositoryCombobox] Calling onChange with:', repo.full_name);
+                      onChange(repo.full_name);
                       setOpen(false);
                     }}
                   >
