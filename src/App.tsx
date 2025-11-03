@@ -46,7 +46,7 @@ function AppLayout() {
   // Handle invalid session IDs
   useEffect(() => {
     // Only check after sessions have loaded
-    if (!isLoadingSessions && id && sessions.length > 0 && !selectedSession) {
+    if (!isLoadingSessions && id && !selectedSession) {
       toast.error('Session not found');
       navigate('/');
     }
