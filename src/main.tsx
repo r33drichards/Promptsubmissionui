@@ -23,7 +23,6 @@
   createRoot(document.getElementById("root")!).render(
     <OidcProvider
       configuration={oidcConfiguration}
-      callbackSuccessComponent={AuthCallback}
       authenticatingComponent={() => (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">

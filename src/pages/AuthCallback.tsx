@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useOidc } from '@axa-fr/react-oidc';
 
 export function AuthCallback() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useOidc();
 
   useEffect(() => {
-    // OidcProvider handles the callback automatically
-    // Redirect to home after a brief delay
-    const timer = setTimeout(() => {
+    if (isAuthenticated) {
+      // User is authenticated, redirect to home
       navigate('/');
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="flex items-center justify-center h-screen">
