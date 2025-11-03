@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useRef } from 'react';
 import { useOidcAccessToken } from '@axa-fr/react-oidc';
 import { BackendClient } from '../services/api/types';
 import { BackendClientImpl } from '../services/api/backendClient';
@@ -48,12 +48,18 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
 }) => {
   const { accessToken } = useOidcAccessToken();
 
-  // Use provided client, or create appropriate client based on useMock flag
-  const backendClient = client ?? (
-    useMock
-      ? new BackendClientImpl(new MockHttpClient())
-      : new PromptBackendClient(backendUrl, () => accessToken)
-  );
+  // Use a ref to always have the latest access token
+  const accessTokenRef = useRef(accessToken);
+  accessTokenRef.current = accessToken;
+
+  // Create backend client once, using a function that always gets the latest token
+  const backendClient = useMemo(() => {
+    if (client) return client;
+    if (useMock) return new BackendClientImpl(new MockHttpClient());
+
+    // Return a function that reads from the ref, ensuring we always get the latest token
+    return new PromptBackendClient(backendUrl, () => accessTokenRef.current);
+  }, [client, useMock, backendUrl]);
 
   return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
 };
