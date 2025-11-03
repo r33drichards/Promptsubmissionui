@@ -112,7 +112,6 @@ export function CreateTaskForm({
               value={prompt}
               onChange={(value) => setPrompt(value || '')}
               placeholder="Describe what you want Claude Code to do..."
-              height="calc(100% - 2rem)"
             />
           </div>
         </div>
