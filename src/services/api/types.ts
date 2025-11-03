@@ -34,12 +34,10 @@ export interface ListSessionsParams {
 }
 
 export interface CreateSessionData {
-  title: string;
   repo: string;
-  branch: string;
   targetBranch: string;
+  messages?: any; // Optional messages field
   parentId?: string | null;
-  sbxConfig?: Record<string, any>;
 }
 
 export interface UpdateSessionData {

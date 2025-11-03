@@ -3,12 +3,13 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { Session } from '../types/session';
+import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
 import { BranchCombobox } from './BranchCombobox';
 import { X } from 'lucide-react';
 
 interface CreateTaskFormProps {
-  onSubmit: (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => void;
+  onSubmit: (task: CreateSessionData) => void;
   onCancel: () => void;
   parentSession?: Session | null;
   repositories: string[];
@@ -29,20 +30,9 @@ export function CreateTaskForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      title: '', // Will be auto-generated from prompt
       repo,
-      branch: '', // Will be auto-generated
       targetBranch,
-      messages: [
-        {
-          id: `m-${Date.now()}`,
-          role: 'user',
-          content: prompt,
-          timestamp: new Date(),
-        },
-      ],
-      inboxStatus: 'pending',
-      sbxConfig: null,
+      messages: { content: prompt }, // Send as JSON object to match backend API
       parentId: parentSession?.id || null,
     });
     setRepo('');

@@ -37,16 +37,13 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Create the session with git fields at top level
+      // Create the session - backend will auto-generate title, branch, and set defaults
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
-          inboxStatus: this.mapInboxStatus('pending'),
-          messages: null,
-          sbxConfig: data.sbxConfig || null,
+          repo: data.repo,
+          targetBranch: data.targetBranch,
+          messages: data.messages || null,
           parent: data.parentId || null,
-          repo: data.repo || null,
-          branch: data.branch || null,
-          targetBranch: data.targetBranch || null,
         },
       });
 
@@ -55,18 +52,6 @@ export class PromptBackendClient implements BackendClient {
       if (!response || !response.id) {
         console.error('[PromptBackendClient] Invalid response structure:', response);
         throw new Error('Failed to create session: Invalid response from backend');
-      }
-
-      // If title is provided, update the session with it
-      if (data.title) {
-        try {
-          const updatedSession = await this.sessions.update(response.id, { title: data.title });
-          console.log('[PromptBackendClient] Session updated with title:', updatedSession);
-          return updatedSession;
-        } catch (error) {
-          console.error('[PromptBackendClient] Failed to update title:', error);
-          // If update fails, fetch the session without title
-        }
       }
 
       // Fetch the full session data
