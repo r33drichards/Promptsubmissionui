@@ -3,6 +3,25 @@ import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import React from 'react';
 
+// Mock OIDC library for tests
+vi.mock('@axa-fr/react-oidc', () => ({
+  useOidcAccessToken: () => ({
+    accessToken: 'mock-access-token',
+    accessTokenPayload: {
+      sub: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+    },
+  }),
+  useOidc: () => ({
+    isAuthenticated: true,
+    logout: vi.fn(),
+    login: vi.fn(),
+  }),
+  OidcProvider: ({ children }: any) => children,
+  OidcSecure: ({ children }: any) => children,
+}));
+
 // Mock Monaco Editor component for tests
 vi.mock('../components/MonacoEditor', () => ({
   MonacoEditor: ({ value, onChange, placeholder }: any) =>
