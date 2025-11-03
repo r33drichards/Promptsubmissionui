@@ -31,6 +31,10 @@ export function BranchCombobox({ value, onChange, branches, id }: BranchCombobox
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          data-1p-ignore="true"
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
         >
           {value || 'Select branch...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
