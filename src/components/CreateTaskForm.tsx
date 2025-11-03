@@ -69,7 +69,7 @@ export function CreateTaskForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
+        <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
           {/* Repository and Target Branch in flex-row at the top */}
           <div className="flex flex-row gap-4">
             <div className="flex-1 space-y-2">
@@ -106,16 +106,14 @@ export function CreateTaskForm({
           </div>
 
           {/* Monaco Editor for Prompt - fills remaining space */}
-          <div className="flex-1 flex flex-col space-y-2 min-h-0">
+          <div className="flex-1 space-y-2 overflow-hidden">
             <Label htmlFor="prompt">Prompt</Label>
-            <div className="flex-1 min-h-0">
-              <MonacoEditor
-                value={prompt}
-                onChange={(value) => setPrompt(value || '')}
-                placeholder="Describe what you want Claude Code to do..."
-                height="100%"
-              />
-            </div>
+            <MonacoEditor
+              value={prompt}
+              onChange={(value) => setPrompt(value || '')}
+              placeholder="Describe what you want Claude Code to do..."
+              height="calc(100% - 2rem)"
+            />
           </div>
         </div>
 
