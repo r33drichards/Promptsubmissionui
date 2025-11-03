@@ -22,9 +22,12 @@ export function CreateTaskForm({
   repositories,
   branches,
 }: CreateTaskFormProps) {
+  console.log('[CreateTaskForm] Render - repositories:', repositories);
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.targetBranch || 'main');
   const [prompt, setPrompt] = useState('');
+
+  console.log('[CreateTaskForm] Current state - repo:', repo, 'targetBranch:', targetBranch);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +84,10 @@ export function CreateTaskForm({
               <RepositoryCombobox
                 id="repo"
                 value={repo}
-                onChange={setRepo}
+                onChange={(newRepo) => {
+                  console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
+                  setRepo(newRepo);
+                }}
                 repositories={repositories}
               />
             </div>

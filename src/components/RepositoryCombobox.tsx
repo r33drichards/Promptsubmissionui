@@ -25,12 +25,16 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const [searchQuery, setSearchQuery] = useState('');
   const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
 
+  console.log('[RepositoryCombobox] Render - value:', value, 'repositories:', repositories);
+
   const handleSearchChange = (newQuery: string) => {
+    console.log('[RepositoryCombobox] handleSearchChange - newQuery:', newQuery);
     setSearchQuery(newQuery);
     search(newQuery);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    console.log('[RepositoryCombobox] handleOpenChange - newOpen:', newOpen);
     setOpen(newOpen);
     if (!newOpen) {
       setSearchQuery('');
@@ -47,6 +51,18 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const hasRecentRepos = filteredRecentRepos.length > 0;
   const hasGitHubRepos = githubRepos.length > 0;
   const showEmpty = !hasRecentRepos && !hasGitHubRepos && !isLoading && searchQuery.trim().length >= 2;
+  const showNoRecentRepos = !hasRecentRepos && !hasGitHubRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
+
+  console.log('[RepositoryCombobox] Display states:', {
+    hasRecentRepos,
+    hasGitHubRepos,
+    showEmpty,
+    showNoRecentRepos,
+    isLoading,
+    searchQueryLength: searchQuery.length,
+    githubReposCount: githubRepos.length,
+    filteredRecentReposCount: filteredRecentRepos.length
+  });
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -83,6 +99,13 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
               </div>
             )}
 
+            {showNoRecentRepos && (
+              <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                <p className="mb-1">No recent repositories</p>
+                <p className="text-xs">Type to search GitHub repositories...</p>
+              </div>
+            )}
+
             {showEmpty && <CommandEmpty>No repository found.</CommandEmpty>}
 
             {hasRecentRepos && (
@@ -92,7 +115,11 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                     key={`recent-${repo}`}
                     value={repo}
                     onSelect={(currentValue) => {
-                      onChange(currentValue === value ? '' : currentValue);
+                      console.log('[RepositoryCombobox] Recent repo selected - currentValue:', currentValue, 'value:', value, 'repo:', repo);
+                      // Use `repo` instead of `currentValue` because cmdk lowercases the value
+                      const newValue = repo === value ? '' : repo;
+                      console.log('[RepositoryCombobox] Calling onChange with:', newValue);
+                      onChange(newValue);
                       setOpen(false);
                     }}
                   >
@@ -115,7 +142,10 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                     key={`github-${repo.id}`}
                     value={repo.full_name}
                     onSelect={(currentValue) => {
-                      onChange(currentValue);
+                      console.log('[RepositoryCombobox] GitHub repo selected - currentValue:', currentValue, 'repo.full_name:', repo.full_name);
+                      // Use `repo.full_name` instead of `currentValue` because cmdk lowercases the value
+                      console.log('[RepositoryCombobox] Calling onChange with:', repo.full_name);
+                      onChange(repo.full_name);
                       setOpen(false);
                     }}
                   >

@@ -155,6 +155,33 @@ describe('RepositoryCombobox', () => {
 
       expect(mockOnChange).toHaveBeenCalledWith('test/repo-1');
     });
+
+    it('should preserve case when selecting mixed-case repository names', async () => {
+      const user = userEvent.setup();
+      const mixedCaseRepos = ['MyOrg/MyRepo', 'AnotherOrg/CoolProject'];
+
+      render(
+        <TestProviders>
+          <RepositoryCombobox
+            value=""
+            onChange={mockOnChange}
+            repositories={mixedCaseRepos}
+          />
+        </TestProviders>
+      );
+
+      await user.click(screen.getByRole('combobox'));
+
+      await waitFor(() => {
+        expect(screen.getByText('MyOrg/MyRepo')).toBeInTheDocument();
+      });
+
+      // Click on a repository with mixed case
+      await user.click(screen.getByText('MyOrg/MyRepo'));
+
+      // Should preserve the original case, not lowercase it
+      expect(mockOnChange).toHaveBeenCalledWith('MyOrg/MyRepo');
+    });
   });
 
   describe('GitHub API Search', () => {
@@ -383,16 +410,17 @@ describe('RepositoryCombobox', () => {
       );
 
       // Open and search
-      await user.click(screen.getByRole('combobox'));
+      const triggerButton = screen.getByText('Select repository...');
+      await user.click(triggerButton);
 
       const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
       await user.type(searchInput, 'react');
 
-      // Close by clicking outside (click the button again)
-      await user.click(screen.getByRole('combobox'));
+      // Close by clicking the button again
+      await user.click(triggerButton);
 
       // Re-open
-      await user.click(screen.getByRole('combobox'));
+      await user.click(triggerButton);
 
       // Search input should be empty
       const newSearchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
