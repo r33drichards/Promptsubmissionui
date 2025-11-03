@@ -616,12 +616,9 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText(/3 active/i)).toBeInTheDocument();
       });
 
-      // Switch to "All" filter
-      const filterSelect = screen.getByRole('combobox');
-      await user.click(filterSelect);
-
-      const allOption = screen.getByText('All');
-      await user.click(allOption);
+      // Switch to "All" filter by clicking the "all" button in the filter
+      const allButton = screen.getByRole('button', { name: /^all$/i });
+      await user.click(allButton);
 
       // Count should update
       await waitFor(() => {
