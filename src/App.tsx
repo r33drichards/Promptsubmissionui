@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { Session } from './types/session';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
@@ -23,7 +24,9 @@ import {
 
 type FilterType = 'active' | 'archived' | 'all';
 
-export default function App() {
+function AppLayout() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterType>('active');
 
   // Fetch sessions using TanStack Query
@@ -33,7 +36,13 @@ export default function App() {
   const createSessionMutation = useCreateSession();
   const updateSessionMutation = useUpdateSession();
   const archiveSessionMutation = useArchiveSession();
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+
+  // Derive selectedSession from URL parameter
+  const selectedSession = useMemo(() => {
+    if (!id) return null;
+    return sessions.find(s => s.id === id) || null;
+  }, [id, sessions]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(null);
@@ -343,5 +352,14 @@ export default function App() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AppLayout />} />
+      <Route path="/session/:id" element={<AppLayout />} />
+    </Routes>
   );
 }
