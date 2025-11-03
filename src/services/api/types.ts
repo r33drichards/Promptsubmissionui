@@ -51,4 +51,7 @@ export interface UpdateSessionData {
     deletions: number;
   };
   sessionStatus?: SessionStatus;
+  repo?: string;
+  branch?: string;
+  targetBranch?: string;
 }

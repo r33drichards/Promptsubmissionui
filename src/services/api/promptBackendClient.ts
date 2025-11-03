@@ -37,21 +37,16 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Store repo, branch, and targetBranch in sbxConfig since they're not part of the backend schema
-      const enhancedSbxConfig = {
-        ...(data.sbxConfig || {}),
-        repo: data.repo,
-        branch: data.branch,
-        targetBranch: data.targetBranch,
-      };
-
-      // Create the session with basic required fields
+      // Create the session with git fields at top level
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
           inboxStatus: this.mapInboxStatus('pending'),
           messages: null,
-          sbxConfig: enhancedSbxConfig,
+          sbxConfig: data.sbxConfig || null,
           parent: data.parentId || null,
+          repo: data.repo || null,
+          branch: data.branch || null,
+          targetBranch: data.targetBranch || null,
         },
       });
 
@@ -95,6 +90,9 @@ export class PromptBackendClient implements BackendClient {
         parent: currentSession.parentId,
         title: data.title !== undefined ? data.title : currentSession.title,
         sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
+        repo: data.repo !== undefined ? data.repo : currentSession.repo || null,
+        branch: data.branch !== undefined ? data.branch : currentSession.branch || null,
+        targetBranch: data.targetBranch !== undefined ? data.targetBranch : currentSession.targetBranch || null,
       };
       console.log('[PromptBackendClient] Update input:', updateInput);
 
