@@ -47,23 +47,40 @@ export class PromptBackendClient implements BackendClient {
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
+      console.log('[PromptBackendClient] Updating session:', id, 'with data:', data);
+
       // Get the current session first to merge with update data
-      const currentSession = await this.get(id);
+      const currentSession = await this.sessions.get(id);
+      console.log('[PromptBackendClient] Current session:', currentSession);
+
+      const updateInput = {
+        id,
+        inboxStatus: data.inboxStatus
+          ? this.mapInboxStatus(data.inboxStatus)
+          : this.mapInboxStatus(currentSession.inboxStatus),
+        messages: currentSession.messages,
+        sbxConfig: currentSession.sbxConfig,
+        parent: currentSession.parentId,
+        title: data.title !== undefined ? data.title : currentSession.title,
+        sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
+      };
+      console.log('[PromptBackendClient] Update input:', updateInput);
 
       const response = await this.api.handlersSessionsUpdate({
         id,
-        updateSessionInput: {
-          id,
-          inboxStatus: data.inboxStatus
-            ? this.mapInboxStatus(data.inboxStatus)
-            : this.mapInboxStatus(currentSession.inboxStatus),
-          messages: currentSession.messages,
-          sbxConfig: currentSession.sbxConfig,
-          parent: currentSession.parentId,
-          title: data.title !== undefined ? data.title : currentSession.title,
-          sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
-        },
+        updateSessionInput: updateInput,
       });
+      console.log('[PromptBackendClient] Update response:', response);
+
+      // If the backend doesn't return the session, construct it from our data
+      if (!response.session) {
+        console.log('[PromptBackendClient] No session in response, constructing from current data');
+        return {
+          ...currentSession,
+          ...data,
+        };
+      }
+
       return this.deserializeSession(response.session);
     },
 
@@ -72,11 +89,19 @@ export class PromptBackendClient implements BackendClient {
     },
 
     archive: async (id: string): Promise<Session> => {
-      return this.update(id, { sessionStatus: 'Archived' });
+      console.log('[PromptBackendClient] Archiving session:', id);
+      try {
+        const result = await this.sessions.update(id, { sessionStatus: 'Archived' });
+        console.log('[PromptBackendClient] Archive successful:', result);
+        return result;
+      } catch (error) {
+        console.error('[PromptBackendClient] Archive failed:', error);
+        throw error;
+      }
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      return this.update(id, { sessionStatus: 'Active' });
+      return this.sessions.update(id, { sessionStatus: 'Active' });
     },
   };
 

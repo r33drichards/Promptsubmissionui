@@ -107,6 +107,7 @@ export function SessionListItem({
             className="flex-shrink-0 hover:bg-gray-200 rounded p-1"
             onClick={(e) => {
               e.stopPropagation();
+              console.log('[SessionListItem] Archive button clicked for session:', session.id);
               onArchive(session.id);
             }}
             title="Archive"
