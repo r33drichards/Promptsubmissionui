@@ -18,6 +18,8 @@
     response_type: 'code',
     automaticSilentRenew: true,
     loadUserInfo: true,
+    service_worker_relative_url: '/OidcServiceWorker.js',
+    service_worker_only: false,
   };
 
   createRoot(document.getElementById("root")!).render(
