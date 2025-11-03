@@ -33,9 +33,13 @@ export function CreateTaskForm({
   // Update targetBranch when branches are loaded and current value is not in the list
   useEffect(() => {
     if (branches.length > 0 && !parentSession) {
-      // If current targetBranch is not in the list, default to 'main' or first branch
+      // If current targetBranch is not in the list, default to 'main', 'master', or first branch
       if (!branches.includes(targetBranch)) {
-        const defaultBranch = branches.includes('main') ? 'main' : branches[0];
+        const defaultBranch = branches.includes('main')
+          ? 'main'
+          : branches.includes('master')
+          ? 'master'
+          : branches[0];
         setTargetBranch(defaultBranch);
       }
     }
