@@ -7,13 +7,6 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './components/ui/select';
 import { Plus, Search, Github, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -262,26 +255,14 @@ function AppLayout() {
             </Button>
           </div>
           
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Find a task..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filter} onValueChange={(value: FilterType) => setFilter(value)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-                <SelectItem value="all">All</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Find a task..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
           </div>
         </div>
 
@@ -315,6 +296,39 @@ function AppLayout() {
                 {searchQuery ? 'No tasks found' : 'No tasks yet'}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="border-t px-4 py-2">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <span>Show:</span>
+            <button
+              onClick={() => setFilter('active')}
+              className={`hover:text-gray-900 transition-colors ${
+                filter === 'active' ? 'text-gray-900 font-medium' : ''
+              }`}
+            >
+              active
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => setFilter('archived')}
+              className={`hover:text-gray-900 transition-colors ${
+                filter === 'archived' ? 'text-gray-900 font-medium' : ''
+              }`}
+            >
+              archived
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => setFilter('all')}
+              className={`hover:text-gray-900 transition-colors ${
+                filter === 'all' ? 'text-gray-900 font-medium' : ''
+              }`}
+            >
+              all
+            </button>
           </div>
         </div>
       </div>
