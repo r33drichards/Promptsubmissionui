@@ -1,20 +1,39 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@/test/utils';
 import { CreateTaskForm } from '../CreateTaskForm';
 import { Session } from '@/types/session';
+import * as hooks from '@/hooks';
+
+// Mock the useGitHubBranches hook
+vi.mock('@/hooks', async () => {
+  const actual = await vi.importActual('@/hooks');
+  return {
+    ...actual,
+    useGitHubBranches: vi.fn(),
+  };
+});
 
 describe('CreateTaskForm', () => {
   const defaultProps = {
     onSubmit: vi.fn(),
     onCancel: vi.fn(),
     repositories: ['test/repo-1', 'test/repo-2', 'org/project'],
-    branches: ['main', 'develop', 'staging'],
   };
+
+  const mockBranches = ['main', 'develop', 'staging'];
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mock implementation - returns branches for any repo
+    vi.mocked(hooks.useGitHubBranches).mockReturnValue({
+      branches: mockBranches,
+      branchData: [],
+      defaultBranch: 'main',
+      isLoading: false,
+      error: null,
+    });
   });
 
   describe('Rendering', () => {
