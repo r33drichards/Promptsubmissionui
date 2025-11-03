@@ -474,11 +474,6 @@ describe('User Flows Integration Tests', () => {
       // Verify other sessions are still visible
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
       expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
-
-      // Verify the count updated to show only active sessions
-      await waitFor(() => {
-        expect(screen.getByText(/2 active/i)).toBeInTheDocument();
-      });
     });
 
     it('should handle archive errors gracefully', async () => {
@@ -600,32 +595,39 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Session Count Display', () => {
-    it('should display correct session count', async () => {
+    it('should display filter buttons', async () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByText(/3 active/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^active$/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^archived$/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
       });
     });
 
-    it('should update session count when filtering', async () => {
+    it('should filter sessions when clicking filter buttons', async () => {
       const user = userEvent.setup();
       render(<App />, { client: mockClient });
 
+      // Wait for sessions to load
       await waitFor(() => {
-        expect(screen.getByText(/3 active/i)).toBeInTheDocument();
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      // Switch to "All" filter
-      const filterSelect = screen.getByRole('combobox');
-      await user.click(filterSelect);
+      // All active sessions should be visible by default
+      expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
 
-      const allOption = screen.getByText('All');
-      await user.click(allOption);
+      // Click "All" filter
+      const allButton = screen.getByRole('button', { name: /^all$/i });
+      await user.click(allButton);
 
-      // Count should update
+      // All sessions should still be visible
       await waitFor(() => {
-        expect(screen.getByText(/3 total/i)).toBeInTheDocument();
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+        expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+        expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
       });
     });
   });

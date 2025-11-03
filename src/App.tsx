@@ -7,13 +7,6 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './components/ui/select';
 import { Plus, Search, Github, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -238,11 +231,16 @@ function AppLayout() {
       {/* Sidebar */}
       <div className="w-96 border-r flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Github className="w-5 h-5" />
-              <h1>Claude Code</h1>
+        <div className="p-4 border-b">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Find a task..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
             <Button
               size="sm"
@@ -261,28 +259,6 @@ function AppLayout() {
               New Task
             </Button>
           </div>
-          
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Find a task..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filter} onValueChange={(value: FilterType) => setFilter(value)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-                <SelectItem value="all">All</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Sessions List */}
@@ -290,9 +266,38 @@ function AppLayout() {
           <div className="p-2">
             <div className="flex items-center justify-between px-2 py-1 mb-2">
               <span className="text-xs text-gray-500">Sessions</span>
-              <span className="text-xs text-gray-400">
-                {sortedSessions.length} {filter !== 'all' ? filter : 'total'}
-              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setFilter('active')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'active'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setFilter('archived')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'archived'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Archived
+                </button>
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    filter === 'all'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  All
+                </button>
+              </div>
             </div>
 
             {isLoadingSessions ? (
