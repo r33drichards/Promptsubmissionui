@@ -165,13 +165,13 @@ describe('BackendClient API Boundaries', () => {
       const newSession = await backendClient.sessions.create({
         repo: 'test/repo',
         targetBranch: 'main',
-        prompt: 'Create new feature',
+        messages: { content: 'Create new feature' },
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions', {
         repo: 'test/repo',
         target_branch: 'main',
-        prompt: 'Create new feature',
+        messages: { content: 'Create new feature' },
       });
       expect(newSession).toMatchObject({
         id: 'new-session',
@@ -187,7 +187,7 @@ describe('BackendClient API Boundaries', () => {
         backendClient.sessions.create({
           repo: '',
           targetBranch: 'main',
-          prompt: 'Test',
+          messages: { content: 'Test' },
         })
       ).rejects.toThrow('Invalid data');
     });

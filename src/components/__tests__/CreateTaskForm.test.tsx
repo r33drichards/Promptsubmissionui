@@ -88,13 +88,9 @@ describe('CreateTaskForm', () => {
           expect.objectContaining({
             repo: 'test/repo-1',
             targetBranch: 'main',
-            messages: expect.arrayContaining([
-              expect.objectContaining({
-                role: 'user',
-                content: 'Create a new authentication feature',
-              }),
-            ]),
-            inboxStatus: 'pending',
+            messages: expect.objectContaining({
+              content: 'Create a new authentication feature',
+            }),
             parentId: 'parent-1',
           })
         );

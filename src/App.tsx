@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { Session } from './types/session';
+import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
@@ -163,16 +164,9 @@ function AppLayout() {
     return filterRecursive(sortedSessions);
   }, [sortedSessions, searchQuery]);
 
-  const handleCreateTask = (task: Omit<Session, 'id' | 'createdAt' | 'children'>) => {
+  const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(
-      {
-        title: task.title,
-        repo: task.repo,
-        branch: task.branch,
-        targetBranch: task.targetBranch,
-        parentId: task.parentId,
-        sbxConfig: task.sbxConfig || undefined,
-      },
+      task,
       {
         onSuccess: (newSession) => {
           navigate(`/session/${newSession.id}`);
