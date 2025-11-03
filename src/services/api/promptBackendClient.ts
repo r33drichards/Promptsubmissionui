@@ -37,6 +37,14 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
+      // Validate required fields
+      if (!data.repo || data.repo.trim() === '') {
+        throw new Error('Repository is required to create a session');
+      }
+      if (!data.targetBranch || data.targetBranch.trim() === '') {
+        throw new Error('Target branch is required to create a session');
+      }
+
       // Create the session - backend will auto-generate title, branch, and set defaults
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {

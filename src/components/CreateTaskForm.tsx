@@ -29,6 +29,22 @@ export function CreateTaskForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate required fields before submission
+    if (!prompt.trim()) {
+      console.error('[CreateTaskForm] Prompt is required');
+      return;
+    }
+    if (!repo.trim()) {
+      console.error('[CreateTaskForm] Repository is required');
+      return;
+    }
+    if (!targetBranch.trim()) {
+      console.error('[CreateTaskForm] Target branch is required');
+      return;
+    }
+
+    console.log('[CreateTaskForm] Submitting with:', { repo, targetBranch, prompt });
     onSubmit({
       repo,
       targetBranch,
