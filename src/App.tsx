@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
+import { OidcSecure } from '@axa-fr/react-oidc';
 import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
@@ -350,9 +351,11 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />} />
-      <Route path="/session/:id" element={<AppLayout />} />
-    </Routes>
+    <OidcSecure>
+      <Routes>
+        <Route path="/" element={<AppLayout />} />
+        <Route path="/session/:id" element={<AppLayout />} />
+      </Routes>
+    </OidcSecure>
   );
 }
