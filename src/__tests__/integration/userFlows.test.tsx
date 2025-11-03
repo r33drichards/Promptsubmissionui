@@ -325,7 +325,7 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Archiving Sessions', () => {
-    it('should archive a session, make API call, refetch list, and remove from active view', async () => {
+    it('should archive a session, make API call, and refetch list', async () => {
       const user = userEvent.setup();
 
       // Track the number of times list is called
@@ -465,19 +465,19 @@ describe('User Flows Integration Tests', () => {
         expect(customClient.sessions.list).toHaveBeenCalledTimes(2);
       }, { timeout: 3000 });
 
-      // Verify the archived session is no longer visible in the active view
-      // (the default filter is "Active", so archived sessions should be hidden)
+      // Since we removed the filter, archived sessions remain visible in the list
+      // Verify all sessions including the archived one are still visible
       await waitFor(() => {
-        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
+        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       }, { timeout: 3000 });
 
       // Verify other sessions are still visible
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
       expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
 
-      // Verify the count updated to show only active sessions
+      // Verify the count shows all sessions (no filtering)
       await waitFor(() => {
-        expect(screen.getByText(/2 active/i)).toBeInTheDocument();
+        expect(screen.getByText(/3 total/i)).toBeInTheDocument();
       });
     });
 
@@ -603,27 +603,6 @@ describe('User Flows Integration Tests', () => {
     it('should display correct session count', async () => {
       render(<App />, { client: mockClient });
 
-      await waitFor(() => {
-        expect(screen.getByText(/3 active/i)).toBeInTheDocument();
-      });
-    });
-
-    it('should update session count when filtering', async () => {
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText(/3 active/i)).toBeInTheDocument();
-      });
-
-      // Switch to "All" filter
-      const filterSelect = screen.getByRole('combobox');
-      await user.click(filterSelect);
-
-      const allOption = screen.getByText('All');
-      await user.click(allOption);
-
-      // Count should update
       await waitFor(() => {
         expect(screen.getByText(/3 total/i)).toBeInTheDocument();
       });
