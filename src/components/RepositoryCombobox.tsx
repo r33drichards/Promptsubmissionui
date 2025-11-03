@@ -41,7 +41,9 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   };
 
   const handleSelect = (selectedRepo: string) => {
-    onChange(selectedRepo === value ? '' : selectedRepo);
+    // Always set the selected repo, don't toggle to empty
+    // (repo is a required field)
+    onChange(selectedRepo);
     setOpen(false);
   };
 

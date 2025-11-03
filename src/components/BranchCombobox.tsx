@@ -47,7 +47,9 @@ export function BranchCombobox({ value, onChange, branches, id }: BranchCombobox
                   key={branch}
                   value={branch}
                   onSelect={(currentValue) => {
-                    onChange(currentValue === value ? '' : currentValue);
+                    // Always set the selected branch, don't toggle to empty
+                    // (targetBranch is a required field)
+                    onChange(currentValue);
                     setOpen(false);
                   }}
                 >
