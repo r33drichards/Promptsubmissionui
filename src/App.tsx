@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { Session } from './types/session';
 import { SessionListItem } from './components/SessionListItem';
@@ -42,6 +42,15 @@ function AppLayout() {
     if (!id) return null;
     return sessions.find(s => s.id === id) || null;
   }, [id, sessions]);
+
+  // Handle invalid session IDs
+  useEffect(() => {
+    // Only check after sessions have loaded
+    if (!isLoadingSessions && id && sessions.length > 0 && !selectedSession) {
+      toast.error('Session not found');
+      navigate('/');
+    }
+  }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
