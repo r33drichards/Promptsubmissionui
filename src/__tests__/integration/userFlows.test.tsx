@@ -42,6 +42,7 @@ describe('User Flows Integration Tests', () => {
           sbxConfig: null,
           parentId: null,
           createdAt: new Date(),
+          sessionStatus: 'Active' as const,
         },
       ];
 
@@ -350,7 +351,7 @@ describe('User Flows Integration Tests', () => {
         sbxConfig: null,
         parentId: null,
         createdAt: new Date(),
-        archived: false,
+        sessionStatus: 'Active' as const,
         diffStats: { additions: 10, deletions: 5 },
       };
 

@@ -21,6 +21,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 4613, deletions: 39 },
     prUrl: 'https://github.com/r33drichards/simple-microvm-infra/pull/123',
     createdAt: new Date('2025-11-01T10:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '2',
@@ -40,6 +41,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T11:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '3',
@@ -61,6 +63,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 202, deletions: 0 },
     prUrl: 'https://github.com/r33drichards/simple-microvm-infra/pull/124',
     createdAt: new Date('2025-11-01T12:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '4',
@@ -73,6 +76,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T13:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '5',
@@ -87,6 +91,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 202, deletions: 0 },
     prUrl: 'https://github.com/r33drichards/simple-microvm-infra/pull/125',
     createdAt: new Date('2025-11-01T14:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '6',
@@ -101,6 +106,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 202, deletions: 0 },
     prUrl: 'https://github.com/r33drichards/simple-microvm-infra/pull/126',
     createdAt: new Date('2025-11-01T15:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '7',
@@ -114,6 +120,7 @@ export const mockSessions: Session[] = [
     parentId: null,
     diffStats: { additions: 2484, deletions: 1 },
     createdAt: new Date('2025-11-01T16:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '7-1',
@@ -126,6 +133,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: '7',
     createdAt: new Date('2025-11-01T16:30:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '7-2',
@@ -138,6 +146,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: '7',
     createdAt: new Date('2025-11-01T16:45:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '8',
@@ -152,6 +161,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 177, deletions: 0 },
     prUrl: 'https://github.com/r33drichards/inf-aws/pull/127',
     createdAt: new Date('2025-11-01T17:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '9',
@@ -165,6 +175,7 @@ export const mockSessions: Session[] = [
     parentId: null,
     diffStats: { additions: 523, deletions: 87 },
     createdAt: new Date('2025-11-01T18:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '10',
@@ -179,6 +190,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 45, deletions: 23 },
     prUrl: 'https://github.com/acme-corp/dashboard/pull/89',
     createdAt: new Date('2025-11-01T19:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '11',
@@ -191,6 +203,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T20:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '12',
@@ -205,6 +218,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 1250, deletions: 980 },
     prUrl: 'https://github.com/r33drichards/nba-kanban/pull/45',
     createdAt: new Date('2025-11-01T21:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '13',
@@ -218,6 +232,7 @@ export const mockSessions: Session[] = [
     parentId: null,
     diffStats: { additions: 789, deletions: 12 },
     createdAt: new Date('2025-11-01T22:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '14',
@@ -230,6 +245,7 @@ export const mockSessions: Session[] = [
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T23:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '15',
@@ -244,6 +260,7 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 234, deletions: 156 },
     prUrl: 'https://github.com/mycompany/analytics-service/pull/67',
     createdAt: new Date('2025-11-02T08:00:00'),
+    sessionStatus: 'Active',
   },
   {
     id: '16',
@@ -258,5 +275,6 @@ export const mockSessions: Session[] = [
     diffStats: { additions: 345, deletions: 0 },
     prUrl: 'https://github.com/acme-corp/dashboard/pull/91',
     createdAt: new Date('2025-11-02T09:00:00'),
+    sessionStatus: 'Active',
   },
 ];

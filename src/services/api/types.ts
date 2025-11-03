@@ -1,4 +1,4 @@
-import { Session, Message, InboxStatus } from '../../types/session';
+import { Session, Message, InboxStatus, SessionStatus } from '../../types/session';
 
 /**
  * Backend API client interface.
@@ -50,5 +50,5 @@ export interface UpdateSessionData {
     additions: number;
     deletions: number;
   };
-  archived?: boolean;
+  sessionStatus?: SessionStatus;
 }
