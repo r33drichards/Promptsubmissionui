@@ -51,6 +51,18 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const hasRecentRepos = filteredRecentRepos.length > 0;
   const hasGitHubRepos = githubRepos.length > 0;
   const showEmpty = !hasRecentRepos && !hasGitHubRepos && !isLoading && searchQuery.trim().length >= 2;
+  const showNoRecentRepos = !hasRecentRepos && !hasGitHubRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
+
+  console.log('[RepositoryCombobox] Display states:', {
+    hasRecentRepos,
+    hasGitHubRepos,
+    showEmpty,
+    showNoRecentRepos,
+    isLoading,
+    searchQueryLength: searchQuery.length,
+    githubReposCount: githubRepos.length,
+    filteredRecentReposCount: filteredRecentRepos.length
+  });
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -84,6 +96,13 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
             {error && (
               <div className="px-2 py-3 text-sm text-red-500">
                 {error}
+              </div>
+            )}
+
+            {showNoRecentRepos && (
+              <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                <p className="mb-1">No recent repositories</p>
+                <p className="text-xs">Type to search GitHub repositories...</p>
               </div>
             )}
 
