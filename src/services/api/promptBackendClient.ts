@@ -13,40 +13,12 @@ import {
  */
 export class PromptBackendClient implements BackendClient {
   private api: DefaultApi;
-  private getAccessToken: () => string | null;
 
-  constructor(basePath?: string, getAccessToken?: () => string | null) {
-    this.getAccessToken = getAccessToken || (() => null);
-
-    // Create middleware to inject auth headers dynamically
-    const authMiddleware = {
-      pre: async (context: any) => {
-        const token = this.getAccessToken();
-        if (token) {
-          context.init.headers = {
-            ...context.init.headers,
-            'Authorization': `Bearer ${token}`,
-          };
-        }
-        return context;
-      },
-    };
-
+  constructor(basePath?: string) {
     const config = new Configuration({
       basePath: basePath || import.meta.env.VITE_BACKEND_URL || 'https://prompt-backend-production.up.railway.app',
-      middleware: [authMiddleware],
     });
     this.api = new DefaultApi(config);
-  }
-
-  private getAuthHeaders(): Record<string, string> {
-    const token = this.getAccessToken();
-    if (token) {
-      return {
-        'Authorization': `Bearer ${token}`,
-      };
-    }
-    return {};
   }
 
   sessions = {
