@@ -9,7 +9,7 @@
   createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <QueryProvider>
-        <ApiProvider>
+        <ApiProvider backendUrl={import.meta.env.VITE_BACKEND_URL}>
           <App />
         </ApiProvider>
       </QueryProvider>
