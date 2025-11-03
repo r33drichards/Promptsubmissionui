@@ -69,51 +69,51 @@ export function CreateTaskForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="flex-1 overflow-auto p-4">
-          <div className="space-y-4">
-            {/* Repository and Target Branch side by side at the top */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="repo" className="text-sm">Repository</Label>
-                <RepositoryCombobox
-                  id="repo"
-                  value={repo}
-                  onChange={(newRepo) => {
-                    console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
-                    setRepo(newRepo);
-                  }}
-                  repositories={repositories}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="targetBranch" className="text-sm">
-                  Target Branch (for PR)
-                  {parentSession && (
-                    <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
-                  )}
-                </Label>
-                {parentSession ? (
-                  <Input
-                    id="targetBranch"
-                    value={targetBranch}
-                    disabled
-                    className="bg-muted cursor-not-allowed"
-                  />
-                ) : (
-                  <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
-                )}
-              </div>
+        <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
+          {/* Repository and Target Branch in flex-row at the top */}
+          <div className="flex flex-row gap-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="repo" className="text-sm">Repository</Label>
+              <RepositoryCombobox
+                id="repo"
+                value={repo}
+                onChange={(newRepo) => {
+                  console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
+                  setRepo(newRepo);
+                }}
+                repositories={repositories}
+              />
             </div>
 
-            {/* Monaco Editor for Prompt */}
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt</Label>
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="targetBranch" className="text-sm">
+                Target Branch (for PR)
+                {parentSession && (
+                  <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
+                )}
+              </Label>
+              {parentSession ? (
+                <Input
+                  id="targetBranch"
+                  value={targetBranch}
+                  disabled
+                  className="bg-muted cursor-not-allowed"
+                />
+              ) : (
+                <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
+              )}
+            </div>
+          </div>
+
+          {/* Monaco Editor for Prompt - fills remaining space */}
+          <div className="flex-1 flex flex-col space-y-2 min-h-0">
+            <Label htmlFor="prompt">Prompt</Label>
+            <div className="flex-1 min-h-0">
               <MonacoEditor
                 value={prompt}
                 onChange={(value) => setPrompt(value || '')}
                 placeholder="Describe what you want Claude Code to do..."
-                height="400px"
+                height="100%"
               />
             </div>
           </div>
