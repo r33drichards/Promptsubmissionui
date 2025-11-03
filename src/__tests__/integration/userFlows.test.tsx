@@ -292,32 +292,190 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Archiving Sessions', () => {
-    it('should archive a session when archive button is clicked', async () => {
+    it('should archive a session, make API call, refetch list, and remove from active view', async () => {
       const user = userEvent.setup();
-      render(<App />, { client: mockClient });
 
+      // Track the number of times list is called
+      let listCallCount = 0;
+      const customClient = createMockBackendClient({
+        sessions: {
+          list: vi.fn().mockImplementation(() => {
+            listCallCount++;
+            // After archive, return sessions with Test Session 1 archived
+            if (listCallCount > 1) {
+              return Promise.resolve([
+                {
+                  id: 'test-session-1',
+                  title: 'Test Session 1',
+                  repo: 'test/repo',
+                  branch: 'feature/test',
+                  targetBranch: 'main',
+                  messages: null,
+                  inboxStatus: 'pending',
+                  sbxConfig: null,
+                  parentId: null,
+                  createdAt: new Date('2025-01-01T10:00:00Z'),
+                  sessionStatus: 'Archived' as const,
+                },
+                {
+                  id: 'test-session-2',
+                  title: 'Test Session 2',
+                  repo: 'test/repo',
+                  branch: 'feature/test-2',
+                  targetBranch: 'main',
+                  messages: null,
+                  inboxStatus: 'in-progress',
+                  sbxConfig: null,
+                  parentId: null,
+                  createdAt: new Date('2025-01-02T10:00:00Z'),
+                  sessionStatus: 'Active' as const,
+                  diffStats: { additions: 10, deletions: 5 },
+                },
+                {
+                  id: 'test-session-3',
+                  title: 'Test Session 3 (Completed)',
+                  repo: 'test/another-repo',
+                  branch: 'feature/completed',
+                  targetBranch: 'main',
+                  messages: null,
+                  inboxStatus: 'completed',
+                  sbxConfig: null,
+                  parentId: null,
+                  createdAt: new Date('2025-01-03T10:00:00Z'),
+                  sessionStatus: 'Active' as const,
+                  diffStats: { additions: 25, deletions: 8 },
+                  prUrl: 'https://github.com/test/repo/pull/123',
+                },
+              ]);
+            }
+            // First call returns all active sessions
+            return Promise.resolve([
+              {
+                id: 'test-session-1',
+                title: 'Test Session 1',
+                repo: 'test/repo',
+                branch: 'feature/test',
+                targetBranch: 'main',
+                messages: null,
+                inboxStatus: 'pending',
+                sbxConfig: null,
+                parentId: null,
+                createdAt: new Date('2025-01-01T10:00:00Z'),
+                sessionStatus: 'Active' as const,
+              },
+              {
+                id: 'test-session-2',
+                title: 'Test Session 2',
+                repo: 'test/repo',
+                branch: 'feature/test-2',
+                targetBranch: 'main',
+                messages: null,
+                inboxStatus: 'in-progress',
+                sbxConfig: null,
+                parentId: null,
+                createdAt: new Date('2025-01-02T10:00:00Z'),
+                sessionStatus: 'Active' as const,
+                diffStats: { additions: 10, deletions: 5 },
+              },
+              {
+                id: 'test-session-3',
+                title: 'Test Session 3 (Completed)',
+                repo: 'test/another-repo',
+                branch: 'feature/completed',
+                targetBranch: 'main',
+                messages: null,
+                inboxStatus: 'completed',
+                sbxConfig: null,
+                parentId: null,
+                createdAt: new Date('2025-01-03T10:00:00Z'),
+                sessionStatus: 'Active' as const,
+                diffStats: { additions: 25, deletions: 8 },
+                prUrl: 'https://github.com/test/repo/pull/123',
+              },
+            ]);
+          }),
+        },
+      });
+
+      render(<App />, { client: customClient });
+
+      // Wait for initial sessions to load
       await waitFor(() => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      // Hover over a session to show the archive button
-      const sessionItem = screen.getByText('Test Session 1').closest('div');
+      expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+
+      // Verify initial list call was made
+      expect(customClient.sessions.list).toHaveBeenCalledTimes(1);
+
+      // Find the session item container and hover to show archive button
+      const sessionItem = screen.getByText('Test Session 1').closest('div[class*="group"]');
+      expect(sessionItem).toBeInTheDocument();
+
       await user.hover(sessionItem!);
 
-      // Note: The archive button might not be visible in the test without proper styling
-      // In a real test, you'd need to verify the archive mutation is called
+      // Find and click the archive button by its title attribute
+      const archiveButton = within(sessionItem!).getByTitle('Archive');
+      expect(archiveButton).toBeInTheDocument();
+
+      await user.click(archiveButton);
+
+      // Verify the archive API was called with the correct session ID
+      await waitFor(() => {
+        expect(customClient.sessions.archive).toHaveBeenCalledWith('test-session-1');
+      });
+
+      // Verify that sessions.list was called again after archiving (refetch)
+      await waitFor(() => {
+        expect(customClient.sessions.list).toHaveBeenCalledTimes(2);
+      }, { timeout: 3000 });
+
+      // Verify the archived session is no longer visible in the active view
+      // (the default filter is "Active", so archived sessions should be hidden)
+      await waitFor(() => {
+        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Verify other sessions are still visible
+      expect(screen.getByText('Test Session 2')).toBeInTheDocument();
+      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+
+      // Verify the count updated to show only active sessions
+      await waitFor(() => {
+        expect(screen.getByText(/2 active/i)).toBeInTheDocument();
+      });
     });
 
-    it('should remove archived session from active view', async () => {
+    it('should handle archive errors gracefully', async () => {
       const user = userEvent.setup();
-      render(<App />, { client: mockClient });
+      const errorClient = createMockBackendClient({
+        sessions: {
+          archive: vi.fn().mockRejectedValue(new Error('Failed to archive session')),
+        },
+      });
+
+      render(<App />, { client: errorClient });
 
       await waitFor(() => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      // Archive a session (would need to trigger the archive action)
-      // Then verify it's not in the active list anymore
+      // Hover over session and click archive
+      const sessionItem = screen.getByText('Test Session 1').closest('div[class*="group"]');
+      await user.hover(sessionItem!);
+
+      const archiveButton = within(sessionItem!).getByTitle('Archive');
+      await user.click(archiveButton);
+
+      // Verify archive was attempted
+      await waitFor(() => {
+        expect(errorClient.sessions.archive).toHaveBeenCalledWith('test-session-1');
+      });
+
+      // Session should still be visible since archive failed
+      expect(screen.getByText('Test Session 1')).toBeInTheDocument();
     });
   });
 
