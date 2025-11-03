@@ -193,6 +193,7 @@ function AppLayout() {
   const handleCancelCreate = () => {
     setIsCreatingTask(false);
     setParentForNewTask(null);
+    // Don't navigate - stay on current URL
   };
 
   const handleCreatePR = (sessionId: string) => {
