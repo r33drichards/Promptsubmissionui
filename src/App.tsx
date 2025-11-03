@@ -166,7 +166,7 @@ function AppLayout() {
       },
       {
         onSuccess: (newSession) => {
-          setSelectedSession(newSession);
+          navigate(`/session/${newSession.id}`);
           setIsCreatingTask(false);
           setParentForNewTask(null);
         },
@@ -177,7 +177,7 @@ function AppLayout() {
   const handleCreateSubtask = (parentId: string) => {
     const parent = sessions.find((s) => s.id === parentId);
     setParentForNewTask(parent || null);
-    setSelectedSession(null);
+    navigate('/');
     setIsCreatingTask(true);
   };
 
@@ -223,7 +223,7 @@ function AppLayout() {
       onSuccess: () => {
         console.log('[App] Archive mutation succeeded');
         if (selectedSession?.id === sessionId) {
-          setSelectedSession(null);
+          navigate('/');
         }
       },
     });
@@ -244,7 +244,7 @@ function AppLayout() {
               size="sm"
               onClick={() => {
                 setParentForNewTask(null);
-                setSelectedSession(null);
+                navigate('/');
                 setIsCreatingTask(true);
               }}
               disabled={createSessionMutation.isPending}
@@ -301,7 +301,7 @@ function AppLayout() {
                   key={session.id}
                   session={session}
                   isActive={selectedSession?.id === session.id}
-                  onSelect={setSelectedSession}
+                  onSelect={(session) => navigate(`/session/${session.id}`)}
                   onCreateSubtask={handleCreateSubtask}
                   onArchive={handleArchive}
                 />
@@ -340,7 +340,7 @@ function AppLayout() {
                 variant="outline"
                 onClick={() => {
                   setParentForNewTask(null);
-                  setSelectedSession(null);
+                  navigate('/');
                   setIsCreatingTask(true);
                 }}
               >
