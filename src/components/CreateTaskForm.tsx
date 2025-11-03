@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Session } from '../types/session';
 import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
 import { BranchCombobox } from './BranchCombobox';
+import { MonacoEditor } from './MonacoEditor';
 import { X } from 'lucide-react';
 
 interface CreateTaskFormProps {
@@ -69,22 +69,11 @@ export function CreateTaskForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="flex-1 overflow-auto p-4">
-          <div className="space-y-6 max-w-2xl">
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt</Label>
-              <Textarea
-                id="prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe what you want Claude Code to do..."
-                className="min-h-[200px]"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="repo">Repository</Label>
+        <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
+          {/* Repository and Target Branch in flex-row at the top */}
+          <div className="flex flex-row gap-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="repo" className="text-sm">Repository</Label>
               <RepositoryCombobox
                 id="repo"
                 value={repo}
@@ -96,8 +85,8 @@ export function CreateTaskForm({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="targetBranch">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="targetBranch" className="text-sm">
                 Target Branch (for PR)
                 {parentSession && (
                   <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
@@ -114,6 +103,16 @@ export function CreateTaskForm({
                 <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
               )}
             </div>
+          </div>
+
+          {/* Monaco Editor for Prompt - fills remaining space */}
+          <div className="flex-1 space-y-2 overflow-hidden">
+            <Label htmlFor="prompt">Prompt</Label>
+            <MonacoEditor
+              value={prompt}
+              onChange={(value) => setPrompt(value || '')}
+              placeholder="Describe what you want Claude Code to do..."
+            />
           </div>
         </div>
 
