@@ -234,8 +234,13 @@ function AppLayout() {
         <div className="p-4 border-b space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Github className="w-5 h-5" />
-              <h1>Claude Code</h1>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Find a task..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
             </div>
             <Button
               size="sm"
@@ -253,16 +258,6 @@ function AppLayout() {
               )}
               New Task
             </Button>
-          </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Find a task..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
           </div>
         </div>
 
