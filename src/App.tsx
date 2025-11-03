@@ -68,23 +68,8 @@ function AppLayout() {
       .map(([repo]) => repo);
   }, [sessions]);
 
-  // Get sorted branches by most recently used
-  const sortedBranches = useMemo(() => {
-    const branchMap = new Map<string, Date>();
-    
-    // Track the most recent usage of each branch
-    sessions.forEach((session) => {
-      const existing = branchMap.get(session.branch);
-      if (!existing || session.createdAt > existing) {
-        branchMap.set(session.branch, session.createdAt);
-      }
-    });
-
-    // Sort by most recent usage
-    return Array.from(branchMap.entries())
-      .sort((a, b) => b[1].getTime() - a[1].getTime())
-      .map(([branch]) => branch);
-  }, [sessions]);
+  // Note: Branches are now fetched from GitHub API in CreateTaskForm
+  // based on the selected repository
 
   // Build hierarchical structure with filtering
   const hierarchicalSessions = useMemo(() => {
@@ -332,7 +317,6 @@ function AppLayout() {
             onCancel={handleCancelCreate}
             parentSession={parentForNewTask}
             repositories={sortedRepositories}
-            branches={sortedBranches}
           />
         ) : selectedSession ? (
           <SessionDetail

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,14 +7,14 @@ import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
 import { BranchCombobox } from './BranchCombobox';
 import { MonacoEditor } from './MonacoEditor';
-import { X } from 'lucide-react';
+import { useGitHubBranches } from '../hooks';
+import { X, Loader2 } from 'lucide-react';
 
 interface CreateTaskFormProps {
   onSubmit: (task: CreateSessionData) => void;
   onCancel: () => void;
   parentSession?: Session | null;
   repositories: string[];
-  branches: string[];
 }
 
 export function CreateTaskForm({
@@ -22,11 +22,24 @@ export function CreateTaskForm({
   onCancel,
   parentSession,
   repositories,
-  branches,
 }: CreateTaskFormProps) {
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.branch || 'main');
   const [prompt, setPrompt] = useState('');
+
+  // Fetch branches from GitHub API based on selected repository
+  const { branches, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
+
+  // Update targetBranch when branches are loaded and current value is not in the list
+  useEffect(() => {
+    if (branches.length > 0 && !parentSession) {
+      // If current targetBranch is not in the list, default to 'main' or first branch
+      if (!branches.includes(targetBranch)) {
+        const defaultBranch = branches.includes('main') ? 'main' : branches[0];
+        setTargetBranch(defaultBranch);
+      }
+    }
+  }, [branches, targetBranch, parentSession]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +113,31 @@ export function CreateTaskForm({
                   className="bg-muted cursor-not-allowed"
                 />
               ) : (
-                <BranchCombobox id="targetBranch" value={targetBranch} onChange={setTargetBranch} branches={branches} />
+                <>
+                  <BranchCombobox
+                    id="targetBranch"
+                    value={targetBranch}
+                    onChange={setTargetBranch}
+                    branches={branches}
+                    disabled={isLoadingBranches || !repo}
+                  />
+                  {isLoadingBranches && repo && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Loading branches...
+                    </div>
+                  )}
+                  {branchesError && (
+                    <div className="text-xs text-red-600">
+                      {branchesError}
+                    </div>
+                  )}
+                  {!repo && (
+                    <div className="text-xs text-muted-foreground">
+                      Select a repository first
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

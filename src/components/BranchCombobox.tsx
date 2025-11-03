@@ -17,9 +17,10 @@ interface BranchComboboxProps {
   onChange: (value: string) => void;
   branches: string[];
   id?: string;
+  disabled?: boolean;
 }
 
-export function BranchCombobox({ value, onChange, branches, id }: BranchComboboxProps) {
+export function BranchCombobox({ value, onChange, branches, id, disabled = false }: BranchComboboxProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,6 +32,7 @@ export function BranchCombobox({ value, onChange, branches, id }: BranchCombobox
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          disabled={disabled}
         >
           {value || 'Select branch...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
