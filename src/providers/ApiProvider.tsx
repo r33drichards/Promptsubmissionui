@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
+import { useOidcAccessToken } from '@axa-fr/react-oidc';
 import { BackendClient } from '../services/api/types';
 import { BackendClientImpl } from '../services/api/backendClient';
 import { PromptBackendClient } from '../services/api/promptBackendClient';
@@ -45,11 +46,13 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
   useMock = false,
   backendUrl
 }) => {
+  const { accessToken } = useOidcAccessToken();
+
   // Use provided client, or create appropriate client based on useMock flag
   const backendClient = client ?? (
     useMock
       ? new BackendClientImpl(new MockHttpClient())
-      : new PromptBackendClient(backendUrl)
+      : new PromptBackendClient(backendUrl, () => accessToken)
   );
 
   return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
