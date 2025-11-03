@@ -45,8 +45,6 @@ async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
 export function useGitHubRepoSearch() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  console.log('[useGitHubRepoSearch] debouncedQuery:', debouncedQuery);
-
   const { data, isLoading, error } = useQuery({
     queryKey: ['githubRepos', debouncedQuery],
     queryFn: () => searchGitHubRepositories(debouncedQuery),
@@ -54,21 +52,11 @@ export function useGitHubRepoSearch() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  console.log('[useGitHubRepoSearch] Query state:', {
-    isLoading,
-    hasError: !!error,
-    dataLength: data?.length || 0,
-    enabled: debouncedQuery.trim().length >= 2
-  });
-
   const debouncedSetQuery = useMemo(
     () => debounce((query: string) => {
-      console.log('[useGitHubRepoSearch] debouncedSetQuery called with:', query);
       if (query && query.trim().length >= 2) {
-        console.log('[useGitHubRepoSearch] Setting debouncedQuery to:', query);
         setDebouncedQuery(query);
       } else {
-        console.log('[useGitHubRepoSearch] Clearing debouncedQuery');
         setDebouncedQuery('');
       }
     }, 300),
@@ -76,12 +64,10 @@ export function useGitHubRepoSearch() {
   );
 
   const search = (query: string) => {
-    console.log('[useGitHubRepoSearch] search called with:', query);
     debouncedSetQuery(query);
   };
 
   const clear = () => {
-    console.log('[useGitHubRepoSearch] clear called');
     debouncedSetQuery.cancel();
     setDebouncedQuery('');
   };

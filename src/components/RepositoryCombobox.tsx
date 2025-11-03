@@ -1,4 +1,6 @@
-import { useState } from 'react';
+"use client"
+
+import * as React from 'react';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from './ui/utils';
 import { Button } from './ui/button';
@@ -21,20 +23,16 @@ interface RepositoryComboboxProps {
 }
 
 export function RepositoryCombobox({ value, onChange, repositories, id }: RepositoryComboboxProps) {
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [open, setOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
 
-  console.log('[RepositoryCombobox] Render - value:', value, 'repositories:', repositories);
-
   const handleSearchChange = (newQuery: string) => {
-    console.log('[RepositoryCombobox] handleSearchChange - newQuery:', newQuery);
     setSearchQuery(newQuery);
     search(newQuery);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    console.log('[RepositoryCombobox] handleOpenChange - newOpen:', newOpen);
     setOpen(newOpen);
     if (!newOpen) {
       setSearchQuery('');
@@ -42,27 +40,22 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
     }
   };
 
+  const handleSelect = (selectedRepo: string) => {
+    onChange(selectedRepo === value ? '' : selectedRepo);
+    setOpen(false);
+  };
+
   // Filter recent repositories based on search query
   const filteredRecentRepos = repositories.filter((repo) =>
     repo.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Check if we have any results to show
+  // Display logic
   const hasRecentRepos = filteredRecentRepos.length > 0;
   const hasGitHubRepos = githubRepos.length > 0;
-  const showEmpty = !hasRecentRepos && !hasGitHubRepos && !isLoading && searchQuery.trim().length >= 2;
-  const showNoRecentRepos = !hasRecentRepos && !hasGitHubRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
-
-  console.log('[RepositoryCombobox] Display states:', {
-    hasRecentRepos,
-    hasGitHubRepos,
-    showEmpty,
-    showNoRecentRepos,
-    isLoading,
-    searchQueryLength: searchQuery.length,
-    githubReposCount: githubRepos.length,
-    filteredRecentReposCount: filteredRecentRepos.length
-  });
+  const hasAnyRepos = hasRecentRepos || hasGitHubRepos;
+  const showEmptyState = !hasAnyRepos && !isLoading && searchQuery.trim().length >= 2;
+  const showInitialState = !hasAnyRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -99,14 +92,14 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
               </div>
             )}
 
-            {showNoRecentRepos && (
+            {showInitialState && (
               <div className="px-2 py-6 text-center text-sm text-muted-foreground">
                 <p className="mb-1">No recent repositories</p>
                 <p className="text-xs">Type to search GitHub repositories...</p>
               </div>
             )}
 
-            {showEmpty && <CommandEmpty>No repository found.</CommandEmpty>}
+            {showEmptyState && <CommandEmpty>No repository found.</CommandEmpty>}
 
             {hasRecentRepos && (
               <CommandGroup heading="Recent Repositories">
@@ -114,14 +107,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                   <CommandItem
                     key={`recent-${repo}`}
                     value={repo}
-                    onSelect={(currentValue) => {
-                      console.log('[RepositoryCombobox] Recent repo selected - currentValue:', currentValue, 'value:', value, 'repo:', repo);
-                      // Use `repo` instead of `currentValue` because cmdk lowercases the value
-                      const newValue = repo === value ? '' : repo;
-                      console.log('[RepositoryCombobox] Calling onChange with:', newValue);
-                      onChange(newValue);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleSelect(repo)}
                   >
                     <Check
                       className={cn(
@@ -141,13 +127,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                   <CommandItem
                     key={`github-${repo.id}`}
                     value={repo.full_name}
-                    onSelect={(currentValue) => {
-                      console.log('[RepositoryCombobox] GitHub repo selected - currentValue:', currentValue, 'repo.full_name:', repo.full_name);
-                      // Use `repo.full_name` instead of `currentValue` because cmdk lowercases the value
-                      console.log('[RepositoryCombobox] Calling onChange with:', repo.full_name);
-                      onChange(repo.full_name);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleSelect(repo.full_name)}
                   >
                     <Check
                       className={cn(
