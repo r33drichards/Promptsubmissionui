@@ -90,9 +90,9 @@ export class PromptBackendClient implements BackendClient {
         parent: currentSession.parentId,
         title: data.title !== undefined ? data.title : currentSession.title,
         sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
-        repo: data.repo !== undefined ? data.repo : currentSession.repo || null,
-        branch: data.branch !== undefined ? data.branch : currentSession.branch || null,
-        targetBranch: data.targetBranch !== undefined ? data.targetBranch : currentSession.targetBranch || null,
+        repo: data.repo || null,
+        branch: data.branch || null,
+        targetBranch: data.targetBranch || null,
       };
       console.log('[PromptBackendClient] Update input:', updateInput);
 
