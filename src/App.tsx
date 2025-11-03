@@ -208,8 +208,11 @@ export default function App() {
   };
 
   const handleArchive = (sessionId: string) => {
+    console.log('[App] handleArchive called for session:', sessionId);
+    console.log('[App] archiveSessionMutation:', archiveSessionMutation);
     archiveSessionMutation.mutate(sessionId, {
       onSuccess: () => {
+        console.log('[App] Archive mutation succeeded');
         if (selectedSession?.id === sessionId) {
           setSelectedSession(null);
         }
