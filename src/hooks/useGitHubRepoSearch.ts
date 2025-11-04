@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
+import { useApi } from '../providers/ApiProvider';
+import { GitHubRepository } from '../services/api/types';
 
 export interface GitHubRepo {
   id: number;
@@ -14,41 +16,33 @@ export interface GitHubRepo {
   stargazers_count: number;
 }
 
-interface GitHubSearchResponse {
-  items: GitHubRepo[];
-  total_count: number;
-}
-
-const GITHUB_API_BASE = 'https://api.github.com';
-
-async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
-  const searchQuery = encodeURIComponent(query.trim());
-  const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
-
-  const response = await fetch(url, {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error('GitHub API rate limit exceeded. Please try again later.');
-    }
-    throw new Error(`GitHub API error: ${response.statusText}`);
-  }
-
-  const data: GitHubSearchResponse = await response.json();
-  return data.items;
+// Convert GitHubRepository to GitHubRepo for backward compatibility
+function convertToGitHubRepo(repo: GitHubRepository): GitHubRepo {
+  return {
+    id: repo.id,
+    full_name: repo.full_name,
+    name: repo.name,
+    owner: repo.owner,
+    description: repo.description,
+    html_url: repo.html_url,
+    stargazers_count: repo.stargazers_count,
+  };
 }
 
 export function useGitHubRepoSearch() {
+  const api = useApi();
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['githubRepos', debouncedQuery],
-    queryFn: () => searchGitHubRepositories(debouncedQuery),
-    enabled: debouncedQuery.trim().length >= 2,
+    queryFn: async () => {
+      // Search the authenticated user's repositories via the backend
+      const repos = await api.github.searchRepositories(
+        debouncedQuery.trim().length >= 2 ? debouncedQuery : undefined
+      );
+      return repos.map(convertToGitHubRepo);
+    },
+    enabled: true, // Always enabled - backend will return user's repos
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

@@ -1,5 +1,22 @@
 import { Session, Message, InboxStatus, SessionStatus } from '../../types/session';
 
+// GitHub types
+export interface GitHubRepository {
+  id: number;
+  name: string;
+  full_name: string;
+  private: boolean;
+  html_url: string;
+  description: string | null;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  updated_at: string;
+  owner: {
+    login: string;
+  };
+}
+
 /**
  * Backend API client interface.
  * This defines all the operations that can be performed against the backend.
@@ -20,6 +37,11 @@ export interface BackendClient {
   messages: {
     list(sessionId: string): Promise<Message[]>;
     create(sessionId: string, content: string): Promise<Message>;
+  };
+
+  // GitHub operations
+  github: {
+    searchRepositories(query?: string): Promise<GitHubRepository[]>;
   };
 }
 

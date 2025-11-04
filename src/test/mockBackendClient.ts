@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { BackendClient } from '@/services/api/types';
+import { BackendClient, GitHubRepository } from '@/services/api/types';
 import { Session, Message } from '@/types/session';
 
 /**
@@ -67,6 +67,39 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
     },
   ];
 
+  const mockRepositories: GitHubRepository[] = [
+    {
+      id: 1,
+      name: 'test-repo',
+      full_name: 'testuser/test-repo',
+      private: false,
+      html_url: 'https://github.com/testuser/test-repo',
+      description: 'A test repository',
+      language: 'TypeScript',
+      stargazers_count: 10,
+      forks_count: 2,
+      updated_at: '2025-01-01T10:00:00Z',
+      owner: {
+        login: 'testuser',
+      },
+    },
+    {
+      id: 2,
+      name: 'another-repo',
+      full_name: 'testuser/another-repo',
+      private: true,
+      html_url: 'https://github.com/testuser/another-repo',
+      description: 'Another test repository',
+      language: 'JavaScript',
+      stargazers_count: 5,
+      forks_count: 1,
+      updated_at: '2025-01-02T10:00:00Z',
+      owner: {
+        login: 'testuser',
+      },
+    },
+  ];
+
   const defaultClient: BackendClient = {
     sessions: {
       list: vi.fn().mockResolvedValue(mockSessions),
@@ -129,6 +162,20 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
         return Promise.resolve(newMessage);
       }),
     },
+    github: {
+      searchRepositories: vi.fn().mockImplementation((query?: string) => {
+        if (!query) {
+          return Promise.resolve(mockRepositories);
+        }
+        // Simple filter based on query
+        const filtered = mockRepositories.filter(repo =>
+          repo.name.toLowerCase().includes(query.toLowerCase()) ||
+          repo.full_name.toLowerCase().includes(query.toLowerCase()) ||
+          (repo.description && repo.description.toLowerCase().includes(query.toLowerCase()))
+        );
+        return Promise.resolve(filtered);
+      }),
+    },
   };
 
   return {
@@ -139,6 +186,10 @@ export function createMockBackendClient(overrides?: Partial<BackendClient>): Bac
     messages: {
       ...defaultClient.messages,
       ...overrides?.messages,
+    },
+    github: {
+      ...defaultClient.github,
+      ...overrides?.github,
     },
   };
 }
@@ -160,6 +211,9 @@ export function createErrorMockBackendClient(): BackendClient {
     messages: {
       list: vi.fn().mockRejectedValue(new Error('Failed to fetch messages')),
       create: vi.fn().mockRejectedValue(new Error('Failed to create message')),
+    },
+    github: {
+      searchRepositories: vi.fn().mockRejectedValue(new Error('Failed to search repositories')),
     },
   };
 }

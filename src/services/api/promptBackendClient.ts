@@ -5,6 +5,7 @@ import {
   CreateSessionData,
   UpdateSessionData,
   ListSessionsParams,
+  GitHubRepository,
 } from './types';
 
 /**
@@ -145,6 +146,36 @@ export class PromptBackendClient implements BackendClient {
         content,
         createdAt: new Date(),
       };
+    },
+  };
+
+  github = {
+    searchRepositories: async (query?: string): Promise<GitHubRepository[]> => {
+      try {
+        // The backend endpoint returns the authenticated user's repositories
+        const basePath = this.api.configuration.basePath || '';
+        const url = `${basePath}/github/search-repos`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies for authentication
+          body: JSON.stringify({ query: query || null }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to search repositories: ${errorText}`);
+        }
+
+        const repos: GitHubRepository[] = await response.json();
+        return repos;
+      } catch (error) {
+        console.error('[PromptBackendClient] GitHub search failed:', error);
+        throw error;
+      }
     },
   };
 
