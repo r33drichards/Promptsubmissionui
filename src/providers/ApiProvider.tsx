@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { BackendClient } from '../services/api/types';
 import { BackendClientImpl } from '../services/api/backendClient';
 import { PromptBackendClient } from '../services/api/promptBackendClient';
@@ -45,12 +45,14 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
   useMock = false,
   backendUrl
 }) => {
-  // Use provided client, or create appropriate client based on useMock flag
-  const backendClient = client ?? (
-    useMock
-      ? new BackendClientImpl(new MockHttpClient())
-      : new PromptBackendClient(backendUrl)
-  );
+  // Create backend client once - Service Worker handles token injection
+  const backendClient = useMemo(() => {
+    if (client) return client;
+    if (useMock) return new BackendClientImpl(new MockHttpClient());
+
+    // No token getter needed - Service Worker injects tokens automatically
+    return new PromptBackendClient(backendUrl);
+  }, [client, useMock, backendUrl]);
 
   return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
 };

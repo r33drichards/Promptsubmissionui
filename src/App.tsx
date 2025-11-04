@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
+import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
 import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
@@ -7,7 +8,7 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import { Plus, Search, Github, Loader2 } from 'lucide-react';
+import { Plus, Search, Github, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useSessions,
@@ -21,6 +22,7 @@ type FilterType = 'active' | 'archived' | 'all';
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { logout, isAuthenticated } = useOidc();
   const [filter, setFilter] = useState<FilterType>('active');
 
   // Fetch sessions using TanStack Query
@@ -243,6 +245,16 @@ function AppLayout() {
               )}
               New Task
             </Button>
+            {isAuthenticated && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => logout()}
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -350,9 +362,11 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />} />
-      <Route path="/session/:id" element={<AppLayout />} />
-    </Routes>
+    <OidcSecure>
+      <Routes>
+        <Route path="/" element={<AppLayout />} />
+        <Route path="/session/:id" element={<AppLayout />} />
+      </Routes>
+    </OidcSecure>
   );
 }
