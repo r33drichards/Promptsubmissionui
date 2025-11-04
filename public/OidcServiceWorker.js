@@ -611,12 +611,14 @@ const handleFetch = (event) => {
           let init;
           if (originalRequest.mode === "navigate") {
             init = {
-              headers
+              headers,
+              credentials: originalRequest.credentials
             };
           } else {
             init = {
               headers,
-              mode: requestMode
+              mode: requestMode,
+              credentials: originalRequest.credentials
             };
           }
           const newRequest = new Request(originalRequest, init);
