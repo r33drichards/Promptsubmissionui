@@ -212,8 +212,15 @@ export function SessionDetail({
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={{
-                                  code({ node, inline, className, children, ...props }) {
-                                    const match = /language-(\w+)/.exec(className || '');
+                                  code({
+                                    inline,
+                                    className,
+                                    children,
+                                    ...props
+                                  }) {
+                                    const match = /language-(\w+)/.exec(
+                                      className || ''
+                                    );
                                     return !inline && match ? (
                                       <SyntaxHighlighter
                                         style={oneDark}
@@ -224,7 +231,10 @@ export function SessionDetail({
                                         {String(children).replace(/\n$/, '')}
                                       </SyntaxHighlighter>
                                     ) : (
-                                      <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props}>
+                                      <code
+                                        className="bg-gray-100 px-1 py-0.5 rounded text-sm"
+                                        {...props}
+                                      >
                                         {children}
                                       </code>
                                     );
