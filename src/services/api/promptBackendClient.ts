@@ -54,9 +54,9 @@ export class PromptBackendClient implements BackendClient {
       // Parse and validate input data using Zod (parse don't validate)
       const validatedData = CreateSessionDataSchema.parse(data);
 
-      // Use the new combined endpoint if messages are provided
-      if (validatedData.messages && validatedData.messages.length > 0) {
-        console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
+      // Use the create with prompt endpoint to create a task (not create session)
+      if (validatedData.messages) {
+        console.log('[PromptBackendClient] Creating task with prompt using create with prompt endpoint');
         const response = await this.api.handlersSessionsCreateWithPrompt({
           createSessionWithPromptInput: {
             repo: validatedData.repo,
@@ -70,7 +70,7 @@ export class PromptBackendClient implements BackendClient {
 
         if (!response || !response.sessionId) {
           console.error('[PromptBackendClient] Invalid response structure:', response);
-          throw new Error('Failed to create session with prompt: Invalid response from backend');
+          throw new Error('Failed to create task with prompt: Invalid response from backend');
         }
 
         // Fetch the full session data
