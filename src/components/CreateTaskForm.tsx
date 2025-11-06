@@ -64,15 +64,13 @@ export function CreateTaskForm({
       // Extract field-specific errors from Zod validation
       const fieldErrors: Partial<Record<keyof CreateTaskFormData, string>> = {};
 
-      // Defensively handle potential undefined errors array
-      if (result.error && Array.isArray(result.error.errors)) {
-        result.error.errors.forEach((error) => {
-          const field = error.path[0] as keyof CreateTaskFormData;
-          if (!fieldErrors[field]) {
-            fieldErrors[field] = error.message;
-          }
-        });
-      }
+      // Zod errors are in the 'issues' property
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof CreateTaskFormData;
+        if (field && !fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      });
 
       setErrors(fieldErrors);
       console.error('[CreateTaskForm] Validation failed:', fieldErrors);

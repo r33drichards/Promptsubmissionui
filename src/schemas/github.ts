@@ -39,7 +39,7 @@ export const GitHubRepoSchema = z.object({
 // GitHub Search Response schema
 export const GitHubSearchResponseSchema = z.object({
   total_count: z.number(),
-  incomplete_results: z.boolean(),
+  incomplete_results: z.boolean().optional(),
   items: z.array(GitHubRepoSchema),
 });
 
