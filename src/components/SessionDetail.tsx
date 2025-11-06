@@ -4,6 +4,7 @@ import { Badge } from './ui/badge';
 import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { useState } from 'react';
+import { useSessionConversation } from '../hooks/useMessages';
 
 interface SessionDetailProps {
   session: Session;
@@ -13,6 +14,7 @@ interface SessionDetailProps {
 
 export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailProps) {
   const [reply, setReply] = useState('');
+  const { messages, isLoading } = useSessionConversation(session.id);
 
   const handleReply = () => {
     if (reply.trim()) {
@@ -84,28 +86,66 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        {session.messages && session.messages.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            <p>Loading messages...</p>
+          </div>
+        ) : messages && messages.length > 0 ? (
           <div className="space-y-4">
-            {session.messages.map((message) => (
+            {messages.map((message) => (
               <div
-                key={message.id}
+                key={message.uuid}
                 className={`p-4 rounded-lg ${
-                  message.role === 'user' ? 'bg-gray-50' : 'bg-blue-50'
+                  message.type === 'user' ? 'bg-gray-50' :
+                  message.type === 'assistant' ? 'bg-blue-50' :
+                  message.type === 'system' ? 'bg-purple-50' :
+                  'bg-yellow-50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">{message.role === 'user' ? 'You' : 'Assistant'}</span>
-                  <span className="text-xs text-gray-500">
-                    {message.createdAt.toLocaleString()}
-                  </span>
+                  <span className="text-sm font-medium capitalize">{message.type}</span>
                 </div>
-                <p className="text-sm">{message.content}</p>
+                <div className="text-sm space-y-2">
+                  {message.message?.content?.map((content, idx) => (
+                    <div key={idx}>
+                      {content.type === 'text' && content.text && (
+                        <p className="whitespace-pre-wrap">{content.text}</p>
+                      )}
+                      {content.type === 'tool_use' && (
+                        <div className="bg-white/50 p-2 rounded border border-gray-200">
+                          <p className="text-xs text-gray-600 mb-1">Tool: {content.name}</p>
+                          <pre className="text-xs overflow-x-auto">
+                            {JSON.stringify(content.input, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {content.type === 'tool_result' && (
+                        <div className="bg-white/50 p-2 rounded border border-gray-200">
+                          <p className="text-xs text-gray-600 mb-1">Tool Result</p>
+                          <pre className="text-xs overflow-x-auto">
+                            {typeof content.content === 'string'
+                              ? content.content
+                              : JSON.stringify(content.content, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {message.message?.usage && (
+                    <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
+                      Tokens: {message.message.usage.input_tokens} in / {message.message.usage.output_tokens} out
+                      {message.message.usage.cache_read_input_tokens &&
+                        ` / ${message.message.usage.cache_read_input_tokens} cached`}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
 
             {session.inboxStatus === 'completed' && session.diffStats && (
               <div className="bg-white border rounded-lg p-4 space-y-3">
-                <h3 className="text-sm">Changes</h3>
+                <h3 className="text-sm font-medium">Changes</h3>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-green-600">
                     +{session.diffStats.additions} additions

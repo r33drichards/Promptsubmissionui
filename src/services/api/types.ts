@@ -1,4 +1,4 @@
-import { Session, Message, InboxStatus, SessionStatus } from '../../types/session';
+import { Session, Message, InboxStatus, SessionStatus, BackendMessage, Prompt } from '../../types/session';
 
 /**
  * Backend API client interface.
@@ -16,9 +16,14 @@ export interface BackendClient {
     unarchive(id: string): Promise<Session>;
   };
 
+  // Prompt operations
+  prompts: {
+    list(sessionId: string): Promise<Prompt[]>;
+  };
+
   // Message operations
   messages: {
-    list(sessionId: string): Promise<Message[]>;
+    list(sessionId: string): Promise<BackendMessage[]>;
     create(sessionId: string, content: string): Promise<Message>;
   };
 }

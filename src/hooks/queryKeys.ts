@@ -14,6 +14,13 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.sessions.details(), id] as const,
   },
 
+  // Prompt query keys
+  prompts: {
+    all: ['prompts'] as const,
+    lists: () => [...queryKeys.prompts.all, 'list'] as const,
+    list: (sessionId: string) => [...queryKeys.prompts.lists(), sessionId] as const,
+  },
+
   // Message query keys
   messages: {
     all: ['messages'] as const,
