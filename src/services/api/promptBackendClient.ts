@@ -295,25 +295,42 @@ export class PromptBackendClient implements BackendClient {
       return [];
     }
 
-    return messages.map((msg) => ({
-      type: msg.type || 'user',
-      uuid: msg.uuid || msg.id || '',
-      message: msg.message || {},
-      session_id: msg.session_id || msg.sessionId || '',
-      parent_tool_use_id: msg.parent_tool_use_id || null,
-    }));
+    return messages.map((msg) => {
+      // The actual API response wraps the data under a "data" field
+      const data = msg.data || msg;
+
+      return {
+        type: data.type || 'user',
+        uuid: data.uuid || msg.id || '',
+        message: data.message || {},
+        session_id: data.session_id || data.sessionId || '',
+        parent_tool_use_id: data.parent_tool_use_id || null,
+      };
+    });
   }
 
   /**
    * Deserializes a single prompt
    */
   private deserializePrompt(prompt: any): Prompt {
+    // The actual API response has content in data[0].content and status in inbox_status
+    const content =
+      prompt.data && Array.isArray(prompt.data) && prompt.data[0]?.content
+        ? prompt.data[0].content
+        : prompt.content || '';
+
+    const status = prompt.inbox_status || prompt.status || 'pending';
+
     return {
       id: prompt.id || '',
       sessionId: prompt.sessionId || prompt.session_id || '',
-      content: prompt.content || '',
-      createdAt: prompt.createdAt ? new Date(prompt.createdAt) : new Date(),
-      status: prompt.status || 'pending',
+      content,
+      createdAt: prompt.createdAt
+        ? new Date(prompt.createdAt)
+        : prompt.created_at
+          ? new Date(prompt.created_at)
+          : new Date(),
+      status,
     };
   }
 
