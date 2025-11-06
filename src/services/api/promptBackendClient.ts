@@ -5,7 +5,7 @@ import {
   CreateSessionWithPromptInput,
   CreateSessionWithPromptOutput,
 } from '@wholelottahoopla/prompt-backend-client';
-import { Session, Message, SessionStatus } from '../../types/session';
+import { Session, Message, SessionStatus, BackendMessage, Prompt } from '../../types/session';
 import {
   BackendClient,
   CreateSessionData,
@@ -122,16 +122,28 @@ export class PromptBackendClient implements BackendClient {
     },
   };
 
+  prompts = {
+    list: async (sessionId: string): Promise<Prompt[]> => {
+      try {
+        const response = await this.api.handlersPromptsList({ sessionId });
+        return this.deserializePrompts(response.prompts || []);
+      } catch (error) {
+        console.error('[PromptBackendClient] Failed to list prompts:', error);
+        return [];
+      }
+    },
+  };
+
   messages = {
-    list: async (sessionId: string): Promise<Message[]> => {
-      // TODO: The new API structure has Prompts and Messages as separate entities.
-      // Messages belong to Prompts, which belong to Sessions.
-      // To implement this properly, we need to:
-      // 1. List all prompts for the session
-      // 2. For each prompt, list its messages
-      // For now, we'll return an empty array as a placeholder
-      console.warn('[PromptBackendClient] messages.list is not yet implemented for the new API structure');
-      return [];
+    list: async (sessionId: string): Promise<BackendMessage[]> => {
+      try {
+        // Fetch all messages for the session
+        const response = await this.api.handlersMessagesList({ sessionId });
+        return this.deserializeBackendMessages(response.messages || []);
+      } catch (error) {
+        console.error('[PromptBackendClient] Failed to list messages:', error);
+        return [];
+      }
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
@@ -234,5 +246,46 @@ export class PromptBackendClient implements BackendClient {
         createdAt: message.createdAt || new Date().toISOString(),
       }))
     );
+  }
+
+  /**
+   * Deserializes an array of backend messages (Claude Code output format)
+   */
+  private deserializeBackendMessages(messages: any[]): BackendMessage[] {
+    if (!Array.isArray(messages)) {
+      return [];
+    }
+
+    return messages.map((msg) => ({
+      type: msg.type || 'user',
+      uuid: msg.uuid || msg.id || '',
+      message: msg.message || {},
+      session_id: msg.session_id || msg.sessionId || '',
+      parent_tool_use_id: msg.parent_tool_use_id || null,
+    }));
+  }
+
+  /**
+   * Deserializes a single prompt
+   */
+  private deserializePrompt(prompt: any): Prompt {
+    return {
+      id: prompt.id || '',
+      sessionId: prompt.sessionId || prompt.session_id || '',
+      content: prompt.content || '',
+      createdAt: prompt.createdAt ? new Date(prompt.createdAt) : new Date(),
+      status: prompt.status || 'pending',
+    };
+  }
+
+  /**
+   * Deserializes an array of prompts
+   */
+  private deserializePrompts(prompts: any[]): Prompt[] {
+    if (!Array.isArray(prompts)) {
+      return [];
+    }
+
+    return prompts.map((prompt) => this.deserializePrompt(prompt));
   }
 }

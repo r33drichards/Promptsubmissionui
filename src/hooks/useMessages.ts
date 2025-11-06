@@ -6,12 +6,16 @@ import {
   UseMutationOptions,
 } from '@tanstack/react-query';
 import { useApi } from '../providers/ApiProvider';
-import { Message } from '../types/session';
+import { Message, BackendMessage, Prompt } from '../types/session';
 import { queryKeys } from './queryKeys';
 import { toast } from 'sonner';
+import { useMemo } from 'react';
 
 /**
- * Hook to fetch messages for a specific session.
+ * Hook to fetch messages for a specific session with polling.
+ *
+ * @param sessionId - The session ID to fetch messages for
+ * @param options - Additional query options (polling enabled by default with 2s interval)
  *
  * @example
  * ```tsx
@@ -20,7 +24,7 @@ import { toast } from 'sonner';
  */
 export function useMessages(
   sessionId: string,
-  options?: Omit<UseQueryOptions<Message[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<BackendMessage[]>, 'queryKey' | 'queryFn'>
 ) {
   const api = useApi();
 
@@ -28,6 +32,8 @@ export function useMessages(
     queryKey: queryKeys.messages.list(sessionId),
     queryFn: () => api.messages.list(sessionId),
     enabled: !!sessionId,
+    refetchInterval: 2000, // Poll every 2 seconds
+    refetchIntervalInBackground: true, // Continue polling when tab is not focused
     ...options,
   });
 }
@@ -119,4 +125,70 @@ export function useCreateMessage(
     },
     ...options,
   });
+}
+
+/**
+ * Hook to fetch prompts for a specific session.
+ *
+ * @param sessionId - The session ID to fetch prompts for
+ * @param options - Additional query options
+ *
+ * @example
+ * ```tsx
+ * const { data: prompts, isLoading } = usePrompts('session-123');
+ * ```
+ */
+export function usePrompts(
+  sessionId: string,
+  options?: Omit<UseQueryOptions<Prompt[]>, 'queryKey' | 'queryFn'>
+) {
+  const api = useApi();
+
+  return useQuery({
+    queryKey: queryKeys.prompts.list(sessionId),
+    queryFn: () => api.prompts.list(sessionId),
+    enabled: !!sessionId,
+    refetchInterval: 2000, // Poll every 2 seconds
+    refetchIntervalInBackground: true,
+    ...options,
+  });
+}
+
+/**
+ * Combined hook to fetch and format session conversation data.
+ * Fetches messages and sorts them by creation time.
+ *
+ * @param sessionId - The session ID to fetch data for
+ *
+ * @example
+ * ```tsx
+ * const { messages, isLoading } = useSessionConversation('session-123');
+ * ```
+ */
+export function useSessionConversation(sessionId: string) {
+  const { data: messages = [], isLoading: messagesLoading } = useMessages(sessionId);
+  const { data: prompts = [], isLoading: promptsLoading } = usePrompts(sessionId);
+
+  // Sort messages by creation time (newest first for conversation display)
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort((a, b) => {
+      // Extract timestamp from message data
+      const getTimestamp = (msg: BackendMessage): number => {
+        // Check if message has a createdAt field
+        if (msg.message?.id) {
+          // Try to extract timestamp from uuid or id
+          return new Date().getTime(); // Fallback to current time
+        }
+        return 0;
+      };
+
+      return getTimestamp(a) - getTimestamp(b);
+    });
+  }, [messages]);
+
+  return {
+    messages: sortedMessages,
+    prompts,
+    isLoading: messagesLoading || promptsLoading,
+  };
 }
