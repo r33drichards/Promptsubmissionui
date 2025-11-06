@@ -11,6 +11,8 @@ import {
   mockEmptyPrompts,
   mockComplexMessages,
   mockSystemMessage,
+  mockMessagesForPrompt1,
+  mockMessagesForPrompt2,
 } from '@/test/mockData';
 import { ReactNode } from 'react';
 
@@ -34,7 +36,12 @@ describe('useSessionConversation', () => {
         list: vi.fn().mockResolvedValue(mockPrompts),
       },
       messages: {
-        list: vi.fn().mockResolvedValue(mockBackendMessages),
+        // Return different messages for different prompts
+        list: vi.fn().mockImplementation((promptId: string) => {
+          if (promptId === 'prompt-1') return Promise.resolve(mockMessagesForPrompt1);
+          if (promptId === 'prompt-2') return Promise.resolve(mockMessagesForPrompt2);
+          return Promise.resolve(mockBackendMessages);
+        }),
         create: vi.fn().mockResolvedValue({
           id: 'new-msg',
           role: 'user',
@@ -61,15 +68,95 @@ describe('useSessionConversation', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(result.current.messages).toHaveLength(mockBackendMessages.length);
+      // We should have messages from both prompts (2 + 2 = 4 total)
+      expect(result.current.messages).toHaveLength(mockMessagesForPrompt1.length + mockMessagesForPrompt2.length);
       expect(result.current.prompts).toHaveLength(mockPrompts.length);
 
       // CORRECT BEHAVIOR: messages.list should be called with promptId, not sessionId
       // First, prompts should be fetched
       expect(mockClient.prompts.list).toHaveBeenCalledWith('session-123');
 
-      // Then messages should be fetched for each promptId (not sessionId!)
+      // Then messages should be fetched for ALL promptIds (not sessionId!)
       expect(mockClient.messages.list).toHaveBeenCalledWith('prompt-1');
+      expect(mockClient.messages.list).toHaveBeenCalledWith('prompt-2');
+      expect(mockClient.messages.list).toHaveBeenCalledTimes(2); // Once for each prompt
+    });
+
+    it('should fetch messages for all prompts in a session', async () => {
+      // Setup: Create multiple prompts with different messages
+      const multiPrompts = [
+        { id: 'prompt-1', session_id: 'session-123' },
+        { id: 'prompt-2', session_id: 'session-123' },
+        { id: 'prompt-3', session_id: 'session-123' },
+      ];
+
+      const messagesForPrompt1 = [
+        {
+          type: 'user' as const,
+          uuid: 'msg-1-1',
+          message: {
+            role: 'user',
+            content: [{ type: 'text' as const, text: 'Message from prompt 1' }],
+          },
+          session_id: 'session-123',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      const messagesForPrompt2 = [
+        {
+          type: 'user' as const,
+          uuid: 'msg-2-1',
+          message: {
+            role: 'user',
+            content: [{ type: 'text' as const, text: 'Message from prompt 2' }],
+          },
+          session_id: 'session-123',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      const messagesForPrompt3 = [
+        {
+          type: 'user' as const,
+          uuid: 'msg-3-1',
+          message: {
+            role: 'user',
+            content: [{ type: 'text' as const, text: 'Message from prompt 3' }],
+          },
+          session_id: 'session-123',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      mockClient.prompts.list = vi.fn().mockResolvedValue(multiPrompts);
+      mockClient.messages.list = vi.fn().mockImplementation((promptId: string) => {
+        if (promptId === 'prompt-1') return Promise.resolve(messagesForPrompt1);
+        if (promptId === 'prompt-2') return Promise.resolve(messagesForPrompt2);
+        if (promptId === 'prompt-3') return Promise.resolve(messagesForPrompt3);
+        return Promise.resolve([]);
+      });
+
+      const { result } = renderHook(() => useSessionConversation('session-123'), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Verify prompts were fetched
+      expect(result.current.prompts).toHaveLength(3);
+
+      // Verify messages.list was called for EACH prompt with correct promptId
+      expect(mockClient.messages.list).toHaveBeenCalledWith('prompt-1');
+      expect(mockClient.messages.list).toHaveBeenCalledWith('prompt-2');
+      expect(mockClient.messages.list).toHaveBeenCalledWith('prompt-3');
+      expect(mockClient.messages.list).toHaveBeenCalledTimes(3);
+
+      // Verify all messages from all prompts are combined
+      expect(result.current.messages).toHaveLength(3);
+      expect(result.current.messages.some(m => m.uuid === 'msg-1-1')).toBe(true);
+      expect(result.current.messages.some(m => m.uuid === 'msg-2-1')).toBe(true);
+      expect(result.current.messages.some(m => m.uuid === 'msg-3-1')).toBe(true);
     });
 
     it('should return empty arrays when no messages or prompts exist', async () => {

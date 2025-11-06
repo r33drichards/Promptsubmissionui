@@ -1,5 +1,6 @@
 import {
   useQuery,
+  useQueries,
   useMutation,
   useQueryClient,
   UseQueryOptions,
@@ -166,16 +167,31 @@ export function usePrompts(
  * ```
  */
 export function useSessionConversation(sessionId: string) {
+  const api = useApi();
   const { data: prompts = [], isLoading: promptsLoading } = usePrompts(sessionId);
 
-  // Fetch messages for the first prompt (if available)
-  // TODO: In the future, we may want to fetch messages for all prompts
-  const firstPromptId = prompts[0]?.id || '';
-  const { data: messages = [], isLoading: messagesLoading } = useMessages(firstPromptId);
+  // Fetch messages for ALL prompts in parallel
+  const messageQueries = useQueries({
+    queries: prompts.map((prompt) => ({
+      queryKey: queryKeys.messages.list(prompt.id),
+      queryFn: () => api.messages.list(prompt.id),
+      enabled: !!prompt.id,
+      refetchInterval: 2000,
+      refetchIntervalInBackground: true,
+    })),
+  });
 
-  // Sort messages by creation time (newest first for conversation display)
+  // Check if any message queries are still loading
+  const messagesLoading = messageQueries.some((query) => query.isLoading);
+
+  // Combine all messages from all prompts
+  const allMessages = useMemo(() => {
+    return messageQueries.flatMap((query) => query.data || []);
+  }, [messageQueries]);
+
+  // Sort messages by creation time (oldest first for conversation display)
   const sortedMessages = useMemo(() => {
-    return [...messages].sort((a, b) => {
+    return [...allMessages].sort((a, b) => {
       // Extract timestamp from message data
       const getTimestamp = (msg: BackendMessage): number => {
         // Check if message has a createdAt field
@@ -188,7 +204,7 @@ export function useSessionConversation(sessionId: string) {
 
       return getTimestamp(a) - getTimestamp(b);
     });
-  }, [messages]);
+  }, [allMessages]);
 
   return {
     messages: sortedMessages,
