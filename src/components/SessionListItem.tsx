@@ -1,7 +1,11 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Button as _Button } from './ui/button';
+import {
+  Collapsible,
+  CollapsibleContent as _CollapsibleContent,
+  CollapsibleTrigger,
+} from './ui/collapsible';
 import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
 import { useState } from 'react';
 
@@ -25,7 +29,7 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  const getStatusColor = (status: Session['inboxStatus']) => {
+  const _getStatusColor = (status: Session['inboxStatus']) => {
     switch (status) {
       case 'completed':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
@@ -64,7 +68,7 @@ export function SessionListItem({
             </CollapsibleTrigger>
           </Collapsible>
         )}
-        
+
         <div className="flex-1 min-w-0" onClick={() => onSelect(session)}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -81,7 +85,7 @@ export function SessionListItem({
                 </a>
               </p>
             </div>
-            
+
             <div className="flex items-center gap-1 flex-shrink-0">
               {session.diffStats && (
                 <>
@@ -94,7 +98,10 @@ export function SessionListItem({
                 </>
               )}
               {session.prUrl && (
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-green-50 text-green-700 border-green-300"
+                >
                   Open
                 </Badge>
               )}
@@ -117,7 +124,10 @@ export function SessionListItem({
             className="flex-shrink-0 hover:bg-gray-200 rounded p-1"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('[SessionListItem] Archive button clicked for session:', session.id);
+              console.log(
+                '[SessionListItem] Archive button clicked for session:',
+                session.id
+              );
               onArchive(session.id);
             }}
             title="Archive"

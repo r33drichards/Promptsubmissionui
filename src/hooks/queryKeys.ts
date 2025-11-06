@@ -9,7 +9,8 @@ export const queryKeys = {
   sessions: {
     all: ['sessions'] as const,
     lists: () => [...queryKeys.sessions.all, 'list'] as const,
-    list: (params?: ListSessionsParams) => [...queryKeys.sessions.lists(), params] as const,
+    list: (params?: ListSessionsParams) =>
+      [...queryKeys.sessions.lists(), params] as const,
     details: () => [...queryKeys.sessions.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.sessions.details(), id] as const,
   },
@@ -18,13 +19,15 @@ export const queryKeys = {
   prompts: {
     all: ['prompts'] as const,
     lists: () => [...queryKeys.prompts.all, 'list'] as const,
-    list: (sessionId: string) => [...queryKeys.prompts.lists(), sessionId] as const,
+    list: (sessionId: string) =>
+      [...queryKeys.prompts.lists(), sessionId] as const,
   },
 
   // Message query keys
   messages: {
     all: ['messages'] as const,
     lists: () => [...queryKeys.messages.all, 'list'] as const,
-    list: (sessionId: string) => [...queryKeys.messages.lists(), sessionId] as const,
+    list: (sessionId: string) =>
+      [...queryKeys.messages.lists(), sessionId] as const,
   },
 } as const;

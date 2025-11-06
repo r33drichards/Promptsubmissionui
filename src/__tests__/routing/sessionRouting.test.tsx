@@ -97,7 +97,9 @@ describe('Session Routing', () => {
       });
 
       // Should show empty state
-      expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+      expect(
+        screen.getByText('Select a task to view details')
+      ).toBeInTheDocument();
     });
 
     it('should show empty state at root path', async () => {
@@ -112,7 +114,9 @@ describe('Session Routing', () => {
       renderWithRouter(router);
 
       await waitFor(() => {
-        expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+        expect(
+          screen.getByText('Select a task to view details')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -205,12 +209,16 @@ describe('Session Routing', () => {
       renderWithRouter(router);
 
       await waitFor(() => {
-        const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+        const newTaskButtons = screen.getAllByRole('button', {
+          name: /new task/i,
+        });
         expect(newTaskButtons.length).toBeGreaterThan(0);
       });
 
       // Click New Task
-      const newTaskButton = screen.getAllByRole('button', { name: /new task/i })[0];
+      const newTaskButton = screen.getAllByRole('button', {
+        name: /new task/i,
+      })[0];
       await user.click(newTaskButton);
 
       // Form should be visible

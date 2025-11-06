@@ -12,7 +12,11 @@ interface SessionDetailProps {
   onReply: (sessionId: string, message: string) => void;
 }
 
-export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailProps) {
+export function SessionDetail({
+  session,
+  onCreatePR,
+  onReply,
+}: SessionDetailProps) {
   const [reply, setReply] = useState('');
   const { messages, isLoading } = useSessionConversation(session.id);
 
@@ -74,10 +78,10 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
               session.inboxStatus === 'completed'
                 ? 'bg-green-50 text-green-700 border-green-300'
                 : session.inboxStatus === 'in-progress'
-                ? 'bg-blue-50 text-blue-700 border-blue-300'
-                : session.inboxStatus === 'failed'
-                ? 'bg-red-50 text-red-700 border-red-300'
-                : 'bg-gray-50 text-gray-700 border-gray-300'
+                  ? 'bg-blue-50 text-blue-700 border-blue-300'
+                  : session.inboxStatus === 'failed'
+                    ? 'bg-red-50 text-red-700 border-red-300'
+                    : 'bg-gray-50 text-gray-700 border-gray-300'
             }
           >
             {session.inboxStatus}
@@ -96,14 +100,19 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
               <div
                 key={message.uuid}
                 className={`p-4 rounded-lg ${
-                  message.type === 'user' ? 'bg-gray-50' :
-                  message.type === 'assistant' ? 'bg-blue-50' :
-                  message.type === 'system' ? 'bg-purple-50' :
-                  'bg-yellow-50'
+                  message.type === 'user'
+                    ? 'bg-gray-50'
+                    : message.type === 'assistant'
+                      ? 'bg-blue-50'
+                      : message.type === 'system'
+                        ? 'bg-purple-50'
+                        : 'bg-yellow-50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium capitalize">{message.type}</span>
+                  <span className="text-sm font-medium capitalize">
+                    {message.type}
+                  </span>
                 </div>
                 <div className="text-sm space-y-2">
                   {message.message?.content?.map((content, idx) => (
@@ -113,7 +122,9 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
                       )}
                       {content.type === 'tool_use' && (
                         <div className="bg-white/50 p-2 rounded border border-gray-200">
-                          <p className="text-xs text-gray-600 mb-1">Tool: {content.name}</p>
+                          <p className="text-xs text-gray-600 mb-1">
+                            Tool: {content.name}
+                          </p>
                           <pre className="text-xs overflow-x-auto">
                             {JSON.stringify(content.input, null, 2)}
                           </pre>
@@ -121,7 +132,9 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
                       )}
                       {content.type === 'tool_result' && (
                         <div className="bg-white/50 p-2 rounded border border-gray-200">
-                          <p className="text-xs text-gray-600 mb-1">Tool Result</p>
+                          <p className="text-xs text-gray-600 mb-1">
+                            Tool Result
+                          </p>
                           <pre className="text-xs overflow-x-auto">
                             {typeof content.content === 'string'
                               ? content.content
@@ -134,7 +147,8 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
 
                   {message.message?.usage && (
                     <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
-                      Tokens: {message.message.usage.input_tokens} in / {message.message.usage.output_tokens} out
+                      Tokens: {message.message.usage.input_tokens} in /{' '}
+                      {message.message.usage.output_tokens} out
                       {message.message.usage.cache_read_input_tokens &&
                         ` / ${message.message.usage.cache_read_input_tokens} cached`}
                     </div>

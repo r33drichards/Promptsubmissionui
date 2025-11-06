@@ -13,6 +13,7 @@
 ## Task 1: Install Dependencies
 
 **Files:**
+
 - Modify: `package.json`
 
 **Step 1: Install react-router-dom**
@@ -37,12 +38,14 @@ git commit -m "feat: add react-router-dom dependency"
 ## Task 2: Update Test Utilities for Routing
 
 **Files:**
+
 - Modify: `src/test/utils.tsx:33-41`
 - Modify: `src/test/utils.tsx:51-63`
 
 **Step 1: Add MemoryRouter import**
 
 Add to imports at top of file:
+
 ```tsx
 import { MemoryRouter } from 'react-router-dom';
 ```
@@ -50,8 +53,13 @@ import { MemoryRouter } from 'react-router-dom';
 **Step 2: Update TestProviders to include MemoryRouter**
 
 Replace the TestProviders function:
+
 ```tsx
-export function TestProviders({ children, client, queryClient }: TestProvidersProps) {
+export function TestProviders({
+  children,
+  client,
+  queryClient,
+}: TestProvidersProps) {
   const testQueryClient = queryClient || createTestQueryClient();
 
   return (
@@ -85,11 +93,13 @@ git commit -m "feat: add MemoryRouter to test utilities"
 ## Task 3: Add BrowserRouter to Main Entry Point
 
 **Files:**
+
 - Modify: `src/main.tsx:1-14`
 
 **Step 1: Write failing test for router presence**
 
 Create: `src/__tests__/main.test.tsx`
+
 ```tsx
 import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
@@ -111,13 +121,15 @@ describe('App Entry Point', () => {
 **Step 2: Update main.tsx with BrowserRouter**
 
 Add import:
+
 ```tsx
 import { BrowserRouter } from 'react-router-dom';
 ```
 
 Update render call:
+
 ```tsx
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <QueryProvider>
       <ApiProvider>
@@ -145,11 +157,13 @@ git commit -m "feat: wrap app with BrowserRouter"
 ## Task 4: Add Route Structure to App Component
 
 **Files:**
+
 - Modify: `src/App.tsx:1-332`
 
 **Step 1: Add router imports**
 
 Add to imports at top of App.tsx:
+
 ```tsx
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 ```
@@ -157,6 +171,7 @@ import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 **Step 2: Extract layout into separate component inside App.tsx**
 
 Before the App component, add:
+
 ```tsx
 function AppLayout() {
   const { id } = useParams();
@@ -177,6 +192,7 @@ function AppLayout() {
 **Step 3: Update App component to define routes**
 
 Replace the App component with:
+
 ```tsx
 export default function App() {
   return (
@@ -191,15 +207,17 @@ export default function App() {
 **Step 4: Derive selectedSession from URL in AppLayout**
 
 Remove this line:
+
 ```tsx
 const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 ```
 
 Add after `useParams()`:
+
 ```tsx
 const selectedSession = useMemo(() => {
   if (!id) return null;
-  return sessions.find(s => s.id === id) || null;
+  return sessions.find((s) => s.id === id) || null;
 }, [id, sessions]);
 ```
 
@@ -220,6 +238,7 @@ git commit -m "feat: add route structure with URL-driven session selection"
 ## Task 5: Update Session Selection to Navigate
 
 **Files:**
+
 - Modify: `src/App.tsx` (multiple locations)
 
 **Step 1: Update onSelect handler to navigate**
@@ -227,11 +246,13 @@ git commit -m "feat: add route structure with URL-driven session selection"
 Find the SessionListItem component usage (around line 276-283) and update:
 
 Change from:
+
 ```tsx
-onSelect={setSelectedSession}
+onSelect = { setSelectedSession };
 ```
 
 To:
+
 ```tsx
 onSelect={(session) => navigate(`/session/${session.id}`)}
 ```
@@ -244,6 +265,7 @@ Expected: Clicking a session updates URL to `/session/:id` and displays details
 **Step 3: Verify browser back/forward buttons work**
 
 In browser:
+
 1. Click session 1 → URL: `/session/session-1`
 2. Click session 2 → URL: `/session/session-2`
 3. Click back → Returns to session 1
@@ -263,11 +285,13 @@ git commit -m "feat: navigate to session URL on selection"
 ## Task 6: Handle Invalid Session IDs
 
 **Files:**
+
 - Modify: `src/App.tsx` (add useEffect in AppLayout)
 
 **Step 1: Add error handling effect**
 
 Add after the selectedSession useMemo:
+
 ```tsx
 useEffect(() => {
   // Only check after sessions have loaded
@@ -281,14 +305,16 @@ useEffect(() => {
 **Step 2: Test invalid session ID**
 
 In browser:
+
 1. Navigate to `/session/invalid-uuid`
-Expected: Redirects to `/` with "Session not found" toast
+   Expected: Redirects to `/` with "Session not found" toast
 
 **Step 3: Test direct link to valid session**
 
 In browser:
+
 1. Navigate to `/session/session-1` (use actual session ID from API)
-Expected: Session loads and displays correctly
+   Expected: Session loads and displays correctly
 
 **Step 4: Commit**
 
@@ -302,11 +328,13 @@ git commit -m "feat: handle invalid session IDs with redirect"
 ## Task 7: Update Create Session Flow
 
 **Files:**
+
 - Modify: `src/App.tsx:136-154`
 
 **Step 1: Update handleCreateTask success callback**
 
 Change the onSuccess callback in createSessionMutation.mutate:
+
 ```tsx
 onSuccess: (newSession) => {
   navigate(`/session/${newSession.id}`);
@@ -318,9 +346,10 @@ onSuccess: (newSession) => {
 **Step 2: Test creating a new session**
 
 In browser:
+
 1. Click "New Task"
 2. Fill in form and submit
-Expected: URL navigates to `/session/<new-id>` and displays new session
+   Expected: URL navigates to `/session/<new-id>` and displays new session
 
 **Step 3: Commit**
 
@@ -334,11 +363,13 @@ git commit -m "feat: navigate to new session after creation"
 ## Task 8: Update Archive Session Flow
 
 **Files:**
+
 - Modify: `src/App.tsx:198-206`
 
 **Step 1: Update handleArchive to check selected session**
 
 Update the archiveSessionMutation.mutate onSuccess:
+
 ```tsx
 archiveSessionMutation.mutate(sessionId, {
   onSuccess: () => {
@@ -352,16 +383,18 @@ archiveSessionMutation.mutate(sessionId, {
 **Step 2: Test archiving selected session**
 
 In browser:
+
 1. Select a session
 2. Hover and click archive button
-Expected: Redirects to `/` (empty state)
+   Expected: Redirects to `/` (empty state)
 
 **Step 3: Test archiving non-selected session**
 
 In browser:
+
 1. Select session 1
 2. Archive session 2 (via hover)
-Expected: Stays on session 1, session 2 removed from list
+   Expected: Stays on session 1, session 2 removed from list
 
 **Step 4: Commit**
 
@@ -375,6 +408,7 @@ git commit -m "feat: navigate to home after archiving selected session"
 ## Task 9: Update Empty State Handlers
 
 **Files:**
+
 - Modify: `src/App.tsx` (multiple button onClick handlers)
 
 **Step 1: Remove setSelectedSession calls from empty state**
@@ -382,6 +416,7 @@ git commit -m "feat: navigate to home after archiving selected session"
 Find the empty state section (around line 311-327) and update button onClick:
 
 Change from:
+
 ```tsx
 onClick={() => {
   setParentForNewTask(null);
@@ -391,6 +426,7 @@ onClick={() => {
 ```
 
 To:
+
 ```tsx
 onClick={() => {
   setParentForNewTask(null);
@@ -402,6 +438,7 @@ onClick={() => {
 **Step 2: Update header "New Task" button similarly**
 
 Around line 219-234, update onClick:
+
 ```tsx
 onClick={() => {
   setParentForNewTask(null);
@@ -413,9 +450,10 @@ onClick={() => {
 **Step 3: Test new task flow from empty state**
 
 In browser:
+
 1. Go to `/` (no session selected)
 2. Click "New Task"
-Expected: Form opens, URL stays at `/`
+   Expected: Form opens, URL stays at `/`
 
 **Step 4: Commit**
 
@@ -429,11 +467,13 @@ git commit -m "feat: update empty state handlers for routing"
 ## Task 10: Update Cancel Task Handler
 
 **Files:**
+
 - Modify: `src/App.tsx:163-166`
 
 **Step 1: Update handleCancelCreate**
 
 Update the function:
+
 ```tsx
 const handleCancelCreate = () => {
   setIsCreatingTask(false);
@@ -445,17 +485,19 @@ const handleCancelCreate = () => {
 **Step 2: Test cancel from home**
 
 In browser:
+
 1. At `/`, click "New Task"
 2. Click "Cancel"
-Expected: Returns to `/` empty state
+   Expected: Returns to `/` empty state
 
 **Step 3: Test cancel from session**
 
 In browser:
+
 1. Select session → `/session/session-1`
 2. Click "New Task" button
 3. Click "Cancel"
-Expected: Returns to `/session/session-1` with details showing
+   Expected: Returns to `/session/session-1` with details showing
 
 **Step 4: Commit**
 
@@ -469,6 +511,7 @@ git commit -m "feat: preserve URL when canceling task creation"
 ## Task 11: Write Routing Integration Tests
 
 **Files:**
+
 - Create: `src/__tests__/routing/sessionRouting.test.tsx`
 
 **Step 1: Create routing test file**
@@ -558,7 +601,9 @@ describe('Session Routing', () => {
       });
 
       // Should show empty state
-      expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+      expect(
+        screen.getByText('Select a task to view details')
+      ).toBeInTheDocument();
     });
 
     it('should show empty state at root path', async () => {
@@ -573,7 +618,9 @@ describe('Session Routing', () => {
       render(<RouterProvider router={router} />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+        expect(
+          screen.getByText('Select a task to view details')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -666,12 +713,16 @@ describe('Session Routing', () => {
       render(<RouterProvider router={router} />, { client: mockClient });
 
       await waitFor(() => {
-        const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+        const newTaskButtons = screen.getAllByRole('button', {
+          name: /new task/i,
+        });
         expect(newTaskButtons.length).toBeGreaterThan(0);
       });
 
       // Click New Task
-      const newTaskButton = screen.getAllByRole('button', { name: /new task/i })[0];
+      const newTaskButton = screen.getAllByRole('button', {
+        name: /new task/i,
+      })[0];
       await user.click(newTaskButton);
 
       // Form should be visible
@@ -703,6 +754,7 @@ git commit -m "test: add routing integration tests"
 ## Task 12: Update Existing Integration Tests
 
 **Files:**
+
 - Modify: `src/__tests__/integration/userFlows.test.tsx`
 
 **Step 1: Verify existing tests still pass**
@@ -713,6 +765,7 @@ Expected: All tests pass (MemoryRouter in test utils handles routing)
 **Step 2: If any tests fail, update them**
 
 Most tests should pass because:
+
 - Test utils wrap with MemoryRouter
 - Component behavior remains the same
 - Only navigation mechanism changed (callback → navigate)
@@ -731,6 +784,7 @@ git commit -m "test: update integration tests for routing"
 ## Task 13: Manual Testing
 
 **Files:**
+
 - None (manual verification)
 
 **Step 1: Test all navigation flows**
@@ -767,6 +821,7 @@ If issues found, create separate tasks to fix them.
 ## Task 14: Run Full Test Suite
 
 **Files:**
+
 - None
 
 **Step 1: Run all tests**
@@ -777,6 +832,7 @@ Expected: All tests pass
 **Step 2: Fix any failing tests**
 
 If tests fail:
+
 1. Identify the issue
 2. Update test or code as needed
 3. Commit fix
@@ -798,27 +854,33 @@ git commit -m "fix: address any remaining test issues"
 ## Task 15: Update Documentation
 
 **Files:**
+
 - Create: `docs/architecture/routing.md` (optional)
 - Modify: `README.md` (if it exists with architecture info)
 
 **Step 1: Document routing architecture**
 
 Create routing documentation if helpful for future developers:
+
 ```markdown
 # Routing Architecture
 
 ## Route Structure
+
 - `/` - Home/Empty state
 - `/session/:id` - Session detail view
 
 ## URL as Source of Truth
+
 The selected session is derived from the URL parameter, not local state.
 
 ## Navigation
+
 - Use `navigate('/session/:id')` to navigate to a session
 - Use `navigate('/')` to return to home
 
 ## Testing
+
 Tests use MemoryRouter from react-router-dom.
 ```
 
@@ -851,20 +913,24 @@ git commit -m "docs: add routing architecture documentation"
 ## Key Principles Applied
 
 **DRY (Don't Repeat Yourself):**
+
 - Single AppLayout component used for both routes
 - Shared logic for session selection from URL
 
 **YAGNI (You Aren't Gonna Need It):**
+
 - Only 2 routes (no over-engineering nested routes)
 - Minimal routing configuration
 - No route guards or complex middleware
 
 **TDD (Test-Driven Development):**
+
 - Tests updated before implementation where possible
 - New routing tests validate behavior
 - All tests pass before completion
 
 **Frequent Commits:**
+
 - Each task step commits logical changes
 - Clear commit messages
 - Easy to track progress and revert if needed

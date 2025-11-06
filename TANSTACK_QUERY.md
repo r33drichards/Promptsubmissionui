@@ -5,6 +5,7 @@ This document describes the TanStack Query (React Query) integration for managin
 ## Overview
 
 TanStack Query provides:
+
 - **Automatic Caching**: Data is cached and reused across components
 - **Background Refetching**: Keeps data fresh automatically
 - **Optimistic Updates**: UI updates instantly, rolls back on error
@@ -71,7 +72,10 @@ export const queryKeys = {
   sessions: {
     all: ['sessions'],
     lists: () => [...queryKeys.sessions.all, 'list'],
-    list: (params?: ListSessionsParams) => [...queryKeys.sessions.lists(), params],
+    list: (params?: ListSessionsParams) => [
+      ...queryKeys.sessions.lists(),
+      params,
+    ],
     details: () => [...queryKeys.sessions.all, 'detail'],
     detail: (id: string) => [...queryKeys.sessions.details(), id],
   },
@@ -84,6 +88,7 @@ export const queryKeys = {
 ```
 
 This structure allows for:
+
 - **Granular invalidation**: Invalidate specific queries or entire groups
 - **Type safety**: Keys are strongly typed
 - **Consistency**: Same keys used across the app
@@ -98,7 +103,11 @@ This structure allows for:
 import { useSessions } from './hooks';
 
 function SessionList() {
-  const { data: sessions, isLoading, error } = useSessions({
+  const {
+    data: sessions,
+    isLoading,
+    error,
+  } = useSessions({
     archived: false,
     status: 'pending',
   });
@@ -418,11 +427,13 @@ export function useSessions(params?: ListSessionsParams) {
 ```
 
 The backend client handles:
+
 - HTTP requests
 - Serialization/deserialization
 - Error formatting
 
 TanStack Query handles:
+
 - Caching
 - Refetching
 - Loading states
@@ -431,6 +442,7 @@ TanStack Query handles:
 ## Migrating from Local State
 
 Before (local state):
+
 ```tsx
 const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -445,6 +457,7 @@ const createSession = async (data) => {
 ```
 
 After (TanStack Query):
+
 ```tsx
 const { data: sessions = [] } = useSessions();
 const createSession = useCreateSession();
@@ -454,6 +467,7 @@ createSession.mutate(data);
 ```
 
 Benefits:
+
 - No manual state management
 - Automatic cache invalidation
 - Built-in loading/error states
@@ -465,24 +479,27 @@ Benefits:
 ### Query Not Refetching
 
 Check if data is stale:
+
 ```tsx
 const { data, isStale } = useSessions();
 console.log('Is stale:', isStale);
 ```
 
 Manually refetch:
+
 ```tsx
 const { data, refetch } = useSessions();
-<button onClick={() => refetch()}>Refresh</button>
+<button onClick={() => refetch()}>Refresh</button>;
 ```
 
 ### Mutation Not Updating UI
 
 Ensure cache is being invalidated:
+
 ```typescript
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
-}
+};
 ```
 
 ### Multiple Requests for Same Data

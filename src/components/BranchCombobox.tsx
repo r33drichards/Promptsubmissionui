@@ -20,7 +20,13 @@ interface BranchComboboxProps {
   disabled?: boolean;
 }
 
-export function BranchCombobox({ value, onChange, branches, id, disabled = false }: BranchComboboxProps) {
+export function BranchCombobox({
+  value,
+  onChange,
+  branches,
+  id,
+  disabled = false,
+}: BranchComboboxProps) {
   const [open, setOpen] = useState(false);
 
   return (

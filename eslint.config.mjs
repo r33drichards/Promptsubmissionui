@@ -39,6 +39,21 @@ export default [
         Response: 'readonly',
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
+        Element: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        Event: 'readonly',
+        AbortSignal: 'readonly',
+        crypto: 'readonly',
+        global: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        HTMLImageElement: 'readonly',
+        React: 'readonly',
       },
     },
     plugins: {
@@ -56,6 +71,19 @@ export default [
 
       // React Hooks rules
       ...reactHooksPlugin.configs.recommended.rules,
+
+      // Relaxed rules for existing codebase
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      // Disable prop-types since we use TypeScript
+      'react/prop-types': 'off',
     },
     settings: {
       react: {

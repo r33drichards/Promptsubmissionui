@@ -137,7 +137,9 @@ const mockClient = createMockBackendClient();
 // Override specific methods
 const customClient = createMockBackendClient({
   sessions: {
-    list: vi.fn().mockResolvedValue([/* custom data */]),
+    list: vi.fn().mockResolvedValue([
+      /* custom data */
+    ]),
   },
 });
 
@@ -151,6 +153,7 @@ const errorClient = createErrorMockBackendClient();
 ### 1. Use Testing Library Queries Properly
 
 Prefer queries in this order:
+
 1. `getByRole` - Most accessible
 2. `getByLabelText` - For form fields
 3. `getByPlaceholderText` - For inputs
@@ -182,11 +185,13 @@ await waitFor(() => {
 ### 4. Test User Behavior, Not Implementation
 
 ❌ Bad: Testing implementation details
+
 ```tsx
 expect(component.state.isOpen).toBe(true);
 ```
 
 ✅ Good: Testing user-visible behavior
+
 ```tsx
 expect(screen.getByText('Modal Content')).toBeInTheDocument();
 ```

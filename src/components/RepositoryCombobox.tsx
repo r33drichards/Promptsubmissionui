@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import * as React from 'react';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
@@ -22,10 +22,21 @@ interface RepositoryComboboxProps {
   id?: string;
 }
 
-export function RepositoryCombobox({ value, onChange, repositories, id }: RepositoryComboboxProps) {
+export function RepositoryCombobox({
+  value,
+  onChange,
+  repositories,
+  id,
+}: RepositoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
+  const {
+    repos: githubRepos,
+    isLoading,
+    error,
+    search,
+    clear,
+  } = useGitHubRepoSearch();
 
   const handleSearchChange = (newQuery: string) => {
     setSearchQuery(newQuery);
@@ -56,8 +67,13 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const hasRecentRepos = filteredRecentRepos.length > 0;
   const hasGitHubRepos = githubRepos.length > 0;
   const hasAnyRepos = hasRecentRepos || hasGitHubRepos;
-  const showEmptyState = !hasAnyRepos && !isLoading && searchQuery.trim().length >= 2;
-  const showInitialState = !hasAnyRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
+  const showEmptyState =
+    !hasAnyRepos && !isLoading && searchQuery.trim().length >= 2;
+  const showInitialState =
+    !hasAnyRepos &&
+    !isLoading &&
+    repositories.length === 0 &&
+    searchQuery.trim().length < 2;
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -84,14 +100,14 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
             {isLoading && (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Searching GitHub...</span>
+                <span className="text-sm text-muted-foreground">
+                  Searching GitHub...
+                </span>
               </div>
             )}
 
             {error && (
-              <div className="px-2 py-3 text-sm text-red-500">
-                {error}
-              </div>
+              <div className="px-2 py-3 text-sm text-red-500">{error}</div>
             )}
 
             {showInitialState && (
@@ -101,7 +117,9 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
               </div>
             )}
 
-            {showEmptyState && <CommandEmpty>No repository found.</CommandEmpty>}
+            {showEmptyState && (
+              <CommandEmpty>No repository found.</CommandEmpty>
+            )}
 
             {hasRecentRepos && (
               <CommandGroup heading="Recent Repositories">

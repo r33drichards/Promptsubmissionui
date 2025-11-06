@@ -12,7 +12,8 @@ const mockGitHubResponse = {
       full_name: 'facebook/react',
       name: 'react',
       owner: { login: 'facebook' },
-      description: 'A declarative, efficient, and flexible JavaScript library for building user interfaces.',
+      description:
+        'A declarative, efficient, and flexible JavaScript library for building user interfaces.',
       html_url: 'https://github.com/facebook/react',
       stargazers_count: 200000,
     },
@@ -31,7 +32,11 @@ const mockGitHubResponse = {
 
 describe('RepositoryCombobox', () => {
   const mockOnChange = vi.fn();
-  const recentRepositories = ['test/repo-1', 'test/repo-2', 'user/another-repo'];
+  const recentRepositories = [
+    'test/repo-1',
+    'test/repo-2',
+    'user/another-repo',
+  ];
 
   beforeEach(() => {
     mockOnChange.mockClear();
@@ -116,10 +121,14 @@ describe('RepositoryCombobox', () => {
 
       // Wait for popover and type in search
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('Search GitHub repositories...')).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText('Search GitHub repositories...')
+        ).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText('Search GitHub repositories...');
+      const searchInput = screen.getByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       await user.type(searchInput, 'test');
 
       // Should only show repos matching "test"
@@ -206,20 +215,28 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
 
       // Type search query
       await user.type(searchInput, 'react');
 
       // Wait for loading state
-      await waitFor(() => {
-        expect(screen.getByText('Searching GitHub...')).toBeInTheDocument();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(screen.getByText('Searching GitHub...')).toBeInTheDocument();
+        },
+        { timeout: 500 }
+      );
 
       // Wait for results
-      await waitFor(() => {
-        expect(screen.getByText('GitHub Repositories')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText('GitHub Repositories')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       expect(screen.getByText('facebook/react')).toBeInTheDocument();
       expect(screen.getByText('vercel/next.js')).toBeInTheDocument();
@@ -233,7 +250,7 @@ describe('RepositoryCombobox', () => {
         expect.stringContaining('api.github.com/search/repositories?q=react'),
         expect.objectContaining({
           headers: {
-            'Accept': 'application/vnd.github.v3+json',
+            Accept: 'application/vnd.github.v3+json',
           },
         })
       );
@@ -254,13 +271,15 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
 
       // Type only 1 character
       await user.type(searchInput, 'r');
 
       // Wait a bit to ensure no API call is made
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       // API should not have been called
       expect(global.fetch).not.toHaveBeenCalled();
@@ -288,13 +307,20 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       await user.type(searchInput, 'react');
 
       // Wait for error message
-      await waitFor(() => {
-        expect(screen.getByText(/GitHub API rate limit exceeded/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(/GitHub API rate limit exceeded/i)
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should call onChange when a GitHub repository is selected', async () => {
@@ -317,13 +343,18 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       await user.type(searchInput, 'react');
 
       // Wait for results
-      await waitFor(() => {
-        expect(screen.getByText('facebook/react')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText('facebook/react')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Click on a GitHub repository
       await user.click(screen.getByText('facebook/react'));
@@ -351,15 +382,20 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
 
       // Type multiple characters quickly
       await user.type(searchInput, 'react');
 
       // Wait for debounce + API call
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(global.fetch).toHaveBeenCalledTimes(1);
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -387,7 +423,9 @@ describe('RepositoryCombobox', () => {
 
       // Popover should close - search input should not be visible
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText('Search GitHub repositories...')).not.toBeInTheDocument();
+        expect(
+          screen.queryByPlaceholderText('Search GitHub repositories...')
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -413,7 +451,9 @@ describe('RepositoryCombobox', () => {
       const triggerButton = screen.getByText('Select repository...');
       await user.click(triggerButton);
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       await user.type(searchInput, 'react');
 
       // Close by clicking the button again
@@ -423,7 +463,9 @@ describe('RepositoryCombobox', () => {
       await user.click(triggerButton);
 
       // Search input should be empty
-      const newSearchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const newSearchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       expect(newSearchInput).toHaveValue('');
     });
   });
@@ -444,7 +486,9 @@ describe('RepositoryCombobox', () => {
 
       await user.click(screen.getByRole('combobox'));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        'Search GitHub repositories...'
+      );
       await user.type(searchInput, 'xyz');
 
       // Mock empty response
@@ -453,9 +497,12 @@ describe('RepositoryCombobox', () => {
         json: async () => ({ items: [], total_count: 0 }),
       });
 
-      await waitFor(() => {
-        expect(screen.getByText('No repository found.')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText('No repository found.')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 });

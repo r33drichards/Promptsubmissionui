@@ -12,7 +12,7 @@ interface MonacoEditorProps {
 export function MonacoEditor({
   value,
   onChange,
-  placeholder = 'Start typing...',
+  placeholder: _placeholder = 'Start typing...',
   language = 'markdown',
 }: MonacoEditorProps) {
   const { theme } = useTheme();
@@ -24,13 +24,12 @@ export function MonacoEditor({
   return (
     <div className="border rounded-md overflow-hidden">
       <Editor
-        height={"600px"}
+        height={'600px'}
         defaultLanguage={language}
         value={value}
         onChange={handleEditorChange}
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
-        options={{
-        }}
+        options={{}}
       />
     </div>
   );

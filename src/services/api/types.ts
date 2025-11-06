@@ -1,4 +1,11 @@
-import { Session, Message, InboxStatus, SessionStatus, BackendMessage, Prompt } from '../../types/session';
+import {
+  Session,
+  Message,
+  InboxStatus,
+  SessionStatus,
+  BackendMessage,
+  Prompt,
+} from '../../types/session';
 
 /**
  * Backend API client interface.

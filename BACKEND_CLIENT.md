@@ -64,14 +64,27 @@ src/
 ```typescript
 interface HttpClient {
   get<T>(url: string, config?: RequestConfig): Promise<HttpResponse<T>>;
-  post<T>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
-  put<T>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
-  patch<T>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
+  post<T>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
+  put<T>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
+  patch<T>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
   delete<T>(url: string, config?: RequestConfig): Promise<HttpResponse<T>>;
 }
 ```
 
 **MockHttpClient** provides a development/testing implementation:
+
 - Simulates network delays (500ms default)
 - Returns mock responses based on URL patterns
 - Logs requests to console for debugging
@@ -100,6 +113,7 @@ interface BackendClient {
 ```
 
 **BackendClientImpl** implementation:
+
 - Accepts any `HttpClient` via constructor injection
 - Handles serialization/deserialization (e.g., Date objects)
 - Provides type-safe API methods
@@ -107,11 +121,13 @@ interface BackendClient {
 ### 3. React Context Provider (`providers/ApiProvider.tsx`)
 
 **ApiProvider** component:
+
 - Uses React Context to provide `BackendClient` to all children
 - Supports dependency injection via `client` prop
 - Creates default mock client if none provided
 
 **useApi** hook:
+
 - Provides access to the backend client from any component
 - Throws error if used outside ApiProvider
 
