@@ -59,7 +59,7 @@ export function CreateTaskForm({
     onSubmit({
       repo,
       targetBranch,
-      messages: { content: prompt }, // Send as JSON object to match backend API
+      messages: { content: prompt, type: "prompt" }, // Send as JSON object to match backend API
       parentId: parentSession?.id || null,
     });
     setRepo('');
