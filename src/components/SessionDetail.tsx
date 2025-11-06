@@ -107,7 +107,7 @@ export function SessionDetail({ session, onCreatePR, onReply }: SessionDetailPro
                 </div>
                 <div className="text-sm space-y-2">
                   {message.message?.content?.map((content, idx) => (
-                    <div key={idx}>
+                    <div key={content.id || `${message.uuid}-content-${idx}`}>
                       {content.type === 'text' && content.text && (
                         <p className="whitespace-pre-wrap">{content.text}</p>
                       )}
