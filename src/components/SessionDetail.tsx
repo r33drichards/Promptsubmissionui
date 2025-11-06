@@ -4,7 +4,7 @@ import { Badge } from './ui/badge';
 import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { useState } from 'react';
-import { useSessionConversation, ConversationItem } from '../hooks/useMessages';
+import { useSessionConversation } from '../hooks/useMessages';
 
 interface SessionDetailProps {
   session: Session;
