@@ -139,8 +139,31 @@ describe('SessionDetail', () => {
       expect(screen.getAllByText('assistant')).toHaveLength(1);
     });
 
-    it('should show "No messages yet" when messages is null', async () => {
-      const mockClient = createMockClient([]);
+    it('should show "No conversation yet" when there are no prompts', async () => {
+      // Create mock with no prompts
+      const mockClient: BackendClient = {
+        sessions: {
+          list: vi.fn().mockResolvedValue([]),
+          get: vi.fn().mockResolvedValue(baseSession),
+          create: vi.fn().mockResolvedValue(baseSession),
+          update: vi.fn().mockResolvedValue(baseSession),
+          delete: vi.fn().mockResolvedValue(undefined),
+          archive: vi.fn().mockResolvedValue(baseSession),
+          unarchive: vi.fn().mockResolvedValue(baseSession),
+        },
+        prompts: {
+          list: vi.fn().mockResolvedValue([]), // No prompts
+        },
+        messages: {
+          list: vi.fn().mockResolvedValue([]),
+          create: vi.fn().mockResolvedValue({
+            id: 'new-msg',
+            role: 'user',
+            content: 'test',
+            createdAt: new Date(),
+          }),
+        },
+      };
 
       render(
         <SessionDetail
@@ -152,11 +175,11 @@ describe('SessionDetail', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('No messages yet')).toBeInTheDocument();
+        expect(screen.getByText('No conversation yet')).toBeInTheDocument();
       });
     });
 
-    it('should show "No messages yet" when messages array is empty', async () => {
+    it('should render prompt with no messages when messages array is empty', async () => {
       const mockClient = createMockClient([]);
 
       render(
@@ -168,9 +191,14 @@ describe('SessionDetail', () => {
         { client: mockClient }
       );
 
+      // Should show the prompt content
       await waitFor(() => {
-        expect(screen.getByText('No messages yet')).toBeInTheDocument();
+        expect(screen.getByText('Test prompt')).toBeInTheDocument();
       });
+
+      // Prompt should be visible with its status badge
+      expect(screen.getByText('Prompt')).toBeInTheDocument();
+      expect(screen.getByText('completed')).toBeInTheDocument();
     });
   });
 

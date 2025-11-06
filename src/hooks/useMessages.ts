@@ -169,6 +169,10 @@ export function usePrompts(
   });
 }
 
+export type ConversationItem =
+  | { type: 'prompt'; data: Prompt; messages: BackendMessage[] }
+  | { type: 'message'; data: BackendMessage };
+
 /**
  * Combined hook to fetch and format session conversation data.
  * Fetches prompts for a session, then fetches messages for each prompt.
@@ -177,7 +181,7 @@ export function usePrompts(
  *
  * @example
  * ```tsx
- * const { messages, prompts, isLoading } = useSessionConversation('session-123');
+ * const { messages, prompts, conversation, isLoading } = useSessionConversation('session-123');
  * ```
  */
 export function useSessionConversation(sessionId: string) {
@@ -221,9 +225,41 @@ export function useSessionConversation(sessionId: string) {
     });
   }, [allMessages]);
 
+  // Create conversation structure that groups messages by prompt
+  const conversation = useMemo(() => {
+    const conversationItems: ConversationItem[] = [];
+
+    // Create a map of promptId -> messages for quick lookup
+    const messagesByPromptId = new Map<string, BackendMessage[]>();
+    messageQueries.forEach((query, index) => {
+      const prompt = prompts[index];
+      if (prompt && query.data) {
+        messagesByPromptId.set(prompt.id, query.data);
+      }
+    });
+
+    // Build conversation by iterating through prompts in chronological order
+    const sortedPrompts = [...prompts].sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    sortedPrompts.forEach((prompt) => {
+      const messages = messagesByPromptId.get(prompt.id) || [];
+      conversationItems.push({
+        type: 'prompt',
+        data: prompt,
+        messages,
+      });
+    });
+
+    return conversationItems;
+  }, [prompts, messageQueries]);
+
   return {
     messages: sortedMessages,
     prompts,
+    conversation,
     isLoading: promptsLoading || messagesLoading,
   };
 }

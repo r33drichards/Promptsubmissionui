@@ -18,7 +18,7 @@ export function SessionDetail({
   onReply,
 }: SessionDetailProps) {
   const [reply, setReply] = useState('');
-  const { messages, isLoading } = useSessionConversation(session.id);
+  const { conversation, isLoading } = useSessionConversation(session.id);
 
   const handleReply = () => {
     if (reply.trim()) {
@@ -92,68 +92,103 @@ export function SessionDetail({
       <div className="flex-1 overflow-auto p-4">
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-gray-500">
-            <p>Loading messages...</p>
+            <p>Loading conversation...</p>
           </div>
-        ) : messages && messages.length > 0 ? (
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.uuid}
-                className={`p-4 rounded-lg ${
-                  message.type === 'user'
-                    ? 'bg-gray-50'
-                    : message.type === 'assistant'
-                      ? 'bg-blue-50'
-                      : message.type === 'system'
-                        ? 'bg-purple-50'
-                        : 'bg-yellow-50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium capitalize">
-                    {message.type}
-                  </span>
+        ) : conversation && conversation.length > 0 ? (
+          <div className="space-y-6">
+            {conversation.map((item, itemIdx) => (
+              <div key={`conversation-${itemIdx}`} className="space-y-4">
+                {/* Render the prompt */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border-l-4 border-indigo-500">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-indigo-900">
+                      Prompt
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className={
+                        item.data.status === 'completed'
+                          ? 'bg-green-50 text-green-700 border-green-300'
+                          : item.data.status === 'processing'
+                            ? 'bg-blue-50 text-blue-700 border-blue-300'
+                            : item.data.status === 'failed'
+                              ? 'bg-red-50 text-red-700 border-red-300'
+                              : 'bg-gray-50 text-gray-700 border-gray-300'
+                      }
+                    >
+                      {item.data.status}
+                    </Badge>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap text-gray-800">
+                    {item.data.content}
+                  </p>
                 </div>
-                <div className="text-sm space-y-2">
-                  {message.message?.content?.map((content, idx) => (
-                    <div key={content.id || `${message.uuid}-content-${idx}`}>
-                      {content.type === 'text' && content.text && (
-                        <p className="whitespace-pre-wrap">{content.text}</p>
-                      )}
-                      {content.type === 'tool_use' && (
-                        <div className="bg-white/50 p-2 rounded border border-gray-200">
-                          <p className="text-xs text-gray-600 mb-1">
-                            Tool: {content.name}
-                          </p>
-                          <pre className="text-xs overflow-x-auto">
-                            {JSON.stringify(content.input, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {content.type === 'tool_result' && (
-                        <div className="bg-white/50 p-2 rounded border border-gray-200">
-                          <p className="text-xs text-gray-600 mb-1">
-                            Tool Result
-                          </p>
-                          <pre className="text-xs overflow-x-auto">
-                            {typeof content.content === 'string'
-                              ? content.content
-                              : JSON.stringify(content.content, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  ))}
 
-                  {message.message?.usage && (
-                    <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
-                      Tokens: {message.message.usage.input_tokens} in /{' '}
-                      {message.message.usage.output_tokens} out
-                      {message.message.usage.cache_read_input_tokens &&
-                        ` / ${message.message.usage.cache_read_input_tokens} cached`}
+                {/* Render messages for this prompt */}
+                {item.messages.map((message) => (
+                  <div
+                    key={message.uuid}
+                    className={`p-4 rounded-lg ${
+                      message.type === 'user'
+                        ? 'bg-gray-50'
+                        : message.type === 'assistant'
+                          ? 'bg-blue-50'
+                          : message.type === 'system'
+                            ? 'bg-purple-50'
+                            : 'bg-yellow-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium capitalize">
+                        {message.type}
+                      </span>
                     </div>
-                  )}
-                </div>
+                    <div className="text-sm space-y-2">
+                      {message.message?.content?.map((content, idx) => (
+                        <div
+                          key={content.id || `${message.uuid}-content-${idx}`}
+                        >
+                          {content.type === 'text' && content.text && (
+                            <p className="whitespace-pre-wrap">
+                              {content.text}
+                            </p>
+                          )}
+                          {content.type === 'tool_use' && (
+                            <div className="bg-white/50 p-2 rounded border border-gray-200">
+                              <p className="text-xs text-gray-600 mb-1">
+                                Tool: {content.name}
+                              </p>
+                              <pre className="text-xs overflow-x-auto">
+                                {JSON.stringify(content.input, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                          {content.type === 'tool_result' && (
+                            <div className="bg-white/50 p-2 rounded border border-gray-200">
+                              <p className="text-xs text-gray-600 mb-1">
+                                Tool Result
+                              </p>
+                              <pre className="text-xs overflow-x-auto">
+                                {typeof content.content === 'string'
+                                  ? content.content
+                                  : JSON.stringify(content.content, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {message.message?.usage && (
+                        <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
+                          Tokens: {message.message.usage.input_tokens} in /{' '}
+                          {message.message.usage.output_tokens} out
+                          {message.message.usage.cache_read_input_tokens &&
+                            ` / ${message.message.usage.cache_read_input_tokens} cached`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
 
@@ -173,7 +208,7 @@ export function SessionDetail({
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
-            <p>No messages yet</p>
+            <p>No conversation yet</p>
           </div>
         )}
       </div>
