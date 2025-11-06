@@ -145,9 +145,13 @@ export function SessionDetail({
                     </div>
                     <div className="text-sm space-y-2">
                       {message.message?.content?.map((content, idx) => (
-                        <div key={content.id || `${message.uuid}-content-${idx}`}>
+                        <div
+                          key={content.id || `${message.uuid}-content-${idx}`}
+                        >
                           {content.type === 'text' && content.text && (
-                            <p className="whitespace-pre-wrap">{content.text}</p>
+                            <p className="whitespace-pre-wrap">
+                              {content.text}
+                            </p>
                           )}
                           {content.type === 'tool_use' && (
                             <div className="bg-white/50 p-2 rounded border border-gray-200">
