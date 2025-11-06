@@ -71,9 +71,7 @@ describe('Data Wrapper Bug', () => {
         'I need to understand what "this" refers to.'
       );
       expect(result[0].uuid).toBe('83ba2e18-07f4-4ca4-ba97-812f79fb2ba4');
-      expect(result[0].session_id).toBe(
-        '424257b8-705a-462e-ad5f-afd041a424dc'
-      );
+      expect(result[0].session_id).toBe('424257b8-705a-462e-ad5f-afd041a424dc');
     });
 
     it('shows what the deserialization SHOULD produce', async () => {
