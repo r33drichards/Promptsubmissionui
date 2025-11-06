@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@/test/utils';
 import { CreateTaskForm } from '../CreateTaskForm';
@@ -141,11 +141,24 @@ describe('CreateTaskForm - Bypass Attempts', () => {
 
     // Try to submit the form programmatically
     const form = promptInput.closest('form') as HTMLFormElement;
-    form.requestSubmit();
+    await act(async () => {
+      form.requestSubmit();
+    });
 
-    // Check console errors
+    // Check console errors - now logs validation errors as an object
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[CreateTaskForm] Repository is required');
+      // Check if console.error was called at all
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      // Find the call that matches our validation error
+      const validationErrorCall = consoleErrorSpy.mock.calls.find(call =>
+        call[0] === '[CreateTaskForm] Validation failed:'
+      );
+
+      expect(validationErrorCall).toBeDefined();
+      expect(validationErrorCall?.[1]).toMatchObject({
+        repo: 'Repository is required',
+      });
     });
 
     // Verify onSubmit was NOT called
