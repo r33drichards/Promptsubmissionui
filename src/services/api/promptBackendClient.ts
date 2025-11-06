@@ -53,14 +53,6 @@ export class PromptBackendClient implements BackendClient {
 
       // Parse and validate input data using Zod (parse don't validate)
       const validatedData = CreateSessionDataSchema.parse(data);
-
-      // Validate that messages are provided in the correct format
-      if (!validatedData.messages || !Array.isArray(validatedData.messages) || validatedData.messages.length === 0) {
-        console.error('[PromptBackendClient] Invalid messages format:', validatedData.messages);
-        throw new Error('Messages must be provided as a non-empty array. Cannot create session without a prompt.');
-      }
-
-      // Create session with prompt using the combined endpoint
       console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
       const response = await this.api.handlersSessionsCreateWithPrompt({
         createSessionWithPromptInput: {
