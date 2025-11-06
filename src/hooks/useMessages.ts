@@ -12,26 +12,26 @@ import { toast } from 'sonner';
 import { useMemo } from 'react';
 
 /**
- * Hook to fetch messages for a specific session with polling.
+ * Hook to fetch messages for a specific prompt with polling.
  *
- * @param sessionId - The session ID to fetch messages for
+ * @param promptId - The prompt ID to fetch messages for
  * @param options - Additional query options (polling enabled by default with 2s interval)
  *
  * @example
  * ```tsx
- * const { data: messages, isLoading } = useMessages('session-123');
+ * const { data: messages, isLoading } = useMessages('prompt-123');
  * ```
  */
 export function useMessages(
-  sessionId: string,
+  promptId: string,
   options?: Omit<UseQueryOptions<BackendMessage[]>, 'queryKey' | 'queryFn'>
 ) {
   const api = useApi();
 
   return useQuery({
-    queryKey: queryKeys.messages.list(sessionId),
-    queryFn: () => api.messages.list(sessionId),
-    enabled: !!sessionId,
+    queryKey: queryKeys.messages.list(promptId),
+    queryFn: () => api.messages.list(promptId),
+    enabled: !!promptId,
     refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true, // Continue polling when tab is not focused
     ...options,
@@ -156,18 +156,22 @@ export function usePrompts(
 
 /**
  * Combined hook to fetch and format session conversation data.
- * Fetches messages and sorts them by creation time.
+ * Fetches prompts for a session, then fetches messages for each prompt.
  *
  * @param sessionId - The session ID to fetch data for
  *
  * @example
  * ```tsx
- * const { messages, isLoading } = useSessionConversation('session-123');
+ * const { messages, prompts, isLoading } = useSessionConversation('session-123');
  * ```
  */
 export function useSessionConversation(sessionId: string) {
-  const { data: messages = [], isLoading: messagesLoading } = useMessages(sessionId);
   const { data: prompts = [], isLoading: promptsLoading } = usePrompts(sessionId);
+
+  // Fetch messages for the first prompt (if available)
+  // TODO: In the future, we may want to fetch messages for all prompts
+  const firstPromptId = prompts[0]?.id || '';
+  const { data: messages = [], isLoading: messagesLoading } = useMessages(firstPromptId);
 
   // Sort messages by creation time (newest first for conversation display)
   const sortedMessages = useMemo(() => {
@@ -189,6 +193,6 @@ export function useSessionConversation(sessionId: string) {
   return {
     messages: sortedMessages,
     prompts,
-    isLoading: messagesLoading || promptsLoading,
+    isLoading: promptsLoading || messagesLoading,
   };
 }
