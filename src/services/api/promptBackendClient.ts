@@ -51,51 +51,27 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Parse and validate input data using Zod (parse don't validate)
+      // Parse input data using Zod 
       const validatedData = CreateSessionDataSchema.parse(data);
-
-      // Use the new combined endpoint if messages are provided
-      if (validatedData.messages && validatedData.messages.length > 0) {
-        console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
-        const response = await this.api.handlersSessionsCreateWithPrompt({
-          createSessionWithPromptInput: {
-            repo: validatedData.repo,
-            targetBranch: validatedData.targetBranch,
-            messages: validatedData.messages,
-            parentId: validatedData.parentId || null,
-          },
-        });
-
-        console.log('[PromptBackendClient] CreateWithPrompt response:', response);
-
-        if (!response || !response.sessionId) {
-          console.error('[PromptBackendClient] Invalid response structure:', response);
-          throw new Error('Failed to create session with prompt: Invalid response from backend');
-        }
-
-        // Fetch the full session data
-        return this.sessions.get(response.sessionId);
-      }
-
-      // Otherwise, use the regular create endpoint
-      console.log('[PromptBackendClient] Creating session without prompt');
-      const response = await this.api.handlersSessionsCreate({
-        createSessionInput: {
+      console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
+      const response = await this.api.handlersSessionsCreateWithPrompt({
+        createSessionWithPromptInput: {
           repo: validatedData.repo,
           targetBranch: validatedData.targetBranch,
-          parent: validatedData.parentId || null,
+          messages: validatedData.messages,
+          parentId: validatedData.parentId || null,
         },
       });
 
-      console.log('[PromptBackendClient] Create response:', response);
+      console.log('[PromptBackendClient] CreateWithPrompt response:', response);
 
-      if (!response || !response.id) {
+      if (!response || !response.sessionId) {
         console.error('[PromptBackendClient] Invalid response structure:', response);
-        throw new Error('Failed to create session: Invalid response from backend');
+        throw new Error('Failed to create session with prompt: Invalid response from backend');
       }
 
       // Fetch the full session data
-      return this.sessions.get(response.id);
+      return this.sessions.get(response.sessionId);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
