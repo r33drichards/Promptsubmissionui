@@ -36,7 +36,7 @@ function AppLayout() {
   // Derive selectedSession from URL parameter
   const selectedSession = useMemo(() => {
     if (!id) return null;
-    return sessions.find(s => s.id === id) || null;
+    return sessions.find((s) => s.id === id) || null;
   }, [id, sessions]);
 
   // Handle invalid session IDs
@@ -50,12 +50,14 @@ function AppLayout() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
-  const [parentForNewTask, setParentForNewTask] = useState<Session | null>(null);
+  const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
+    null
+  );
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
     const repoMap = new Map<string, Date>();
-    
+
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
       const existing = repoMap.get(session.repo);
@@ -145,16 +147,13 @@ function AppLayout() {
   }, [sortedSessions, searchQuery]);
 
   const handleCreateTask = (task: CreateSessionData) => {
-    createSessionMutation.mutate(
-      task,
-      {
-        onSuccess: (newSession) => {
-          navigate(`/session/${newSession.id}`);
-          setIsCreatingTask(false);
-          setParentForNewTask(null);
-        },
-      }
-    );
+    createSessionMutation.mutate(task, {
+      onSuccess: (newSession) => {
+        navigate(`/session/${newSession.id}`);
+        setIsCreatingTask(false);
+        setParentForNewTask(null);
+      },
+    });
   };
 
   const handleCreateSubtask = (parentId: string) => {
@@ -181,14 +180,14 @@ function AppLayout() {
     }
   };
 
-  const handleOpenInCLI = (sessionId: string) => {
+  const _handleOpenInCLI = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
       toast.info(`Opening ${session.repo} in CLI...`);
     }
   };
 
-  const handleReply = (sessionId: string, message: string) => {
+  const handleReply = (sessionId: string, _message: string) => {
     // Update the session status to in-progress
     updateSessionMutation.mutate({
       id: sessionId,

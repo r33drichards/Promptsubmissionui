@@ -89,13 +89,19 @@ export class BackendClientImpl implements BackendClient {
 
     create: async (data: CreateSessionData): Promise<Session> => {
       const snakeData = keysToSnake(data);
-      const response = await this.httpClient.post<any>('/api/sessions', snakeData);
+      const response = await this.httpClient.post<any>(
+        '/api/sessions',
+        snakeData
+      );
       return this.deserializeSession(response.data);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
       const snakeData = keysToSnake(data);
-      const response = await this.httpClient.patch<any>(`/api/sessions/${id}`, snakeData);
+      const response = await this.httpClient.patch<any>(
+        `/api/sessions/${id}`,
+        snakeData
+      );
       return this.deserializeSession(response.data);
     },
 
@@ -104,26 +110,35 @@ export class BackendClientImpl implements BackendClient {
     },
 
     archive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${id}/archive`);
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${id}/archive`
+      );
       return this.deserializeSession(response.data);
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${id}/unarchive`);
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${id}/unarchive`
+      );
       return this.deserializeSession(response.data);
     },
   };
 
   messages = {
     list: async (sessionId: string): Promise<Message[]> => {
-      const response = await this.httpClient.get<any[]>(`/api/sessions/${sessionId}/messages`);
+      const response = await this.httpClient.get<any[]>(
+        `/api/sessions/${sessionId}/messages`
+      );
       return this.deserializeMessages(response.data);
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${sessionId}/messages`, {
-        content,
-      });
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${sessionId}/messages`,
+        {
+          content,
+        }
+      );
       return this.deserializeMessage(response.data);
     },
   };
@@ -136,8 +151,12 @@ export class BackendClientImpl implements BackendClient {
     return {
       ...camelSession,
       createdAt: new Date(camelSession.createdAt),
-      messages: camelSession.messages ? this.deserializeMessages(camelSession.messages) : null,
-      children: camelSession.children ? this.deserializeSessions(camelSession.children) : undefined,
+      messages: camelSession.messages
+        ? this.deserializeMessages(camelSession.messages)
+        : null,
+      children: camelSession.children
+        ? this.deserializeSessions(camelSession.children)
+        : undefined,
     };
   }
 

@@ -1,4 +1,9 @@
-import { HttpClient, HttpResponse, HttpError, RequestConfig } from './types';
+import {
+  HttpClient,
+  HttpResponse,
+  HttpError as _HttpError,
+  RequestConfig,
+} from './types';
 
 /**
  * Mock HTTP client for testing and development.
@@ -8,28 +13,49 @@ export class MockHttpClient implements HttpClient {
   private baseURL: string;
   private defaultDelay: number;
 
-  constructor(baseURL: string = 'http://localhost:8000/api', defaultDelay: number = 500) {
+  constructor(
+    baseURL: string = 'http://localhost:8000/api',
+    defaultDelay: number = 500
+  ) {
     this.baseURL = baseURL;
     this.defaultDelay = defaultDelay;
   }
 
-  async get<T = any>(url: string, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async get<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.mockRequest<T>('GET', url, undefined, config);
   }
 
-  async post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.mockRequest<T>('POST', url, data, config);
   }
 
-  async put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.mockRequest<T>('PUT', url, data, config);
   }
 
-  async patch<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.mockRequest<T>('PATCH', url, data, config);
   }
 
-  async delete<T = any>(url: string, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async delete<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.mockRequest<T>('DELETE', url, undefined, config);
   }
 

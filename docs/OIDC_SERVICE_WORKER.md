@@ -15,9 +15,11 @@ This application uses the `@axa-fr/react-oidc` Service Worker pattern for automa
 ## Configuration Files
 
 ### `/public/OidcServiceWorker.js`
+
 The Service Worker implementation from `@axa-fr/react-oidc`. This file should not be modified.
 
 ### `/public/OidcTrustedDomains.js`
+
 Configures which domains receive access tokens:
 
 ```javascript
@@ -30,6 +32,7 @@ const trustedDomains = {
 ```
 
 **Important:**
+
 - `oidcDomains`: Must include your OIDC provider's URL
 - `accessTokenDomains`: Add any API endpoints that need authentication
 - For production, update these to production URLs
@@ -46,6 +49,7 @@ const trustedDomains = {
 ### Service Worker Not Registering
 
 Check browser console for errors:
+
 - "Service Worker registration failed" → Check that `/OidcServiceWorker.js` is accessible
 - "SecurityError" → Service Workers require HTTPS in production (localhost is exempt)
 
@@ -59,6 +63,7 @@ Check browser console for errors:
 ### 401 Unauthorized Errors
 
 If you still get 401 errors after Service Worker setup:
+
 1. Check that backend URL in `accessTokenDomains` matches actual request URLs
 2. Verify user is authenticated (check OidcProvider state)
 3. Check backend logs for JWT validation errors
@@ -67,6 +72,7 @@ If you still get 401 errors after Service Worker setup:
 ## Development vs Production
 
 ### Development (localhost)
+
 ```javascript
 const trustedDomains = {
   default: {
@@ -77,6 +83,7 @@ const trustedDomains = {
 ```
 
 ### Production
+
 ```javascript
 const trustedDomains = {
   default: {

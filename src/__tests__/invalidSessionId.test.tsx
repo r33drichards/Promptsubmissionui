@@ -52,9 +52,12 @@ describe('Invalid Session ID Handling', () => {
     });
 
     // Should redirect to home
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/');
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(router.state.location.pathname).toBe('/');
+      },
+      { timeout: 3000 }
+    );
 
     // Should show error toast
     await waitFor(() => {
@@ -62,7 +65,9 @@ describe('Invalid Session ID Handling', () => {
     });
 
     // Should show empty state
-    expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+    expect(
+      screen.getByText('Select a task to view details')
+    ).toBeInTheDocument();
   });
 
   it('should load valid session ID correctly', async () => {

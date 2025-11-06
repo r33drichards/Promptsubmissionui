@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PromptBackendClient } from '../promptBackendClient';
-import * as PromptBackendClientModule from '@wholelottahoopla/prompt-backend-client';
+import * as _PromptBackendClientModule from '@wholelottahoopla/prompt-backend-client';
 
 /**
  * This test file demonstrates the bug where messages.list() is called with sessionId
@@ -29,11 +29,15 @@ describe('PromptId Bug in Message Listing', () => {
 
   describe('Current Buggy Behavior', () => {
     it('demonstrates the bug: messages.list() is called with sessionId but API expects promptId', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       // Setup mock to show what the API expects
       mockApiClient.handlersMessagesList.mockRejectedValue(
-        new Error("Required parameter 'promptId' was null or undefined when calling handlersMessagesList()")
+        new Error(
+          "Required parameter 'promptId' was null or undefined when calling handlersMessagesList()"
+        )
       );
 
       // This is the current code behavior - passing sessionId
@@ -46,7 +50,9 @@ describe('PromptId Bug in Message Listing', () => {
       expect(result).toEqual([]);
 
       // But the API was called with sessionId (which is wrong)
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ sessionId });
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        sessionId,
+      });
 
       consoleErrorSpy.mockRestore();
     });
@@ -58,14 +64,18 @@ describe('PromptId Bug in Message Listing', () => {
       await backendClient.messages.list(sessionId);
 
       // Currently called with { sessionId: 'session-123' }
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ sessionId });
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        sessionId,
+      });
 
       // But should be called with { promptId: 'prompt-xxx' }
       // expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-xxx' });
     });
 
     it('demonstrates the API call stack that leads to the error', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       // The call chain:
       // 1. SessionDetail component renders
@@ -113,7 +123,9 @@ describe('PromptId Bug in Message Listing', () => {
       // Simulate calling handlersMessagesList with promptId (the correct way)
       await mockApiClient.handlersMessagesList({ promptId });
 
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId });
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId,
+      });
     });
 
     it('demonstrates the correct workflow: session → prompts → messages', async () => {
@@ -128,7 +140,9 @@ describe('PromptId Bug in Message Listing', () => {
       const sessionId = 'session-123';
       const promptsResponse = await backendClient.prompts.list(sessionId);
 
-      expect(mockApiClient.handlersPromptsList).toHaveBeenCalledWith({ sessionId });
+      expect(mockApiClient.handlersPromptsList).toHaveBeenCalledWith({
+        sessionId,
+      });
       expect(promptsResponse).toHaveLength(2);
 
       // Step 2: For each prompt, get its messages using promptId
@@ -154,7 +168,9 @@ describe('PromptId Bug in Message Listing', () => {
       // passes sessionId instead of promptId
       await mockApiClient.handlersMessagesList({ promptId });
 
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId });
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId,
+      });
     });
   });
 
@@ -193,7 +209,9 @@ describe('PromptId Bug in Message Listing', () => {
       // 4. Backend API throws error
       // 5. Error is caught and empty array is returned
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       mockApiClient.handlersMessagesList.mockRejectedValue(
         new Error(
@@ -214,7 +232,9 @@ describe('PromptId Bug in Message Listing', () => {
       // The useMessages hook has refetchInterval: 2000
       // So this error repeats every 2 seconds!
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       mockApiClient.handlersMessagesList.mockRejectedValue(
         new Error('Required parameter "promptId" was null or undefined')
@@ -269,7 +289,9 @@ describe('PromptId Bug in Message Listing', () => {
 
   describe('Impact Assessment', () => {
     it('shows that the detail page cannot display messages due to this bug', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       mockApiClient.handlersMessagesList.mockRejectedValue(
         new Error('Required parameter "promptId" was null or undefined')
@@ -291,7 +313,9 @@ describe('PromptId Bug in Message Listing', () => {
     });
 
     it('shows that prompts can be loaded but messages cannot', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       // Prompts work fine
       mockApiClient.handlersPromptsList.mockResolvedValue({
@@ -369,7 +393,11 @@ describe('Solution Verification', () => {
     }
 
     expect(allMessages).toHaveLength(2);
-    expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-1' });
-    expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-2' });
+    expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+      promptId: 'prompt-1',
+    });
+    expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+      promptId: 'prompt-2',
+    });
   });
 });

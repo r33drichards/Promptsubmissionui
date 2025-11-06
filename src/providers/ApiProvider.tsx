@@ -43,7 +43,7 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
   children,
   client,
   useMock = false,
-  backendUrl
+  backendUrl,
 }) => {
   // Create backend client once - Service Worker handles token injection
   const backendClient = useMemo(() => {
@@ -54,7 +54,9 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
     return new PromptBackendClient(backendUrl);
   }, [client, useMock, backendUrl]);
 
-  return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
+  return (
+    <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>
+  );
 };
 
 /**

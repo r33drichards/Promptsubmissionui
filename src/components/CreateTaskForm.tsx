@@ -37,10 +37,17 @@ export function CreateTaskForm({
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
   const [prompt, setPrompt] = useState('');
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateTaskFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateTaskFormData, string>>
+  >({});
 
   // Fetch branches from GitHub API based on selected repository
-  const { branches, defaultBranch, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
+  const {
+    branches,
+    defaultBranch,
+    isLoading: isLoadingBranches,
+    error: branchesError,
+  } = useGitHubBranches(repo);
 
   // Update targetBranch when repository changes and default branch is loaded
   useEffect(() => {
@@ -100,7 +107,9 @@ export function CreateTaskForm({
     <div className="flex flex-col h-full">
       <div className="border-b p-4 flex items-center justify-between">
         <h2>
-          {parentSession ? `Create Subtask for "${parentSession.title}"` : 'Create New Task'}
+          {parentSession
+            ? `Create Subtask for "${parentSession.title}"`
+            : 'Create New Task'}
         </h2>
         <Button variant="ghost" size="sm" onClick={onCancel}>
           <X className="w-4 h-4" />
@@ -112,12 +121,17 @@ export function CreateTaskForm({
           {/* Repository and Target Branch in flex-row at the top */}
           <div className="flex flex-row gap-4">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="repo" className="text-sm">Repository</Label>
+              <Label htmlFor="repo" className="text-sm">
+                Repository
+              </Label>
               <RepositoryCombobox
                 id="repo"
                 value={repo}
                 onChange={(newRepo) => {
-                  console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
+                  console.log(
+                    '[CreateTaskForm] RepositoryCombobox onChange called with:',
+                    newRepo
+                  );
                   setRepo(newRepo);
                   // Clear error when user starts typing
                   if (errors.repo) {
@@ -139,7 +153,9 @@ export function CreateTaskForm({
               <Label htmlFor="targetBranch" className="text-sm">
                 Target Branch (for PR)
                 {parentSession && (
-                  <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
+                  <span className="text-muted-foreground text-xs ml-2">
+                    (inherited from parent)
+                  </span>
                 )}
               </Label>
               {parentSession ? (
@@ -158,14 +174,19 @@ export function CreateTaskForm({
                       setTargetBranch(newBranch);
                       // Clear error when user starts typing
                       if (errors.targetBranch) {
-                        setErrors((prev) => ({ ...prev, targetBranch: undefined }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          targetBranch: undefined,
+                        }));
                       }
                     }}
                     branches={branches}
                     disabled={isLoadingBranches || !repo}
                   />
                   {errors.targetBranch && (
-                    <div className="text-xs text-red-600">{errors.targetBranch}</div>
+                    <div className="text-xs text-red-600">
+                      {errors.targetBranch}
+                    </div>
                   )}
                   {isLoadingBranches && repo && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -174,9 +195,7 @@ export function CreateTaskForm({
                     </div>
                   )}
                   {branchesError && (
-                    <div className="text-xs text-red-600">
-                      {branchesError}
-                    </div>
+                    <div className="text-xs text-red-600">{branchesError}</div>
                   )}
                   {!repo && (
                     <div className="text-xs text-muted-foreground">

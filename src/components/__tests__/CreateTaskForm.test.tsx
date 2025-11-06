@@ -44,8 +44,12 @@ describe('CreateTaskForm', () => {
       expect(screen.getByLabelText(/prompt/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/repository/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/target branch/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create task/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /create task/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /cancel/i })
+      ).toBeInTheDocument();
     });
 
     it('should show subtask header when parent session is provided', () => {
@@ -62,9 +66,13 @@ describe('CreateTaskForm', () => {
         createdAt: new Date(),
       };
 
-      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
+      render(
+        <CreateTaskForm {...defaultProps} parentSession={parentSession} />
+      );
 
-      expect(screen.getByText('Create Subtask for "Parent Task"')).toBeInTheDocument();
+      expect(
+        screen.getByText('Create Subtask for "Parent Task"')
+      ).toBeInTheDocument();
     });
 
     it('should disable submit button when required fields are empty', () => {
@@ -92,7 +100,9 @@ describe('CreateTaskForm', () => {
         createdAt: new Date(),
       };
 
-      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
+      render(
+        <CreateTaskForm {...defaultProps} parentSession={parentSession} />
+      );
 
       // Fill in the prompt
       const promptInput = screen.getByLabelText(/prompt/i);
@@ -133,7 +143,9 @@ describe('CreateTaskForm', () => {
         createdAt: new Date(),
       };
 
-      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
+      render(
+        <CreateTaskForm {...defaultProps} parentSession={parentSession} />
+      );
 
       const promptInput = screen.getByLabelText(/prompt/i);
       await user.type(promptInput, 'Fix a bug in the parent task');
@@ -166,9 +178,13 @@ describe('CreateTaskForm', () => {
         createdAt: new Date(),
       };
 
-      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
+      render(
+        <CreateTaskForm {...defaultProps} parentSession={parentSession} />
+      );
 
-      const promptInput = screen.getByLabelText(/prompt/i) as HTMLTextAreaElement;
+      const promptInput = screen.getByLabelText(
+        /prompt/i
+      ) as HTMLTextAreaElement;
       await user.type(promptInput, 'Test prompt');
 
       const submitButton = screen.getByRole('button', { name: /create task/i });
@@ -194,7 +210,9 @@ describe('CreateTaskForm', () => {
         createdAt: new Date(),
       };
 
-      render(<CreateTaskForm {...defaultProps} parentSession={parentSession} />);
+      render(
+        <CreateTaskForm {...defaultProps} parentSession={parentSession} />
+      );
 
       const promptInput = screen.getByLabelText(/prompt/i);
       await user.type(promptInput, 'Subtask prompt');
@@ -256,7 +274,9 @@ describe('CreateTaskForm', () => {
 
       // Find the X button in the header
       const closeButtons = screen.getAllByRole('button');
-      const xButton = closeButtons.find(btn => btn.querySelector('.lucide-x'));
+      const xButton = closeButtons.find((btn) =>
+        btn.querySelector('.lucide-x')
+      );
 
       if (xButton) {
         await user.click(xButton);
@@ -284,7 +304,9 @@ describe('CreateTaskForm', () => {
       const user = userEvent.setup();
       render(<CreateTaskForm {...defaultProps} />);
 
-      const promptInput = screen.getByLabelText(/prompt/i) as HTMLTextAreaElement;
+      const promptInput = screen.getByLabelText(
+        /prompt/i
+      ) as HTMLTextAreaElement;
       await user.type(promptInput, 'My task description');
 
       expect(promptInput.value).toBe('My task description');
@@ -294,7 +316,9 @@ describe('CreateTaskForm', () => {
       const user = userEvent.setup();
       render(<CreateTaskForm {...defaultProps} />);
 
-      const promptInput = screen.getByLabelText(/prompt/i) as HTMLTextAreaElement;
+      const promptInput = screen.getByLabelText(
+        /prompt/i
+      ) as HTMLTextAreaElement;
       await user.type(promptInput, 'Line 1{Enter}Line 2{Enter}Line 3');
 
       expect(promptInput.value).toContain('Line 1');

@@ -68,7 +68,9 @@ describe('SessionDetail', () => {
   };
 
   // Create mock API client
-  const createMockClient = (messages: BackendMessage[] = mockBackendMessages): BackendClient => ({
+  const createMockClient = (
+    messages: BackendMessage[] = mockBackendMessages
+  ): BackendClient => ({
     sessions: {
       list: vi.fn().mockResolvedValue([]),
       get: vi.fn().mockResolvedValue(baseSession),
@@ -100,7 +102,11 @@ describe('SessionDetail', () => {
     it('should render session title and metadata', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -113,7 +119,11 @@ describe('SessionDetail', () => {
     it('should render all messages', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -122,7 +132,9 @@ describe('SessionDetail', () => {
         expect(screen.getByText('Hello, please help me')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Sure, I can help you with that!')).toBeInTheDocument();
+      expect(
+        screen.getByText('Sure, I can help you with that!')
+      ).toBeInTheDocument();
       expect(screen.getAllByText('user')).toHaveLength(1);
       expect(screen.getAllByText('assistant')).toHaveLength(1);
     });
@@ -165,7 +177,10 @@ describe('SessionDetail', () => {
   describe('Status Badge', () => {
     it('should display pending status', () => {
       const mockClient = createMockClient();
-      const pendingSession: Session = { ...baseSession, inboxStatus: 'pending' };
+      const pendingSession: Session = {
+        ...baseSession,
+        inboxStatus: 'pending',
+      };
       render(
         <SessionDetail
           session={pendingSession}
@@ -182,7 +197,10 @@ describe('SessionDetail', () => {
 
     it('should display in-progress status', () => {
       const mockClient = createMockClient();
-      const inProgressSession: Session = { ...baseSession, inboxStatus: 'in-progress' };
+      const inProgressSession: Session = {
+        ...baseSession,
+        inboxStatus: 'in-progress',
+      };
       render(
         <SessionDetail
           session={inProgressSession}
@@ -199,7 +217,10 @@ describe('SessionDetail', () => {
 
     it('should display completed status', () => {
       const mockClient = createMockClient();
-      const completedSession: Session = { ...baseSession, inboxStatus: 'completed' };
+      const completedSession: Session = {
+        ...baseSession,
+        inboxStatus: 'completed',
+      };
       render(
         <SessionDetail
           session={completedSession}
@@ -297,7 +318,9 @@ describe('SessionDetail', () => {
         { client: mockClient }
       );
 
-      expect(screen.getByRole('button', { name: /create pr/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /create pr/i })
+      ).toBeInTheDocument();
     });
 
     it('should call onCreatePR when Create PR button is clicked', async () => {
@@ -342,14 +365,20 @@ describe('SessionDetail', () => {
         { client: mockClient }
       );
 
-      expect(screen.getByRole('button', { name: /view pr/i })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /create pr/i })).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /view pr/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /create pr/i })
+      ).not.toBeInTheDocument();
     });
 
     it('should open PR URL in new tab when View PR is clicked', async () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+      const windowOpenSpy = vi
+        .spyOn(window, 'open')
+        .mockImplementation(() => null);
 
       const sessionWithPR: Session = {
         ...baseSession,
@@ -369,7 +398,10 @@ describe('SessionDetail', () => {
       const viewPRButton = screen.getByRole('button', { name: /view pr/i });
       await user.click(viewPRButton);
 
-      expect(windowOpenSpy).toHaveBeenCalledWith('https://github.com/test/repo/pull/123', '_blank');
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://github.com/test/repo/pull/123',
+        '_blank'
+      );
       windowOpenSpy.mockRestore();
     });
 
@@ -389,7 +421,9 @@ describe('SessionDetail', () => {
         { client: mockClient }
       );
 
-      expect(screen.queryByRole('button', { name: /create pr/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /create pr/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -397,7 +431,11 @@ describe('SessionDetail', () => {
     it('should render reply textarea and send button', () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -409,11 +447,17 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
-      const replyTextarea = screen.getByPlaceholderText(/reply/i) as HTMLTextAreaElement;
+      const replyTextarea = screen.getByPlaceholderText(
+        /reply/i
+      ) as HTMLTextAreaElement;
       await user.type(replyTextarea, 'My reply message');
 
       expect(replyTextarea.value).toBe('My reply message');
@@ -423,7 +467,11 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -433,18 +481,27 @@ describe('SessionDetail', () => {
       const sendButton = screen.getByRole('button', { name: /send/i });
       await user.click(sendButton);
 
-      expect(mockOnReply).toHaveBeenCalledWith('test-session-1', 'My reply message');
+      expect(mockOnReply).toHaveBeenCalledWith(
+        'test-session-1',
+        'My reply message'
+      );
     });
 
     it('should clear reply textarea after sending', async () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
-      const replyTextarea = screen.getByPlaceholderText(/reply/i) as HTMLTextAreaElement;
+      const replyTextarea = screen.getByPlaceholderText(
+        /reply/i
+      ) as HTMLTextAreaElement;
       await user.type(replyTextarea, 'My reply message');
 
       const sendButton = screen.getByRole('button', { name: /send/i });
@@ -456,7 +513,11 @@ describe('SessionDetail', () => {
     it('should disable send button when reply is empty', () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -468,7 +529,11 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -483,7 +548,11 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -491,14 +560,21 @@ describe('SessionDetail', () => {
       await user.type(replyTextarea, 'My reply message');
       await user.keyboard('{Meta>}{Enter}{/Meta}');
 
-      expect(mockOnReply).toHaveBeenCalledWith('test-session-1', 'My reply message');
+      expect(mockOnReply).toHaveBeenCalledWith(
+        'test-session-1',
+        'My reply message'
+      );
     });
 
     it('should send reply when Ctrl+Enter is pressed', async () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -506,14 +582,21 @@ describe('SessionDetail', () => {
       await user.type(replyTextarea, 'My reply message');
       await user.keyboard('{Control>}{Enter}{/Control}');
 
-      expect(mockOnReply).toHaveBeenCalledWith('test-session-1', 'My reply message');
+      expect(mockOnReply).toHaveBeenCalledWith(
+        'test-session-1',
+        'My reply message'
+      );
     });
 
     it('should not send reply when Enter is pressed without modifier key', async () => {
       const mockClient = createMockClient();
       const user = userEvent.setup();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -529,7 +612,11 @@ describe('SessionDetail', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
       const { container } = render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
@@ -538,32 +625,50 @@ describe('SessionDetail', () => {
       });
 
       // Find the message container div with rounded-lg class (messages only, not badges)
-      const userMessageContainer = container.querySelector('.rounded-lg.bg-gray-50');
+      const userMessageContainer = container.querySelector(
+        '.rounded-lg.bg-gray-50'
+      );
       expect(userMessageContainer).toBeInTheDocument();
-      expect(userMessageContainer?.textContent).toContain('Hello, please help me');
+      expect(userMessageContainer?.textContent).toContain(
+        'Hello, please help me'
+      );
     });
 
     it('should display assistant messages with correct styling', async () => {
       const mockClient = createMockClient();
       const { container } = render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Sure, I can help you with that!')).toBeInTheDocument();
+        expect(
+          screen.getByText('Sure, I can help you with that!')
+        ).toBeInTheDocument();
       });
 
       // Find the message container div with rounded-lg class (messages only, not badges)
-      const assistantMessageContainer = container.querySelector('.rounded-lg.bg-blue-50');
+      const assistantMessageContainer = container.querySelector(
+        '.rounded-lg.bg-blue-50'
+      );
       expect(assistantMessageContainer).toBeInTheDocument();
-      expect(assistantMessageContainer?.textContent).toContain('Sure, I can help you with that!');
+      expect(assistantMessageContainer?.textContent).toContain(
+        'Sure, I can help you with that!'
+      );
     });
 
     it('should display message types', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} onReply={mockOnReply} />,
+        <SessionDetail
+          session={baseSession}
+          onCreatePR={mockOnCreatePR}
+          onReply={mockOnReply}
+        />,
         { client: mockClient }
       );
 

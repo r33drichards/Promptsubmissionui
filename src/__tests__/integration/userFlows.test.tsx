@@ -23,7 +23,9 @@ describe('User Flows Integration Tests', () => {
       });
 
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Test Session 3 (Completed)')
+      ).toBeInTheDocument();
       expect(mockClient.sessions.list).toHaveBeenCalled();
     });
 
@@ -47,21 +49,28 @@ describe('User Flows Integration Tests', () => {
       ];
 
       vi.mocked(delayedClient.sessions.list).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockSessions), 200))
+        () =>
+          new Promise((resolve) => setTimeout(() => resolve(mockSessions), 200))
       );
 
       render(<App />, { client: delayedClient });
 
       // Loading spinner should be visible - check for the animate-spin class
-      await waitFor(() => {
-        const spinner = document.querySelector('.animate-spin');
-        expect(spinner).toBeInTheDocument();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          const spinner = document.querySelector('.animate-spin');
+          expect(spinner).toBeInTheDocument();
+        },
+        { timeout: 500 }
+      );
 
       // Wait for sessions to load
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText('Test Session 1')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should show empty state when no sessions exist', async () => {
@@ -88,7 +97,9 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      const newTaskButtons = screen.getAllByRole('button', {
+        name: /new task/i,
+      });
       // Click the first one (there might be multiple if the button text appears in other places)
       await user.click(newTaskButtons[0]);
 
@@ -105,7 +116,9 @@ describe('User Flows Integration Tests', () => {
       });
 
       // Click New Task button
-      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      const newTaskButtons = screen.getAllByRole('button', {
+        name: /new task/i,
+      });
       await user.click(newTaskButtons[0]);
 
       // Fill in the form
@@ -131,7 +144,9 @@ describe('User Flows Integration Tests', () => {
       });
 
       // Click New Task button
-      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      const newTaskButtons = screen.getAllByRole('button', {
+        name: /new task/i,
+      });
       await user.click(newTaskButtons[0]);
 
       await waitFor(() => {
@@ -161,7 +176,9 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+      const newTaskButtons = screen.getAllByRole('button', {
+        name: /new task/i,
+      });
       await user.click(newTaskButtons[0]);
 
       // Wait for the form to open
@@ -174,8 +191,12 @@ describe('User Flows Integration Tests', () => {
 
       // Should return to empty state and form should be closed
       await waitFor(() => {
-        expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
-        expect(screen.queryByRole('heading', { name: 'Create New Task' })).not.toBeInTheDocument();
+        expect(
+          screen.getByText('Select a task to view details')
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByRole('heading', { name: 'Create New Task' })
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -224,14 +245,16 @@ describe('User Flows Integration Tests', () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+        expect(
+          screen.getByText('Select a task to view details')
+        ).toBeInTheDocument();
       });
     });
   });
 
   describe('Session Filtering and Search', () => {
     it('should filter sessions by active status', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       const clientWithArchived = createMockBackendClient();
 
       render(<App />, { client: clientWithArchived });
@@ -260,7 +283,9 @@ describe('User Flows Integration Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
         expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-        expect(screen.queryByText('Test Session 3 (Completed)')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Test Session 3 (Completed)')
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -279,7 +304,9 @@ describe('User Flows Integration Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
         expect(screen.queryByText('Test Session 2')).not.toBeInTheDocument();
-        expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Test Session 3 (Completed)')
+        ).toBeInTheDocument();
       });
     });
 
@@ -307,7 +334,9 @@ describe('User Flows Integration Tests', () => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/find a task/i) as HTMLInputElement;
+      const searchInput = screen.getByPlaceholderText(
+        /find a task/i
+      ) as HTMLInputElement;
       await user.type(searchInput, 'Session 2');
 
       await waitFor(() => {
@@ -438,13 +467,17 @@ describe('User Flows Integration Tests', () => {
       });
 
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Test Session 3 (Completed)')
+      ).toBeInTheDocument();
 
       // Verify initial list call was made
       expect(customClient.sessions.list).toHaveBeenCalledTimes(1);
 
       // Find the session item container and hover to show archive button
-      const sessionItem = screen.getByText('Test Session 1').closest('div[class*="group"]');
+      const sessionItem = screen
+        .getByText('Test Session 1')
+        .closest('div[class*="group"]');
       expect(sessionItem).toBeInTheDocument();
 
       await user.hover(sessionItem!);
@@ -457,30 +490,42 @@ describe('User Flows Integration Tests', () => {
 
       // Verify the archive API was called with the correct session ID
       await waitFor(() => {
-        expect(customClient.sessions.archive).toHaveBeenCalledWith('test-session-1');
+        expect(customClient.sessions.archive).toHaveBeenCalledWith(
+          'test-session-1'
+        );
       });
 
       // Verify that sessions.list was called again after archiving (refetch)
-      await waitFor(() => {
-        expect(customClient.sessions.list).toHaveBeenCalledTimes(2);
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(customClient.sessions.list).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 3000 }
+      );
 
       // Verify the archived session is no longer visible in the active view
       // (the default filter is "Active", so archived sessions should be hidden)
-      await waitFor(() => {
-        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Verify other sessions are still visible
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Test Session 3 (Completed)')
+      ).toBeInTheDocument();
     });
 
     it('should handle archive errors gracefully', async () => {
       const user = userEvent.setup();
       const errorClient = createMockBackendClient({
         sessions: {
-          archive: vi.fn().mockRejectedValue(new Error('Failed to archive session')),
+          archive: vi
+            .fn()
+            .mockRejectedValue(new Error('Failed to archive session')),
         },
       });
 
@@ -491,7 +536,9 @@ describe('User Flows Integration Tests', () => {
       });
 
       // Hover over session and click archive
-      const sessionItem = screen.getByText('Test Session 1').closest('div[class*="group"]');
+      const sessionItem = screen
+        .getByText('Test Session 1')
+        .closest('div[class*="group"]');
       await user.hover(sessionItem!);
 
       const archiveButton = within(sessionItem!).getByTitle('Archive');
@@ -499,7 +546,9 @@ describe('User Flows Integration Tests', () => {
 
       // Verify archive was attempted
       await waitFor(() => {
-        expect(errorClient.sessions.archive).toHaveBeenCalledWith('test-session-1');
+        expect(errorClient.sessions.archive).toHaveBeenCalledWith(
+          'test-session-1'
+        );
       });
 
       // Session should still be visible since archive failed
@@ -513,7 +562,9 @@ describe('User Flows Integration Tests', () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Test Session 3 (Completed)')
+        ).toBeInTheDocument();
       });
 
       // Click on completed session
@@ -559,7 +610,9 @@ describe('User Flows Integration Tests', () => {
 
       // Should show Create PR button
       await waitFor(() => {
-        const createPRButton = screen.queryByRole('button', { name: /create pr/i });
+        const createPRButton = screen.queryByRole('button', {
+          name: /create pr/i,
+        });
         if (createPRButton) {
           expect(createPRButton).toBeInTheDocument();
         }
@@ -599,9 +652,15 @@ describe('User Flows Integration Tests', () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /^active$/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /^archived$/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /^active$/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /^archived$/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /^all$/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -617,7 +676,9 @@ describe('User Flows Integration Tests', () => {
       // All active sessions should be visible by default
       expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-      expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Test Session 3 (Completed)')
+      ).toBeInTheDocument();
 
       // Click "All" filter
       const allButton = screen.getByRole('button', { name: /^all$/i });
@@ -627,7 +688,9 @@ describe('User Flows Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Test Session 1')).toBeInTheDocument();
         expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-        expect(screen.getByText('Test Session 3 (Completed)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Test Session 3 (Completed)')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -649,17 +712,21 @@ describe('User Flows Integration Tests', () => {
     });
 
     it('should handle session creation errors', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       const errorClient = createMockBackendClient({
         sessions: {
-          create: vi.fn().mockRejectedValue(new Error('Failed to create session')),
+          create: vi
+            .fn()
+            .mockRejectedValue(new Error('Failed to create session')),
         },
       });
 
       render(<App />, { client: errorClient });
 
       await waitFor(() => {
-        const newTaskButtons = screen.getAllByRole('button', { name: /new task/i });
+        const newTaskButtons = screen.getAllByRole('button', {
+          name: /new task/i,
+        });
         expect(newTaskButtons.length).toBeGreaterThan(0);
       });
 

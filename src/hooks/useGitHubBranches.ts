@@ -10,7 +10,9 @@ import {
 const GITHUB_API_BASE = 'https://api.github.com';
 
 // Validation schema for repository format
-const RepoFormatSchema = z.string().regex(/^[^/]+\/[^/]+$/, 'Invalid repository format. Expected "owner/repo"');
+const RepoFormatSchema = z
+  .string()
+  .regex(/^[^/]+\/[^/]+$/, 'Invalid repository format. Expected "owner/repo"');
 
 async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
   // Parse and validate repository format
@@ -20,13 +22,15 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
 
   const response = await fetch(url, {
     headers: {
-      'Accept': 'application/vnd.github.v3+json',
+      Accept: 'application/vnd.github.v3+json',
     },
   });
 
   if (!response.ok) {
     if (response.status === 403) {
-      throw new Error('GitHub API rate limit exceeded. Please try again later.');
+      throw new Error(
+        'GitHub API rate limit exceeded. Please try again later.'
+      );
     }
     if (response.status === 404) {
       throw new Error('Repository not found or you do not have access to it.');
@@ -48,13 +52,15 @@ async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {
 
   const response = await fetch(url, {
     headers: {
-      'Accept': 'application/vnd.github.v3+json',
+      Accept: 'application/vnd.github.v3+json',
     },
   });
 
   if (!response.ok) {
     if (response.status === 403) {
-      throw new Error('GitHub API rate limit exceeded. Please try again later.');
+      throw new Error(
+        'GitHub API rate limit exceeded. Please try again later.'
+      );
     }
     if (response.status === 404) {
       throw new Error('Repository not found or you do not have access to it.');
@@ -69,7 +75,11 @@ async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {
 }
 
 export function useGitHubBranches(repo: string) {
-  const { data: branchesData, isLoading: isLoadingBranches, error: branchesError } = useQuery({
+  const {
+    data: branchesData,
+    isLoading: isLoadingBranches,
+    error: branchesError,
+  } = useQuery({
     queryKey: ['githubBranches', repo],
     queryFn: () => fetchGitHubBranches(repo),
     enabled: !!repo && repo.includes('/'),
@@ -77,7 +87,11 @@ export function useGitHubBranches(repo: string) {
     retry: 1,
   });
 
-  const { data: repoInfo, isLoading: isLoadingRepo, error: repoError } = useQuery({
+  const {
+    data: repoInfo,
+    isLoading: isLoadingRepo,
+    error: repoError,
+  } = useQuery({
     queryKey: ['githubRepo', repo],
     queryFn: () => fetchGitHubRepoInfo(repo),
     enabled: !!repo && repo.includes('/'),
@@ -86,7 +100,7 @@ export function useGitHubBranches(repo: string) {
   });
 
   return {
-    branches: branchesData?.map(b => b.name) ?? [],
+    branches: branchesData?.map((b) => b.name) ?? [],
     branchData: branchesData ?? [],
     defaultBranch: repoInfo?.default_branch ?? null,
     isLoading: isLoadingBranches || isLoadingRepo,

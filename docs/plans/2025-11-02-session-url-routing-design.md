@@ -37,6 +37,7 @@ Add URL-based navigation for sessions using React Router v6. When users select a
 #### 1. Dependencies
 
 Add `react-router-dom` v6 to package.json:
+
 ```bash
 npm install react-router-dom
 ```
@@ -44,12 +45,13 @@ npm install react-router-dom
 #### 2. Main Entry Point (main.tsx)
 
 Wrap the app with `BrowserRouter`:
+
 ```tsx
 import { BrowserRouter } from 'react-router-dom';
 
 <BrowserRouter>
   <App />
-</BrowserRouter>
+</BrowserRouter>;
 ```
 
 #### 3. App Component Refactor
@@ -63,10 +65,11 @@ const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 // After: URL-driven
 const { id } = useParams();
 const navigate = useNavigate();
-const selectedSession = id ? sessions.find(s => s.id === id) : null;
+const selectedSession = id ? sessions.find((s) => s.id === id) : null;
 ```
 
 **Add route definitions:**
+
 ```tsx
 <Routes>
   <Route path="/" element={<AppLayout />} />
@@ -75,6 +78,7 @@ const selectedSession = id ? sessions.find(s => s.id === id) : null;
 ```
 
 **Invalid session handling:**
+
 ```tsx
 useEffect(() => {
   if (id && sessions.length > 0 && !selectedSession) {
@@ -87,6 +91,7 @@ useEffect(() => {
 #### 4. Navigation Updates
 
 **Session selection (SessionListItem):**
+
 ```tsx
 // Before
 onClick={() => onSelect(session)}
@@ -96,21 +101,23 @@ onClick={() => navigate(`/session/${session.id}`)}
 ```
 
 **New session creation:**
+
 ```tsx
 onSuccess: (newSession) => {
   navigate(`/session/${newSession.id}`);
   setIsCreatingTask(false);
   setParentForNewTask(null);
-}
+};
 ```
 
 **Archive session:**
+
 ```tsx
 onSuccess: () => {
   if (selectedSession?.id === sessionId) {
     navigate('/');
   }
-}
+};
 ```
 
 #### 5. Component Structure
@@ -136,11 +143,11 @@ BrowserRouter (main.tsx)
 
 ## Error Handling
 
-| Scenario | Behavior |
-|----------|----------|
-| Invalid UUID in URL | Show "Session not found" toast, redirect to `/` |
-| Session archived while viewing | Redirect to `/` on archive success |
-| Direct link before data loads | Wait for `isLoadingSessions` to complete, then validate |
+| Scenario                       | Behavior                                                |
+| ------------------------------ | ------------------------------------------------------- |
+| Invalid UUID in URL            | Show "Session not found" toast, redirect to `/`         |
+| Session archived while viewing | Redirect to `/` on archive success                      |
+| Direct link before data loads  | Wait for `isLoadingSessions` to complete, then validate |
 
 ## Testing Considerations
 

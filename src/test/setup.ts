@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { expect as _expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import React from 'react';
 
@@ -31,7 +31,7 @@ vi.mock('../components/MonacoEditor', () => ({
       onChange: (e: any) => onChange(e.target.value),
       placeholder,
       required: true,
-    })
+    }),
 }));
 
 // Cleanup after each test
@@ -42,7 +42,7 @@ afterEach(() => {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

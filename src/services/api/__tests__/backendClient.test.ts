@@ -66,7 +66,10 @@ describe('BackendClient API Boundaries', () => {
         headers: {},
       });
 
-      await backendClient.sessions.list({ archived: true, parentId: 'parent-1' });
+      await backendClient.sessions.list({
+        archived: true,
+        parentId: 'parent-1',
+      });
 
       expect(mockHttpClient.get).toHaveBeenCalledWith('/api/sessions', {
         params: { archived: true, parentId: 'parent-1' },
@@ -74,9 +77,13 @@ describe('BackendClient API Boundaries', () => {
     });
 
     it('should handle network errors', async () => {
-      vi.mocked(mockHttpClient.get).mockRejectedValue(new Error('Network error'));
+      vi.mocked(mockHttpClient.get).mockRejectedValue(
+        new Error('Network error')
+      );
 
-      await expect(backendClient.sessions.list()).rejects.toThrow('Network error');
+      await expect(backendClient.sessions.list()).rejects.toThrow(
+        'Network error'
+      );
     });
   });
 
@@ -114,7 +121,9 @@ describe('BackendClient API Boundaries', () => {
 
       const session = await backendClient.sessions.get('session-1');
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/sessions/session-1');
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/api/sessions/session-1'
+      );
       expect(session).toMatchObject({
         id: 'session-1',
         title: 'Test Session',
@@ -136,7 +145,9 @@ describe('BackendClient API Boundaries', () => {
       const error = new Error('Not found');
       vi.mocked(mockHttpClient.get).mockRejectedValue(error);
 
-      await expect(backendClient.sessions.get('nonexistent')).rejects.toThrow('Not found');
+      await expect(backendClient.sessions.get('nonexistent')).rejects.toThrow(
+        'Not found'
+      );
     });
   });
 
@@ -181,7 +192,9 @@ describe('BackendClient API Boundaries', () => {
     });
 
     it('should handle validation errors', async () => {
-      vi.mocked(mockHttpClient.post).mockRejectedValue(new Error('Invalid data'));
+      vi.mocked(mockHttpClient.post).mockRejectedValue(
+        new Error('Invalid data')
+      );
 
       await expect(
         backendClient.sessions.create({
@@ -222,11 +235,14 @@ describe('BackendClient API Boundaries', () => {
         prUrl: 'https://github.com/test/repo/pull/1',
       });
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith('/api/sessions/session-1', {
-        title: 'Updated Title',
-        inbox_status: 'completed',
-        pr_url: 'https://github.com/test/repo/pull/1',
-      });
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
+        '/api/sessions/session-1',
+        {
+          title: 'Updated Title',
+          inbox_status: 'completed',
+          pr_url: 'https://github.com/test/repo/pull/1',
+        }
+      );
       expect(updated.title).toBe('Updated Title');
       expect(updated.inboxStatus).toBe('completed');
     });
@@ -245,7 +261,9 @@ describe('BackendClient API Boundaries', () => {
 
       await backendClient.sessions.delete('session-1');
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith('/api/sessions/session-1');
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        '/api/sessions/session-1'
+      );
     });
   });
 
@@ -274,7 +292,9 @@ describe('BackendClient API Boundaries', () => {
 
       const archived = await backendClient.sessions.archive('session-1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions/session-1/archive');
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/api/sessions/session-1/archive'
+      );
       expect(archived.sessionStatus).toBe('Archived');
     });
   });
@@ -304,7 +324,9 @@ describe('BackendClient API Boundaries', () => {
 
       const unarchived = await backendClient.sessions.unarchive('session-1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions/session-1/unarchive');
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/api/sessions/session-1/unarchive'
+      );
       expect(unarchived.sessionStatus).toBe('Active');
     });
   });
@@ -337,7 +359,9 @@ describe('BackendClient API Boundaries', () => {
 
       const messages = await backendClient.messages.list('session-1');
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/sessions/session-1/messages');
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/api/sessions/session-1/messages'
+      );
       expect(messages).toHaveLength(2);
       expect(messages[0]).toMatchObject({
         id: 'msg-1',
@@ -365,11 +389,17 @@ describe('BackendClient API Boundaries', () => {
 
       vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-      const message = await backendClient.messages.create('session-1', 'New message');
+      const message = await backendClient.messages.create(
+        'session-1',
+        'New message'
+      );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith('/api/sessions/session-1/messages', {
-        content: 'New message',
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/api/sessions/session-1/messages',
+        {
+          content: 'New message',
+        }
+      );
       expect(message).toMatchObject({
         id: 'msg-new',
         content: 'New message',

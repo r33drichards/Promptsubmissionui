@@ -67,7 +67,9 @@ export function useCreateMessage(
     mutationFn: (content: string) => api.messages.create(sessionId, content),
     onMutate: async (content) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.messages.list(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.messages.list(sessionId),
+      });
 
       // Snapshot the previous messages
       const previousMessages = queryClient.getQueryData<Message[]>(
@@ -83,27 +85,34 @@ export function useCreateMessage(
       };
 
       if (previousMessages) {
-        queryClient.setQueryData<Message[]>(queryKeys.messages.list(sessionId), [
-          ...previousMessages,
-          optimisticMessage,
-        ]);
+        queryClient.setQueryData<Message[]>(
+          queryKeys.messages.list(sessionId),
+          [...previousMessages, optimisticMessage]
+        );
       }
 
       return { previousMessages, optimisticMessage };
     },
     onSuccess: (newMessage, content, context) => {
       // Replace optimistic message with real one
-      const messages = queryClient.getQueryData<Message[]>(queryKeys.messages.list(sessionId));
+      const messages = queryClient.getQueryData<Message[]>(
+        queryKeys.messages.list(sessionId)
+      );
 
       if (messages && context?.optimisticMessage) {
         const updatedMessages = messages.map((msg) =>
           msg.id === context.optimisticMessage.id ? newMessage : msg
         );
-        queryClient.setQueryData(queryKeys.messages.list(sessionId), updatedMessages);
+        queryClient.setQueryData(
+          queryKeys.messages.list(sessionId),
+          updatedMessages
+        );
       }
 
       // Also invalidate session details as the message count may have changed
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(sessionId),
+      });
 
       toast.success('Message sent');
 
@@ -112,7 +121,10 @@ export function useCreateMessage(
     onError: (error, content, context) => {
       // Rollback to previous messages on error
       if (context?.previousMessages) {
-        queryClient.setQueryData(queryKeys.messages.list(sessionId), context.previousMessages);
+        queryClient.setQueryData(
+          queryKeys.messages.list(sessionId),
+          context.previousMessages
+        );
       }
 
       console.error('Failed to send message:', error);
@@ -122,7 +134,9 @@ export function useCreateMessage(
     },
     onSettled: () => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.messages.list(sessionId),
+      });
     },
     ...options,
   });
@@ -168,7 +182,8 @@ export function usePrompts(
  */
 export function useSessionConversation(sessionId: string) {
   const api = useApi();
-  const { data: prompts = [], isLoading: promptsLoading } = usePrompts(sessionId);
+  const { data: prompts = [], isLoading: promptsLoading } =
+    usePrompts(sessionId);
 
   // Fetch messages for ALL prompts in parallel
   const messageQueries = useQueries({

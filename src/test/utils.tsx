@@ -31,7 +31,11 @@ interface TestProvidersProps {
 /**
  * Test wrapper that provides all necessary contexts
  */
-export function TestProviders({ children, client, queryClient }: TestProvidersProps) {
+export function TestProviders({
+  children,
+  client,
+  queryClient,
+}: TestProvidersProps) {
   const testQueryClient = queryClient || createTestQueryClient();
 
   return (

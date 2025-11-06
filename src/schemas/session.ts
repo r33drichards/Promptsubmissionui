@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 // Enums - matching existing types
-export const InboxStatusSchema = z.enum(['pending', 'in-progress', 'completed', 'failed']);
+export const InboxStatusSchema = z.enum([
+  'pending',
+  'in-progress',
+  'completed',
+  'failed',
+]);
 export const SessionStatusSchema = z.enum(['Active', 'Archived']);
 
 // Message schema - matching existing Message interface
@@ -23,10 +28,12 @@ export const SessionSchema = z.object({
   sessionStatus: SessionStatusSchema,
   createdAt: z.coerce.date(), // Coerce strings to Date objects
   prUrl: z.string().optional(),
-  diffStats: z.object({
-    additions: z.number(),
-    deletions: z.number(),
-  }).optional(),
+  diffStats: z
+    .object({
+      additions: z.number(),
+      deletions: z.number(),
+    })
+    .optional(),
   messages: z.array(MessageSchema).nullable(),
   children: z.lazy(() => z.array(SessionSchema)).optional(),
   parentId: z.string().nullable(),
@@ -40,7 +47,10 @@ export const SessionsArraySchema = z.array(SessionSchema);
 // Create Session Data schema (for API requests)
 export const CreateSessionDataSchema = z.object({
   repo: z.string().trim().min(1, 'Repository is required to create a session'),
-  targetBranch: z.string().trim().min(1, 'Target branch is required to create a session'),
+  targetBranch: z
+    .string()
+    .trim()
+    .min(1, 'Target branch is required to create a session'),
   messages: z.any().optional(), // Backend expects flexible format
   parentId: z.string().nullable().optional(),
 });
@@ -50,10 +60,12 @@ export const UpdateSessionDataSchema = z.object({
   title: z.string().optional(),
   inboxStatus: InboxStatusSchema.optional(),
   prUrl: z.string().optional(),
-  diffStats: z.object({
-    additions: z.number(),
-    deletions: z.number(),
-  }).optional(),
+  diffStats: z
+    .object({
+      additions: z.number(),
+      deletions: z.number(),
+    })
+    .optional(),
   sessionStatus: SessionStatusSchema.optional(),
   repo: z.string().optional(),
   branch: z.string().optional(),

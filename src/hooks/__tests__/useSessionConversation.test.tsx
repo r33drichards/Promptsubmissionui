@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestProviders, createTestQueryClient } from '@/test/utils';
-import { useSessionConversation, useMessages, usePrompts } from '../useMessages';
+import {
+  useSessionConversation,
+  useMessages,
+  usePrompts,
+} from '../useMessages';
 import { BackendClient } from '@/services/api/types';
 import {
   mockSession,
@@ -38,8 +42,10 @@ describe('useSessionConversation', () => {
       messages: {
         // Return different messages for different prompts
         list: vi.fn().mockImplementation((promptId: string) => {
-          if (promptId === 'prompt-1') return Promise.resolve(mockMessagesForPrompt1);
-          if (promptId === 'prompt-2') return Promise.resolve(mockMessagesForPrompt2);
+          if (promptId === 'prompt-1')
+            return Promise.resolve(mockMessagesForPrompt1);
+          if (promptId === 'prompt-2')
+            return Promise.resolve(mockMessagesForPrompt2);
           return Promise.resolve(mockBackendMessages);
         }),
         create: vi.fn().mockResolvedValue({
@@ -60,7 +66,10 @@ describe('useSessionConversation', () => {
 
   describe('Hook Integration', () => {
     it('should fetch both messages and prompts for a session', async () => {
-      const { result } = renderHook(() => useSessionConversation('session-123'), { wrapper });
+      const { result } = renderHook(
+        () => useSessionConversation('session-123'),
+        { wrapper }
+      );
 
       expect(result.current.isLoading).toBe(true);
 
@@ -69,7 +78,9 @@ describe('useSessionConversation', () => {
       });
 
       // We should have messages from both prompts (2 + 2 = 4 total)
-      expect(result.current.messages).toHaveLength(mockMessagesForPrompt1.length + mockMessagesForPrompt2.length);
+      expect(result.current.messages).toHaveLength(
+        mockMessagesForPrompt1.length + mockMessagesForPrompt2.length
+      );
       expect(result.current.prompts).toHaveLength(mockPrompts.length);
 
       // CORRECT BEHAVIOR: messages.list should be called with promptId, not sessionId
@@ -130,14 +141,22 @@ describe('useSessionConversation', () => {
       ];
 
       mockClient.prompts.list = vi.fn().mockResolvedValue(multiPrompts);
-      mockClient.messages.list = vi.fn().mockImplementation((promptId: string) => {
-        if (promptId === 'prompt-1') return Promise.resolve(messagesForPrompt1);
-        if (promptId === 'prompt-2') return Promise.resolve(messagesForPrompt2);
-        if (promptId === 'prompt-3') return Promise.resolve(messagesForPrompt3);
-        return Promise.resolve([]);
-      });
+      mockClient.messages.list = vi
+        .fn()
+        .mockImplementation((promptId: string) => {
+          if (promptId === 'prompt-1')
+            return Promise.resolve(messagesForPrompt1);
+          if (promptId === 'prompt-2')
+            return Promise.resolve(messagesForPrompt2);
+          if (promptId === 'prompt-3')
+            return Promise.resolve(messagesForPrompt3);
+          return Promise.resolve([]);
+        });
 
-      const { result } = renderHook(() => useSessionConversation('session-123'), { wrapper });
+      const { result } = renderHook(
+        () => useSessionConversation('session-123'),
+        { wrapper }
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -154,16 +173,25 @@ describe('useSessionConversation', () => {
 
       // Verify all messages from all prompts are combined
       expect(result.current.messages).toHaveLength(3);
-      expect(result.current.messages.some(m => m.uuid === 'msg-1-1')).toBe(true);
-      expect(result.current.messages.some(m => m.uuid === 'msg-2-1')).toBe(true);
-      expect(result.current.messages.some(m => m.uuid === 'msg-3-1')).toBe(true);
+      expect(result.current.messages.some((m) => m.uuid === 'msg-1-1')).toBe(
+        true
+      );
+      expect(result.current.messages.some((m) => m.uuid === 'msg-2-1')).toBe(
+        true
+      );
+      expect(result.current.messages.some((m) => m.uuid === 'msg-3-1')).toBe(
+        true
+      );
     });
 
     it('should return empty arrays when no messages or prompts exist', async () => {
       mockClient.messages.list = vi.fn().mockResolvedValue(mockEmptyMessages);
       mockClient.prompts.list = vi.fn().mockResolvedValue(mockEmptyPrompts);
 
-      const { result } = renderHook(() => useSessionConversation('session-123'), { wrapper });
+      const { result } = renderHook(
+        () => useSessionConversation('session-123'),
+        { wrapper }
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -191,9 +219,9 @@ describe('useSessionConversation', () => {
 
       // Change session ID
       mockClient.messages.list = vi.fn().mockResolvedValue([]);
-      mockClient.prompts.list = vi.fn().mockResolvedValue([
-        { id: 'prompt-456', session_id: 'session-456' },
-      ]);
+      mockClient.prompts.list = vi
+        .fn()
+        .mockResolvedValue([{ id: 'prompt-456', session_id: 'session-456' }]);
 
       rerender({ sessionId: 'session-456' });
 
@@ -205,7 +233,9 @@ describe('useSessionConversation', () => {
 
   describe('useMessages Hook', () => {
     it('should fetch messages with polling enabled', async () => {
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -220,7 +250,9 @@ describe('useSessionConversation', () => {
       const messagesWithSystem = [...mockBackendMessages, mockSystemMessage];
       mockClient.messages.list = vi.fn().mockResolvedValue(messagesWithSystem);
 
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -242,7 +274,9 @@ describe('useSessionConversation', () => {
     it('should handle complex messages with tool use and tool results', async () => {
       mockClient.messages.list = vi.fn().mockResolvedValue(mockComplexMessages);
 
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -271,10 +305,16 @@ describe('useSessionConversation', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockClient.messages.list = vi.fn().mockRejectedValue(new Error('API Error'));
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockClient.messages.list = vi
+        .fn()
+        .mockRejectedValue(new Error('API Error'));
 
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true);
@@ -287,7 +327,9 @@ describe('useSessionConversation', () => {
 
   describe('usePrompts Hook', () => {
     it('should fetch prompts for a session', async () => {
-      const { result } = renderHook(() => usePrompts('session-123'), { wrapper });
+      const { result } = renderHook(() => usePrompts('session-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -300,7 +342,9 @@ describe('useSessionConversation', () => {
     it('should return empty array when no prompts exist', async () => {
       mockClient.prompts.list = vi.fn().mockResolvedValue([]);
 
-      const { result } = renderHook(() => usePrompts('session-123'), { wrapper });
+      const { result } = renderHook(() => usePrompts('session-123'), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -312,11 +356,16 @@ describe('useSessionConversation', () => {
 
   describe('Message Content Types', () => {
     it('should handle text content in messages', async () => {
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       const messages = result.current.data || [];
       const firstMessage = messages[0];
@@ -326,11 +375,16 @@ describe('useSessionConversation', () => {
     });
 
     it('should handle usage information in messages', async () => {
-      const { result } = renderHook(() => useMessages('prompt-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('prompt-123'), {
+        wrapper,
+      });
 
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       const messages = result.current.data || [];
       const messageWithUsage = messages.find((m) => m.message?.usage);
@@ -338,17 +392,24 @@ describe('useSessionConversation', () => {
       expect(messageWithUsage).toBeDefined();
       expect(messageWithUsage?.message?.usage).toHaveProperty('input_tokens');
       expect(messageWithUsage?.message?.usage).toHaveProperty('output_tokens');
-      expect(messageWithUsage?.message?.usage).toHaveProperty('cache_read_input_tokens');
+      expect(messageWithUsage?.message?.usage).toHaveProperty(
+        'cache_read_input_tokens'
+      );
     });
   });
 
   describe('API Parameter Testing - Bug Demonstration', () => {
     it('should call messages.list with sessionId (CURRENT BUGGY BEHAVIOR)', async () => {
-      const { result } = renderHook(() => useMessages('session-123'), { wrapper });
+      const { result } = renderHook(() => useMessages('session-123'), {
+        wrapper,
+      });
 
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       // This demonstrates the bug - we're calling with sessionId
       expect(mockClient.messages.list).toHaveBeenCalledWith('session-123');
@@ -357,11 +418,16 @@ describe('useSessionConversation', () => {
     });
 
     it('should call prompts.list with sessionId (CORRECT BEHAVIOR)', async () => {
-      const { result } = renderHook(() => usePrompts('session-123'), { wrapper });
+      const { result } = renderHook(() => usePrompts('session-123'), {
+        wrapper,
+      });
 
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       // Prompts correctly use sessionId
       expect(mockClient.prompts.list).toHaveBeenCalledWith('session-123');
@@ -370,11 +436,17 @@ describe('useSessionConversation', () => {
     it('demonstrates the correct flow: session → prompts → messages', async () => {
       // This test demonstrates how it SHOULD work:
       // 1. Get prompts for a session
-      const { result: promptsResult } = renderHook(() => usePrompts('session-123'), { wrapper });
+      const { result: promptsResult } = renderHook(
+        () => usePrompts('session-123'),
+        { wrapper }
+      );
 
-      await waitFor(() => {
-        expect(promptsResult.current.isSuccess).toBe(true);
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(promptsResult.current.isSuccess).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       const prompts = promptsResult.current.data || [];
       expect(prompts.length).toBeGreaterThan(0);

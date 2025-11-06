@@ -68,7 +68,9 @@ describe('CreateTaskForm - Bypass Attempts', () => {
       sessionStatus: 'Active' as const,
     };
 
-    render(<CreateTaskForm {...defaultProps} parentSession={parentWithEmptyBranch} />);
+    render(
+      <CreateTaskForm {...defaultProps} parentSession={parentWithEmptyBranch} />
+    );
 
     // Fill in the prompt
     const promptInput = screen.getByLabelText(/prompt/i);
@@ -93,7 +95,10 @@ describe('CreateTaskForm - Bypass Attempts', () => {
     expect(form).toBeInTheDocument();
 
     // Dispatch a submit event directly to the form (bypassing button disabled state)
-    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+    const submitEvent = new Event('submit', {
+      bubbles: true,
+      cancelable: true,
+    });
     form?.dispatchEvent(submitEvent);
 
     // The form's handleSubmit should prevent submission
@@ -120,7 +125,10 @@ describe('CreateTaskForm - Bypass Attempts', () => {
     // Try to force submit by dispatching form submit event
     const form = promptInput.closest('form');
     if (form) {
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      const submitEvent = new Event('submit', {
+        bubbles: true,
+        cancelable: true,
+      });
       form.dispatchEvent(submitEvent);
     }
 
@@ -129,7 +137,9 @@ describe('CreateTaskForm - Bypass Attempts', () => {
   });
 
   it('should log what actually gets submitted when form state has empty values', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const onSubmitSpy = vi.fn();
 
     render(<CreateTaskForm {...defaultProps} onSubmit={onSubmitSpy} />);
@@ -151,8 +161,8 @@ describe('CreateTaskForm - Bypass Attempts', () => {
       expect(consoleErrorSpy).toHaveBeenCalled();
 
       // Find the call that matches our validation error
-      const validationErrorCall = consoleErrorSpy.mock.calls.find(call =>
-        call[0] === '[CreateTaskForm] Validation failed:'
+      const validationErrorCall = consoleErrorSpy.mock.calls.find(
+        (call) => call[0] === '[CreateTaskForm] Validation failed:'
       );
 
       expect(validationErrorCall).toBeDefined();
