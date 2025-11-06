@@ -1,28 +1,18 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
-
-export interface GitHubRepo {
-  id: number;
-  full_name: string;
-  name: string;
-  owner: {
-    login: string;
-  };
-  description: string | null;
-  html_url: string;
-  stargazers_count: number;
-}
-
-interface GitHubSearchResponse {
-  items: GitHubRepo[];
-  total_count: number;
-}
+import { z } from 'zod';
+import { GitHubRepo, GitHubSearchResponseSchema } from '../schemas/github';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
+// Schema for validating search query
+const SearchQuerySchema = z.string().min(2, 'Search query must be at least 2 characters').trim();
+
 async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
-  const searchQuery = encodeURIComponent(query.trim());
+  // Parse and validate search query
+  const validatedQuery = SearchQuerySchema.parse(query);
+  const searchQuery = encodeURIComponent(validatedQuery);
   const url = `${GITHUB_API_BASE}/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=20`;
 
   const response = await fetch(url, {
@@ -38,7 +28,9 @@ async function searchGitHubRepositories(query: string): Promise<GitHubRepo[]> {
     throw new Error(`GitHub API error: ${response.statusText}`);
   }
 
-  const data: GitHubSearchResponse = await response.json();
+  const rawData = await response.json();
+  // Parse and validate the response data (parse don't validate)
+  const data = GitHubSearchResponseSchema.parse(rawData);
   return data.items;
 }
 

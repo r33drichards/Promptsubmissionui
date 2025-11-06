@@ -1,28 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
-
-export interface GitHubBranch {
-  name: string;
-  commit: {
-    sha: string;
-    url: string;
-  };
-  protected: boolean;
-}
-
-export interface GitHubRepoInfo {
-  default_branch: string;
-  name: string;
-  full_name: string;
-}
+import { z } from 'zod';
+import {
+  GitHubBranch,
+  GitHubRepoInfo,
+  GitHubBranchesArraySchema,
+  GitHubRepoInfoSchema,
+} from '../schemas/github';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
-async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
-  if (!repo || !repo.includes('/')) {
-    throw new Error('Invalid repository format. Expected "owner/repo"');
-  }
+// Validation schema for repository format
+const RepoFormatSchema = z.string().regex(/^[^/]+\/[^/]+$/, 'Invalid repository format. Expected "owner/repo"');
 
-  const url = `${GITHUB_API_BASE}/repos/${repo}/branches?per_page=100`;
+async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
+  // Parse and validate repository format
+  const validatedRepo = RepoFormatSchema.parse(repo);
+
+  const url = `${GITHUB_API_BASE}/repos/${validatedRepo}/branches?per_page=100`;
 
   const response = await fetch(url, {
     headers: {
@@ -40,16 +34,17 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
     throw new Error(`GitHub API error: ${response.statusText}`);
   }
 
-  const data: GitHubBranch[] = await response.json();
+  const rawData = await response.json();
+  // Parse and validate the response data (parse don't validate)
+  const data = GitHubBranchesArraySchema.parse(rawData);
   return data;
 }
 
 async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {
-  if (!repo || !repo.includes('/')) {
-    throw new Error('Invalid repository format. Expected "owner/repo"');
-  }
+  // Parse and validate repository format
+  const validatedRepo = RepoFormatSchema.parse(repo);
 
-  const url = `${GITHUB_API_BASE}/repos/${repo}`;
+  const url = `${GITHUB_API_BASE}/repos/${validatedRepo}`;
 
   const response = await fetch(url, {
     headers: {
@@ -67,7 +62,9 @@ async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {
     throw new Error(`GitHub API error: ${response.statusText}`);
   }
 
-  const data: GitHubRepoInfo = await response.json();
+  const rawData = await response.json();
+  // Parse and validate the response data (parse don't validate)
+  const data = GitHubRepoInfoSchema.parse(rawData);
   return data;
 }
 

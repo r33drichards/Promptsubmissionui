@@ -6,6 +6,13 @@ import {
   UpdateSessionData,
   ListSessionsParams,
 } from './types';
+import {
+  SessionSchema,
+  SessionsArraySchema,
+  MessageSchema,
+  MessagesArraySchema,
+  CreateSessionDataSchema,
+} from '../../schemas/session';
 
 /**
  * Implementation of BackendClient using the @wholelottahoopla/prompt-backend-client package.
@@ -38,21 +45,16 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Validate required fields
-      if (!data.repo || data.repo.trim() === '') {
-        throw new Error('Repository is required to create a session');
-      }
-      if (!data.targetBranch || data.targetBranch.trim() === '') {
-        throw new Error('Target branch is required to create a session');
-      }
+      // Parse and validate input data using Zod (parse don't validate)
+      const validatedData = CreateSessionDataSchema.parse(data);
 
       // Create the session - backend will auto-generate title, branch, and set defaults
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
-          repo: data.repo,
-          targetBranch: data.targetBranch,
-          messages: data.messages || null,
-          parent: data.parentId || null,
+          repo: validatedData.repo,
+          targetBranch: validatedData.targetBranch,
+          messages: validatedData.messages || null,
+          parent: validatedData.parentId || null,
         },
       });
 
@@ -189,7 +191,8 @@ export class PromptBackendClient implements BackendClient {
     const branch = session.branch || sbxConfig.branch || '';
     const targetBranch = session.targetBranch || sbxConfig.targetBranch || 'main';
 
-    return {
+    // Prepare session data for validation
+    const sessionData = {
       id: session.id || '',
       title: session.title || '',
       repo,
@@ -197,14 +200,17 @@ export class PromptBackendClient implements BackendClient {
       targetBranch,
       messages: session.messages ? this.deserializeMessages(session.messages) : null,
       inboxStatus: this.unmapInboxStatus(session.inboxStatus || 'Pending'),
-      sbxConfig: session.sbxConfig || null,
+      sessionStatus: session.sessionStatus || 'Active',
       parentId: session.parent || null,
-      createdAt: session.createdAt ? new Date(session.createdAt) : new Date(),
+      createdAt: session.createdAt || new Date().toISOString(),
       diffStats: session.diffStats,
       prUrl: session.prUrl,
-      sessionStatus: session.sessionStatus || 'Active',
       children: session.children ? this.deserializeSessions(session.children) : undefined,
+      sbxConfig: session.sbxConfig || null,
     };
+
+    // Parse and validate the session data (parse don't validate)
+    return SessionSchema.parse(sessionData);
   }
 
   /**
@@ -218,12 +224,15 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single message
    */
   private deserializeMessage(message: any): Message {
-    return {
+    const messageData = {
       id: message.id || '',
       role: message.role || 'user',
       content: message.content || '',
-      createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+      createdAt: message.createdAt || new Date().toISOString(),
     };
+
+    // Parse and validate the message data (parse don't validate)
+    return MessageSchema.parse(messageData);
   }
 
   /**
@@ -233,6 +242,15 @@ export class PromptBackendClient implements BackendClient {
     if (!Array.isArray(messages)) {
       return [];
     }
-    return messages.map((message) => this.deserializeMessage(message));
+
+    // Parse and validate the entire array (parse don't validate)
+    return MessagesArraySchema.parse(
+      messages.map((message) => ({
+        id: message.id || '',
+        role: message.role || 'user',
+        content: message.content || '',
+        createdAt: message.createdAt || new Date().toISOString(),
+      }))
+    );
   }
 }

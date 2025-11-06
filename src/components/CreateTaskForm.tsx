@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { z } from 'zod';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,12 +11,22 @@ import { MonacoEditor } from './MonacoEditor';
 import { useGitHubBranches } from '../hooks';
 import { X, Loader2 } from 'lucide-react';
 
+// Zod schema for form validation
+const createTaskFormSchema = z.object({
+  repo: z.string().trim().min(1, 'Repository is required'),
+  targetBranch: z.string().trim().min(1, 'Target branch is required'),
+  prompt: z.string().trim().min(1, 'Prompt is required'),
+});
+
 interface CreateTaskFormProps {
   onSubmit: (task: CreateSessionData) => void;
   onCancel: () => void;
   parentSession?: Session | null;
   repositories: string[];
 }
+
+// Infer the type from the schema
+type CreateTaskFormData = z.infer<typeof createTaskFormSchema>;
 
 export function CreateTaskForm({
   onSubmit,
@@ -26,6 +37,7 @@ export function CreateTaskForm({
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
   const [prompt, setPrompt] = useState('');
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateTaskFormData, string>>>({});
 
   // Fetch branches from GitHub API based on selected repository
   const { branches, defaultBranch, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
@@ -41,27 +53,44 @@ export function CreateTaskForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields before submission
-    if (!prompt.trim()) {
-      console.error('[CreateTaskForm] Prompt is required');
-      return;
-    }
-    if (!repo.trim()) {
-      console.error('[CreateTaskForm] Repository is required');
-      return;
-    }
-    if (!targetBranch.trim()) {
-      console.error('[CreateTaskForm] Target branch is required');
+    // Parse and validate form data using Zod (parse don't validate)
+    const result = createTaskFormSchema.safeParse({
+      repo,
+      targetBranch,
+      prompt,
+    });
+
+    if (!result.success) {
+      // Extract field-specific errors from Zod validation
+      const fieldErrors: Partial<Record<keyof CreateTaskFormData, string>> = {};
+
+      // Zod errors are in the 'issues' property
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof CreateTaskFormData;
+        if (field && !fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      });
+
+      setErrors(fieldErrors);
+      console.error('[CreateTaskForm] Validation failed:', fieldErrors);
       return;
     }
 
-    console.log('[CreateTaskForm] Submitting with:', { repo, targetBranch, prompt });
+    // Clear errors on successful validation
+    setErrors({});
+
+    // Use the parsed (validated and typed) data
+    const validatedData = result.data;
+    console.log('[CreateTaskForm] Submitting with:', validatedData);
+
     onSubmit({
-      repo,
-      targetBranch,
-      messages: { content: prompt }, // Send as JSON object to match backend API
+      repo: validatedData.repo,
+      targetBranch: validatedData.targetBranch,
+      messages: { content: validatedData.prompt }, // Send as JSON object to match backend API
       parentId: parentSession?.id || null,
     });
+
     setRepo('');
     setTargetBranch('main');
     setPrompt('');
@@ -90,6 +119,10 @@ export function CreateTaskForm({
                 onChange={(newRepo) => {
                   console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
                   setRepo(newRepo);
+                  // Clear error when user starts typing
+                  if (errors.repo) {
+                    setErrors((prev) => ({ ...prev, repo: undefined }));
+                  }
                   // Reset targetBranch when repo changes so useEffect can set it to the new repo's default
                   if (!parentSession) {
                     setTargetBranch('');
@@ -97,6 +130,9 @@ export function CreateTaskForm({
                 }}
                 repositories={repositories}
               />
+              {errors.repo && (
+                <div className="text-xs text-red-600">{errors.repo}</div>
+              )}
             </div>
 
             <div className="flex-1 space-y-2">
@@ -118,10 +154,19 @@ export function CreateTaskForm({
                   <BranchCombobox
                     id="targetBranch"
                     value={targetBranch}
-                    onChange={setTargetBranch}
+                    onChange={(newBranch) => {
+                      setTargetBranch(newBranch);
+                      // Clear error when user starts typing
+                      if (errors.targetBranch) {
+                        setErrors((prev) => ({ ...prev, targetBranch: undefined }));
+                      }
+                    }}
                     branches={branches}
                     disabled={isLoadingBranches || !repo}
                   />
+                  {errors.targetBranch && (
+                    <div className="text-xs text-red-600">{errors.targetBranch}</div>
+                  )}
                   {isLoadingBranches && repo && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Loader2 className="w-3 h-3 animate-spin" />
@@ -148,9 +193,18 @@ export function CreateTaskForm({
             <Label htmlFor="prompt">Prompt</Label>
             <MonacoEditor
               value={prompt}
-              onChange={(value) => setPrompt(value || '')}
+              onChange={(value) => {
+                setPrompt(value || '');
+                // Clear error when user starts typing
+                if (errors.prompt) {
+                  setErrors((prev) => ({ ...prev, prompt: undefined }));
+                }
+              }}
               placeholder="Describe what you want Claude Code to do..."
             />
+            {errors.prompt && (
+              <div className="text-xs text-red-600">{errors.prompt}</div>
+            )}
           </div>
         </div>
 
