@@ -86,7 +86,9 @@ describe('PromptId Bug in Message Listing', () => {
 
       const result = await backendClient.messages.list('prompt-123');
       expect(result).toHaveLength(1);
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-123' });
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId: 'prompt-123',
+      });
     });
   });
 
