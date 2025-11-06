@@ -30,7 +30,7 @@ export interface BackendClient {
 
   // Message operations
   messages: {
-    list(sessionId: string): Promise<BackendMessage[]>;
+    list(promptId: string): Promise<BackendMessage[]>;
     create(sessionId: string, content: string): Promise<Message>;
   };
 }

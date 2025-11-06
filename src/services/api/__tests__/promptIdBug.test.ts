@@ -27,75 +27,68 @@ describe('PromptId Bug in Message Listing', () => {
     (backendClient as any).api = mockApiClient;
   });
 
-  describe('Current Buggy Behavior', () => {
-    it('demonstrates the bug: messages.list() is called with sessionId but API expects promptId', async () => {
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
-
-      // Setup mock to show what the API expects
-      mockApiClient.handlersMessagesList.mockRejectedValue(
-        new Error(
-          "Required parameter 'promptId' was null or undefined when calling handlersMessagesList()"
-        )
-      );
-
-      // This is the current code behavior - passing sessionId
-      const sessionId = 'session-123';
-
-      // The backend client catches the error and returns empty array
-      const result = await backendClient.messages.list(sessionId);
-
-      // Result is empty because API call failed
-      expect(result).toEqual([]);
-
-      // But the API was called with sessionId (which is wrong)
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
-        sessionId,
-      });
-
-      consoleErrorSpy.mockRestore();
-    });
-
-    it('shows that handlersMessagesList is called with wrong parameter name', async () => {
+  describe('Fixed Behavior', () => {
+    it('correctly calls API with promptId parameter', async () => {
       mockApiClient.handlersMessagesList.mockResolvedValue({ messages: [] });
 
-      const sessionId = 'session-123';
-      await backendClient.messages.list(sessionId);
+      // Now passing promptId correctly
+      const promptId = 'prompt-123';
 
-      // Currently called with { sessionId: 'session-123' }
-      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
-        sessionId,
-      });
+      // The backend client should return empty array successfully
+      const result = await backendClient.messages.list(promptId);
 
-      // But should be called with { promptId: 'prompt-xxx' }
-      // expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-xxx' });
-    });
-
-    it('demonstrates the API call stack that leads to the error', async () => {
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
-
-      // The call chain:
-      // 1. SessionDetail component renders
-      // 2. useSessionConversation hook is called with session.id
-      // 3. useMessages hook is called with sessionId
-      // 4. api.messages.list(sessionId) is called
-      // 5. PromptBackendClient.messages.list(sessionId) is called
-      // 6. this.api.handlersMessagesList({ sessionId }) is called
-      // 7. Backend API receives sessionId but expects promptId
-      // 8. Error: "Required parameter 'promptId' was null or undefined"
-      // 9. Error is caught and empty array is returned
-
-      mockApiClient.handlersMessagesList.mockRejectedValue(
-        new Error("Required parameter 'promptId' was null or undefined")
-      );
-
-      const result = await backendClient.messages.list('session-123');
+      // Result is empty array as expected
       expect(result).toEqual([]);
 
-      consoleErrorSpy.mockRestore();
+      // API was called with promptId (which is correct)
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId,
+      });
+    });
+
+    it('shows that handlersMessagesList is now called with correct parameter name', async () => {
+      mockApiClient.handlersMessagesList.mockResolvedValue({ messages: [] });
+
+      const promptId = 'prompt-123';
+      await backendClient.messages.list(promptId);
+
+      // Now correctly called with { promptId: 'prompt-123' }
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId,
+      });
+    });
+
+    it('demonstrates the correct API call stack', async () => {
+      // The correct call chain:
+      // 1. SessionDetail component renders
+      // 2. useSessionConversation hook is called with session.id
+      // 3. usePrompts hook fetches prompts for the session
+      // 4. useMessages hook is called with promptId
+      // 5. api.messages.list(promptId) is called
+      // 6. PromptBackendClient.messages.list(promptId) is called
+      // 7. this.api.handlersMessagesList({ promptId }) is called
+      // 8. Backend API receives promptId and returns messages successfully
+
+      mockApiClient.handlersMessagesList.mockResolvedValue({
+        messages: [
+          {
+            type: 'user',
+            uuid: 'msg-1',
+            message: {
+              role: 'user',
+              content: [{ type: 'text', text: 'Hello' }],
+            },
+            session_id: 'session-123',
+            parent_tool_use_id: null,
+          },
+        ],
+      });
+
+      const result = await backendClient.messages.list('prompt-123');
+      expect(result).toHaveLength(1);
+      expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
+        promptId: 'prompt-123',
+      });
     });
   });
 
@@ -185,18 +178,15 @@ describe('PromptId Bug in Message Listing', () => {
         sessionId: 'session-123',
       });
 
-      // Messages.list SHOULD use promptId but currently uses sessionId
-      // This is the bug!
+      // Messages.list now correctly uses promptId
+      // The bug has been fixed!
       mockApiClient.handlersMessagesList.mockClear();
 
-      // The backend client passes sessionId
-      await backendClient.messages.list('session-123');
+      // The backend client now passes promptId
+      await backendClient.messages.list('prompt-123');
       expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({
-        sessionId: 'session-123',
+        promptId: 'prompt-123',
       });
-
-      // But the API expects promptId
-      // expect(mockApiClient.handlersMessagesList).toHaveBeenCalledWith({ promptId: 'prompt-123' });
     });
   });
 
