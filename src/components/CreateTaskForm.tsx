@@ -87,7 +87,7 @@ export function CreateTaskForm({
     onSubmit({
       repo: validatedData.repo,
       targetBranch: validatedData.targetBranch,
-      messages: { content: validatedData.prompt }, // Send as JSON object to match backend API
+      messages: [{ content: validatedData.prompt }], // Send as array to match backend API
       parentId: parentSession?.id || null,
     });
 
