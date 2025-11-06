@@ -1,4 +1,10 @@
-import { DefaultApi, Configuration, SessionStatus as SDKSessionStatus } from '@wholelottahoopla/prompt-backend-client';
+import {
+  DefaultApi,
+  Configuration,
+  SessionStatus as SDKSessionStatus,
+  CreateSessionWithPromptInput,
+  CreateSessionWithPromptOutput,
+} from '@wholelottahoopla/prompt-backend-client';
 import { Session, Message, SessionStatus } from '../../types/session';
 import {
   BackendClient,
@@ -48,12 +54,35 @@ export class PromptBackendClient implements BackendClient {
       // Parse and validate input data using Zod (parse don't validate)
       const validatedData = CreateSessionDataSchema.parse(data);
 
-      // Create the session - backend will auto-generate title, branch, and set defaults
+      // Use the new combined endpoint if messages are provided
+      if (validatedData.messages && validatedData.messages.length > 0) {
+        console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
+        const response = await this.api.handlersSessionsCreateWithPrompt({
+          createSessionWithPromptInput: {
+            repo: validatedData.repo,
+            targetBranch: validatedData.targetBranch,
+            messages: validatedData.messages,
+            parentId: validatedData.parentId || null,
+          },
+        });
+
+        console.log('[PromptBackendClient] CreateWithPrompt response:', response);
+
+        if (!response || !response.sessionId) {
+          console.error('[PromptBackendClient] Invalid response structure:', response);
+          throw new Error('Failed to create session with prompt: Invalid response from backend');
+        }
+
+        // Fetch the full session data
+        return this.sessions.get(response.sessionId);
+      }
+
+      // Otherwise, use the regular create endpoint
+      console.log('[PromptBackendClient] Creating session without prompt');
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
           repo: validatedData.repo,
           targetBranch: validatedData.targetBranch,
-          messages: validatedData.messages || null,
           parent: validatedData.parentId || null,
         },
       });
@@ -72,24 +101,18 @@ export class PromptBackendClient implements BackendClient {
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Updating session:', id, 'with data:', data);
 
-      // Get the current session first to merge with update data
-      const currentSession = await this.sessions.get(id);
-      console.log('[PromptBackendClient] Current session:', currentSession);
-
-      const updateInput = {
+      // Build update input with only the fields that are provided or need to be updated
+      const updateInput: any = {
         id,
-        inboxStatus: data.inboxStatus
-          ? this.mapInboxStatus(data.inboxStatus)
-          : this.mapInboxStatus(currentSession.inboxStatus),
-        messages: currentSession.messages,
-        sbxConfig: currentSession.sbxConfig,
-        parent: currentSession.parentId,
-        title: data.title !== undefined ? data.title : currentSession.title,
-        sessionStatus: data.sessionStatus as SDKSessionStatus | undefined,
-        repo: data.repo !== undefined ? data.repo : currentSession.repo || null,
-        branch: data.branch !== undefined ? data.branch : currentSession.branch || null,
-        targetBranch: data.targetBranch !== undefined ? data.targetBranch : currentSession.targetBranch || null,
       };
+
+      // Only include fields that are explicitly provided in the update data
+      if (data.title !== undefined) updateInput.title = data.title;
+      if (data.sessionStatus !== undefined) updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
+      if (data.repo !== undefined) updateInput.repo = data.repo;
+      if (data.branch !== undefined) updateInput.branch = data.branch;
+      if (data.targetBranch !== undefined) updateInput.targetBranch = data.targetBranch;
+
       console.log('[PromptBackendClient] Update input:', updateInput);
 
       const response = await this.api.handlersSessionsUpdate({
@@ -125,56 +148,36 @@ export class PromptBackendClient implements BackendClient {
 
   messages = {
     list: async (sessionId: string): Promise<Message[]> => {
-      const response = await this.api.handlersItemsList();
-      // The items API might be used for messages
-      // This needs to be adjusted based on actual backend implementation
-      return this.deserializeMessages(response.items || []);
+      // TODO: The new API structure has Prompts and Messages as separate entities.
+      // Messages belong to Prompts, which belong to Sessions.
+      // To implement this properly, we need to:
+      // 1. List all prompts for the session
+      // 2. For each prompt, list its messages
+      // For now, we'll return an empty array as a placeholder
+      console.warn('[PromptBackendClient] messages.list is not yet implemented for the new API structure');
+      return [];
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
-      const response = await this.api.handlersItemsCreate({
-        createInput: {
-          inboxStatus: 'Pending' as any,
-          messages: content,
-          sbxConfig: null,
-          parent: sessionId,
-        },
-      });
-      // This is a placeholder - actual implementation depends on backend
-      return {
-        id: response.item?.id || '',
-        role: 'user',
-        content,
-        createdAt: new Date(),
-      };
+      // TODO: The new API structure requires creating a Prompt first, then adding Messages to it.
+      // This needs to be redesigned based on the app's requirements.
+      console.error('[PromptBackendClient] messages.create is not yet implemented for the new API structure');
+      throw new Error('messages.create is not yet implemented for the new API structure. Please use the Prompts API.');
     },
   };
 
   /**
-   * Maps our local InboxStatus to the backend's InboxStatus format
+   * Maps SessionStatus to our local InboxStatus format
+   * Note: The new API uses SessionStatus instead of InboxStatus
    */
-  private mapInboxStatus(status: string): string {
-    const statusMap: Record<string, string> = {
-      'pending': 'Pending',
-      'in-progress': 'Active',
-      'completed': 'Completed',
-      'failed': 'Completed',
-      'archived': 'Archived',
-    };
-    return statusMap[status] || 'Pending';
-  }
-
-  /**
-   * Maps backend InboxStatus to our local format
-   */
-  private unmapInboxStatus(status: string): 'pending' | 'in-progress' | 'completed' | 'failed' {
+  private sessionStatusToInboxStatus(sessionStatus: string): 'pending' | 'in-progress' | 'completed' | 'failed' {
     const statusMap: Record<string, 'pending' | 'in-progress' | 'completed' | 'failed'> = {
-      'Pending': 'pending',
       'Active': 'in-progress',
-      'Completed': 'completed',
       'Archived': 'completed',
+      'Completed': 'completed',
+      // Add other mappings as needed based on SessionStatus enum
     };
-    return statusMap[status] || 'pending';
+    return statusMap[sessionStatus] || 'pending';
   }
 
   /**
@@ -191,6 +194,9 @@ export class PromptBackendClient implements BackendClient {
     const branch = session.branch || sbxConfig.branch || '';
     const targetBranch = session.targetBranch || sbxConfig.targetBranch || 'main';
 
+    // Map sessionStatus to inboxStatus for backwards compatibility
+    const inboxStatus = this.sessionStatusToInboxStatus(session.sessionStatus || 'Active');
+
     // Prepare session data for validation
     const sessionData = {
       id: session.id || '',
@@ -198,8 +204,8 @@ export class PromptBackendClient implements BackendClient {
       repo,
       branch,
       targetBranch,
-      messages: session.messages ? this.deserializeMessages(session.messages) : null,
-      inboxStatus: this.unmapInboxStatus(session.inboxStatus || 'Pending'),
+      messages: null, // Messages are now separate entities in the new API
+      inboxStatus,
       sessionStatus: session.sessionStatus || 'Active',
       parentId: session.parent || null,
       createdAt: session.createdAt || new Date().toISOString(),
