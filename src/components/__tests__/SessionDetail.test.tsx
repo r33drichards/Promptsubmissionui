@@ -58,6 +58,15 @@ describe('SessionDetail', () => {
     sessionStatus: 'Active',
   };
 
+  // Mock prompt for the session
+  const mockPrompt = {
+    id: 'prompt-1',
+    sessionId: 'test-session-1',
+    content: 'Test prompt',
+    createdAt: new Date('2025-01-01T09:00:00Z'),
+    status: 'completed' as const,
+  };
+
   // Create mock API client
   const createMockClient = (messages: BackendMessage[] = mockBackendMessages): BackendClient => ({
     sessions: {
@@ -70,7 +79,7 @@ describe('SessionDetail', () => {
       unarchive: vi.fn().mockResolvedValue(baseSession),
     },
     prompts: {
-      list: vi.fn().mockResolvedValue([]),
+      list: vi.fn().mockResolvedValue([mockPrompt]),
     },
     messages: {
       list: vi.fn().mockResolvedValue(messages),
