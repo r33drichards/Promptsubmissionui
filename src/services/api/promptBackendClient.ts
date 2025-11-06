@@ -1,4 +1,10 @@
-import { DefaultApi, Configuration, SessionStatus as SDKSessionStatus } from '@wholelottahoopla/prompt-backend-client';
+import {
+  DefaultApi,
+  Configuration,
+  SessionStatus as SDKSessionStatus,
+  CreateSessionWithPromptInput,
+  CreateSessionWithPromptOutput,
+} from '@wholelottahoopla/prompt-backend-client';
 import { Session, Message, SessionStatus } from '../../types/session';
 import {
   BackendClient,
@@ -48,7 +54,31 @@ export class PromptBackendClient implements BackendClient {
       // Parse and validate input data using Zod (parse don't validate)
       const validatedData = CreateSessionDataSchema.parse(data);
 
-      // Create the session - backend will auto-generate title, branch, and set defaults
+      // Use the new combined endpoint if messages are provided
+      if (validatedData.messages && validatedData.messages.length > 0) {
+        console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
+        const response = await this.api.handlersSessionsCreateWithPrompt({
+          createSessionWithPromptInput: {
+            repo: validatedData.repo,
+            targetBranch: validatedData.targetBranch,
+            messages: validatedData.messages,
+            parentId: validatedData.parentId || null,
+          },
+        });
+
+        console.log('[PromptBackendClient] CreateWithPrompt response:', response);
+
+        if (!response || !response.sessionId) {
+          console.error('[PromptBackendClient] Invalid response structure:', response);
+          throw new Error('Failed to create session with prompt: Invalid response from backend');
+        }
+
+        // Fetch the full session data
+        return this.sessions.get(response.sessionId);
+      }
+
+      // Otherwise, use the regular create endpoint
+      console.log('[PromptBackendClient] Creating session without prompt');
       const response = await this.api.handlersSessionsCreate({
         createSessionInput: {
           repo: validatedData.repo,
