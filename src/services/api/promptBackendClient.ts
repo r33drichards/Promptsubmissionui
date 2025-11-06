@@ -51,7 +51,7 @@ export class PromptBackendClient implements BackendClient {
     create: async (data: CreateSessionData): Promise<Session> => {
       console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Parse and validate input data using Zod (parse don't validate)
+      // Parse input data using Zod 
       const validatedData = CreateSessionDataSchema.parse(data);
       console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
       const response = await this.api.handlersSessionsCreateWithPrompt({
