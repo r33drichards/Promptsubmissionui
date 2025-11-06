@@ -160,10 +160,10 @@ export class PromptBackendClient implements BackendClient {
   };
 
   messages = {
-    list: async (sessionId: string): Promise<BackendMessage[]> => {
+    list: async (promptId: string): Promise<BackendMessage[]> => {
       try {
-        // Fetch all messages for the session
-        const response = await this.api.handlersMessagesList({ sessionId });
+        // Fetch all messages for the prompt
+        const response = await this.api.handlersMessagesList({ promptId });
         return this.deserializeBackendMessages(response.messages || []);
       } catch (error) {
         console.error('[PromptBackendClient] Failed to list messages:', error);
