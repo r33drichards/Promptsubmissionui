@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // GitHub Branch schema
 export const GitHubBranchSchema = z.object({

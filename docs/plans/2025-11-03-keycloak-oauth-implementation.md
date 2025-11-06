@@ -7,6 +7,7 @@
 **Architecture:** Frontend uses @axa-fr/react-oidc for OIDC Authorization Code + PKCE flow. Backend validates JWT tokens via Rocket request guards using Keycloak's JWKS. Sessions table extended with user_id column for user-scoping.
 
 **Tech Stack:**
+
 - Frontend: React, @axa-fr/react-oidc, TanStack Query, Vite
 - Backend: Rust, Rocket, jsonwebtoken, SeaORM, PostgreSQL
 
@@ -15,6 +16,7 @@
 ## Prerequisites
 
 **Keycloak Setup Required:**
+
 1. Create client in Keycloak oauth2-realm (if not exists)
 2. Client ID: `prompt-submission-ui`
 3. Client Type: Public (no secret)
@@ -23,6 +25,7 @@
 6. Web Origins: `http://localhost:5173`
 
 **Working Directories:**
+
 - Frontend: `/Users/robertwendt/workspace/Promptsubmissionui/.worktrees/oauth`
 - Backend: `/Users/robertwendt/workspace/prompt-backend/.worktrees/oauth`
 
@@ -33,6 +36,7 @@
 ### Task 1.1: Add JWT Dependencies to Cargo.toml
 
 **Files:**
+
 - Modify: `Cargo.toml`
 
 **Step 1: Add jsonwebtoken and reqwest dependencies**
@@ -47,6 +51,7 @@ reqwest = { version = "0.11", features = ["json"] }
 **Step 2: Verify dependencies compile**
 
 Run in backend worktree:
+
 ```bash
 cd /Users/robertwendt/workspace/prompt-backend/.worktrees/oauth
 nix develop --command cargo build
@@ -68,6 +73,7 @@ git commit -m "chore: add jsonwebtoken and reqwest dependencies for OAuth"
 ### Task 2.1: Create Migration for user_id Column
 
 **Files:**
+
 - Create: `migration/src/m20251103_000001_add_user_id_to_sessions.rs`
 - Modify: `migration/src/lib.rs`
 
@@ -167,6 +173,7 @@ git commit -m "feat: add user_id column migration for sessions table"
 ### Task 3.1: Add user_id Field to Session Entity
 
 **Files:**
+
 - Modify: `src/entities/session.rs`
 
 **Step 1: Add user_id field to Model struct**
@@ -201,6 +208,7 @@ git commit -m "feat: add user_id field to Session entity"
 ### Task 4.1: Create JWKS Fetcher Module
 
 **Files:**
+
 - Create: `src/auth/mod.rs`
 - Create: `src/auth/jwks.rs`
 - Modify: `src/lib.rs`
@@ -351,6 +359,7 @@ git commit -m "feat: add JWKS fetcher for JWT validation"
 ### Task 4.2: Create AuthenticatedUser Request Guard
 
 **Files:**
+
 - Create: `src/auth/guard.rs`
 
 **Step 1: Create request guard**
@@ -453,6 +462,7 @@ git commit -m "feat: add AuthenticatedUser request guard for JWT validation"
 ### Task 5.1: Create Health Handler
 
 **Files:**
+
 - Create: `src/handlers/health.rs`
 - Modify: `src/handlers/mod.rs`
 
@@ -510,6 +520,7 @@ git commit -m "feat: add health endpoint without authentication"
 ### Task 6.1: Initialize JWKS Cache and Mount Health Endpoint
 
 **Files:**
+
 - Modify: `src/main.rs`
 
 **Step 1: Import auth modules**
@@ -607,6 +618,7 @@ git commit -m "feat: initialize JWKS cache and mount health endpoint"
 ### Task 7.1: Update Session Handlers with AuthenticatedUser Guard
 
 **Files:**
+
 - Modify: `src/handlers/sessions.rs`
 
 **Step 1: Add AuthenticatedUser to create handler**
@@ -821,6 +833,7 @@ git commit -m "feat: add JWT authentication to all session endpoints"
 ### Task 8.1: Update .env.example with Keycloak Variables
 
 **Files:**
+
 - Modify: `.env` (if exists) or create `.env.example`
 
 **Step 1: Add Keycloak configuration**
@@ -908,6 +921,7 @@ Expected: 401 Unauthorized with error message
 **Step 4: Verify server logs show JWKS fetched**
 
 Check terminal output for:
+
 ```
 Fetching JWKS from Keycloak...
 JWKS fetched successfully
@@ -920,6 +934,7 @@ JWKS fetched successfully
 ### Task 10.1: Install @axa-fr/react-oidc
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `package-lock.json`
 
@@ -954,6 +969,7 @@ git commit -m "chore: add @axa-fr/react-oidc dependency"
 ### Task 11.1: Add OIDC Environment Variables
 
 **Files:**
+
 - Create or modify: `.env.development`
 - Create or modify: `.env.production`
 
@@ -1003,6 +1019,7 @@ git commit -m "config: add OIDC environment variables"
 ### Task 12.1: Create Authentication Callback Components
 
 **Files:**
+
 - Create: `src/pages/AuthCallback.tsx`
 - Create: `src/pages/SilentCallback.tsx`
 
@@ -1072,6 +1089,7 @@ git commit -m "feat: add OIDC authentication callback components"
 ### Task 13.1: Wrap App with OidcProvider
 
 **Files:**
+
 - Modify: `src/main.tsx`
 
 **Step 1: Add OIDC imports**
@@ -1079,9 +1097,9 @@ git commit -m "feat: add OIDC authentication callback components"
 Add to imports in `src/main.tsx`:
 
 ```typescript
-import { OidcProvider } from '@axa-fr/react-oidc';
-import { AuthCallback } from './pages/AuthCallback';
-import { SilentCallback } from './pages/SilentCallback';
+import { OidcProvider } from "@axa-fr/react-oidc";
+import { AuthCallback } from "./pages/AuthCallback";
+import { SilentCallback } from "./pages/SilentCallback";
 ```
 
 **Step 2: Create OIDC configuration object**
@@ -1095,7 +1113,7 @@ const oidcConfiguration = {
   redirect_uri: import.meta.env.VITE_OIDC_REDIRECT_URI,
   silent_redirect_uri: import.meta.env.VITE_OIDC_SILENT_REDIRECT_URI,
   scope: import.meta.env.VITE_OIDC_SCOPE,
-  response_type: 'code',
+  response_type: "code",
   automaticSilentRenew: true,
   loadUserInfo: true,
 };
@@ -1160,6 +1178,7 @@ git commit -m "feat: wrap app with OidcProvider for authentication"
 ### Task 14.1: Modify ApiProvider to Inject Tokens
 
 **Files:**
+
 - Modify: `src/providers/ApiProvider.tsx`
 
 **Step 1: Add OIDC imports**
@@ -1167,7 +1186,7 @@ git commit -m "feat: wrap app with OidcProvider for authentication"
 Add to imports:
 
 ```typescript
-import { useOidcAccessToken } from '@axa-fr/react-oidc';
+import { useOidcAccessToken } from "@axa-fr/react-oidc";
 ```
 
 **Step 2: Update ApiProvider to pass token to client**
@@ -1207,7 +1226,7 @@ export class PromptBackendClient implements BackendClient {
   private getAccessToken: () => string | null;
 
   constructor(baseUrl?: string, getAccessToken?: () => string | null) {
-    this.baseUrl = baseUrl || 'http://localhost:8000';
+    this.baseUrl = baseUrl || "http://localhost:8000";
     this.getAccessToken = getAccessToken || (() => null);
 
     const config = new Configuration({
@@ -1222,7 +1241,7 @@ export class PromptBackendClient implements BackendClient {
     const token = this.getAccessToken();
     if (token) {
       return {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       };
     }
     return {};
@@ -1289,6 +1308,7 @@ git commit -m "feat: inject OAuth access token into API requests"
 ### Task 15.1: Wrap App Routes with OidcSecure
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 **Step 1: Import OidcSecure**
@@ -1296,7 +1316,7 @@ git commit -m "feat: inject OAuth access token into API requests"
 Add to imports:
 
 ```typescript
-import { OidcSecure } from '@axa-fr/react-oidc';
+import { OidcSecure } from "@axa-fr/react-oidc";
 ```
 
 **Step 2: Wrap AppLayout with OidcSecure**
@@ -1339,6 +1359,7 @@ git commit -m "feat: protect app routes with OidcSecure"
 ### Task 16.1: Add User Menu with Logout
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 **Step 1: Import OIDC hooks**
@@ -1346,8 +1367,8 @@ git commit -m "feat: protect app routes with OidcSecure"
 Add to imports:
 
 ```typescript
-import { useOidc } from '@axa-fr/react-oidc';
-import { LogOut, User } from 'lucide-react';
+import { useOidc } from "@axa-fr/react-oidc";
+import { LogOut, User } from "lucide-react";
 ```
 
 **Step 2: Add user menu to AppLayout**
@@ -1431,6 +1452,7 @@ git commit -m "feat: add logout button to header"
 **Step 1: Start backend with Keycloak configuration**
 
 Ensure `.env` has:
+
 ```bash
 KEYCLOAK_ISSUER=https://keycloak-production-1100.up.railway.app/realms/oauth2-realm
 KEYCLOAK_JWKS_URI=https://keycloak-production-1100.up.railway.app/realms/oauth2-realm/protocol/openid-connect/certs
@@ -1438,6 +1460,7 @@ DATABASE_URL=<your-db-url>
 ```
 
 Start backend:
+
 ```bash
 cd /Users/robertwendt/workspace/prompt-backend/.worktrees/oauth
 nix develop --command cargo run -- --server
@@ -1481,6 +1504,7 @@ npm run dev
 **Step 7: Document any issues**
 
 Create a test report documenting:
+
 - What works
 - What doesn't work
 - Any error messages
@@ -1493,6 +1517,7 @@ Create a test report documenting:
 ### Task 18.1: Update README Files
 
 **Files:**
+
 - Modify: `README.md` in backend
 - Modify: `README.md` in frontend
 
@@ -1500,7 +1525,7 @@ Create a test report documenting:
 
 Add section to backend README:
 
-```markdown
+````markdown
 ## OAuth Authentication
 
 This application uses Keycloak for OAuth 2.0 authentication.
@@ -1511,6 +1536,7 @@ This application uses Keycloak for OAuth 2.0 authentication.
 KEYCLOAK_ISSUER=https://keycloak-production-1100.up.railway.app/realms/oauth2-realm
 KEYCLOAK_JWKS_URI=https://keycloak-production-1100.up.railway.app/realms/oauth2-realm/protocol/openid-connect/certs
 ```
+````
 
 ### Protected Endpoints
 
@@ -1519,7 +1545,8 @@ All `/sessions/*` endpoints require a valid JWT Bearer token.
 ### Unprotected Endpoints
 
 - `GET /health` - Health check endpoint
-```
+
+````
 
 **Step 2: Add OAuth setup instructions to frontend README**
 
@@ -1540,15 +1567,17 @@ VITE_OIDC_CLIENT_ID=prompt-submission-ui
 VITE_OIDC_REDIRECT_URI=http://localhost:5173/authentication/callback
 VITE_OIDC_SCOPE=openid profile email
 VITE_BACKEND_URL=http://localhost:8000
-```
+````
 
 ### Keycloak Client Setup
 
 Ensure your Keycloak client is configured with:
+
 - Client Type: Public
 - Valid Redirect URIs: `http://localhost:5173/authentication/callback`
 - Web Origins: `http://localhost:5173`
-```
+
+````
 
 **Step 3: Commit README updates**
 
@@ -1556,9 +1585,10 @@ In backend:
 ```bash
 git add README.md
 git commit -m "docs: add OAuth authentication documentation"
-```
+````
 
 In frontend:
+
 ```bash
 git add README.md
 git commit -m "docs: add OAuth authentication setup instructions"
@@ -1589,6 +1619,7 @@ Expected: All tests pass
 **Step 3: Update snapshot if needed**
 
 If OpenAPI snapshot test fails:
+
 ```bash
 cd /Users/robertwendt/workspace/prompt-backend/.worktrees/oauth
 nix develop --command cargo insta review
@@ -1713,16 +1744,19 @@ Update each PR description with link to the other PR.
 ### Backend Issues
 
 **JWKS fetch fails:**
+
 - Verify KEYCLOAK_JWKS_URI is correct
 - Check network connectivity to Keycloak
 - Verify Keycloak is running and accessible
 
 **401 Unauthorized on valid token:**
+
 - Check KEYCLOAK_ISSUER matches token issuer claim
 - Verify token has not expired
 - Check JWKS cache contains correct keys
 
 **Migration fails:**
+
 - Verify DATABASE_URL is correct
 - Check database is running
 - Ensure migrations haven't already run
@@ -1730,16 +1764,19 @@ Update each PR description with link to the other PR.
 ### Frontend Issues
 
 **Redirect loop:**
+
 - Verify VITE_OIDC_REDIRECT_URI matches Keycloak client config
 - Check VITE_OIDC_CLIENT_ID matches Keycloak client
 - Verify Keycloak client is Public type
 
 **Token not included in requests:**
+
 - Check useOidcAccessToken returns valid token
 - Verify ApiProvider passes token to client
 - Check PromptBackendClient getAuthHeaders implementation
 
 **CORS errors:**
+
 - Verify backend CORS allows frontend origin
 - Check Keycloak client Web Origins includes frontend URL
 

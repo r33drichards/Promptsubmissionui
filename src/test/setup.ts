@@ -1,16 +1,16 @@
-import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import React from 'react';
+import "@testing-library/jest-dom";
+import { expect, afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+import React from "react";
 
 // Mock OIDC library for tests
-vi.mock('@axa-fr/react-oidc', () => ({
+vi.mock("@axa-fr/react-oidc", () => ({
   useOidcAccessToken: () => ({
-    accessToken: 'mock-access-token',
+    accessToken: "mock-access-token",
     accessTokenPayload: {
-      sub: 'test-user-id',
-      email: 'test@example.com',
-      name: 'Test User',
+      sub: "test-user-id",
+      email: "test@example.com",
+      name: "Test User",
     },
   }),
   useOidc: () => ({
@@ -23,15 +23,15 @@ vi.mock('@axa-fr/react-oidc', () => ({
 }));
 
 // Mock Monaco Editor component for tests
-vi.mock('../components/MonacoEditor', () => ({
+vi.mock("../components/MonacoEditor", () => ({
   MonacoEditor: ({ value, onChange, placeholder }: any) =>
-    React.createElement('textarea', {
-      'aria-label': 'Prompt',
+    React.createElement("textarea", {
+      "aria-label": "Prompt",
       value,
       onChange: (e: any) => onChange(e.target.value),
       placeholder,
       required: true,
-    })
+    }),
 }));
 
 // Cleanup after each test
@@ -40,9 +40,9 @@ afterEach(() => {
 });
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

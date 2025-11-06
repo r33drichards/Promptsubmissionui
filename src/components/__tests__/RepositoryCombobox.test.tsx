@@ -1,37 +1,42 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { RepositoryCombobox } from '../RepositoryCombobox';
-import { TestProviders } from '../../test/utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { RepositoryCombobox } from "../RepositoryCombobox";
+import { TestProviders } from "../../test/utils";
 
 // Mock GitHub API response
 const mockGitHubResponse = {
   items: [
     {
       id: 1,
-      full_name: 'facebook/react',
-      name: 'react',
-      owner: { login: 'facebook' },
-      description: 'A declarative, efficient, and flexible JavaScript library for building user interfaces.',
-      html_url: 'https://github.com/facebook/react',
+      full_name: "facebook/react",
+      name: "react",
+      owner: { login: "facebook" },
+      description:
+        "A declarative, efficient, and flexible JavaScript library for building user interfaces.",
+      html_url: "https://github.com/facebook/react",
       stargazers_count: 200000,
     },
     {
       id: 2,
-      full_name: 'vercel/next.js',
-      name: 'next.js',
-      owner: { login: 'vercel' },
-      description: 'The React Framework',
-      html_url: 'https://github.com/vercel/next.js',
+      full_name: "vercel/next.js",
+      name: "next.js",
+      owner: { login: "vercel" },
+      description: "The React Framework",
+      html_url: "https://github.com/vercel/next.js",
       stargazers_count: 100000,
     },
   ],
   total_count: 2,
 };
 
-describe('RepositoryCombobox', () => {
+describe("RepositoryCombobox", () => {
   const mockOnChange = vi.fn();
-  const recentRepositories = ['test/repo-1', 'test/repo-2', 'user/another-repo'];
+  const recentRepositories = [
+    "test/repo-1",
+    "test/repo-2",
+    "user/another-repo",
+  ];
 
   beforeEach(() => {
     mockOnChange.mockClear();
@@ -43,8 +48,8 @@ describe('RepositoryCombobox', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render the combobox button', () => {
+  describe("Rendering", () => {
+    it("should render the combobox button", () => {
       render(
         <TestProviders>
           <RepositoryCombobox
@@ -55,11 +60,11 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
-      expect(screen.getByText('Select repository...')).toBeInTheDocument();
+      expect(screen.getByRole("combobox")).toBeInTheDocument();
+      expect(screen.getByText("Select repository...")).toBeInTheDocument();
     });
 
-    it('should display the selected value', () => {
+    it("should display the selected value", () => {
       render(
         <TestProviders>
           <RepositoryCombobox
@@ -70,12 +75,12 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      expect(screen.getByText('test/repo-1')).toBeInTheDocument();
+      expect(screen.getByText("test/repo-1")).toBeInTheDocument();
     });
   });
 
-  describe('Recent Repositories', () => {
-    it('should display recent repositories when opened', async () => {
+  describe("Recent Repositories", () => {
+    it("should display recent repositories when opened", async () => {
       const user = userEvent.setup();
       render(
         <TestProviders>
@@ -88,19 +93,19 @@ describe('RepositoryCombobox', () => {
       );
 
       // Click to open the combobox
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
       // Wait for popover to open and check for recent repos
       await waitFor(() => {
-        expect(screen.getByText('Recent Repositories')).toBeInTheDocument();
+        expect(screen.getByText("Recent Repositories")).toBeInTheDocument();
       });
 
-      expect(screen.getByText('test/repo-1')).toBeInTheDocument();
-      expect(screen.getByText('test/repo-2')).toBeInTheDocument();
-      expect(screen.getByText('user/another-repo')).toBeInTheDocument();
+      expect(screen.getByText("test/repo-1")).toBeInTheDocument();
+      expect(screen.getByText("test/repo-2")).toBeInTheDocument();
+      expect(screen.getByText("user/another-repo")).toBeInTheDocument();
     });
 
-    it('should filter recent repositories based on search', async () => {
+    it("should filter recent repositories based on search", async () => {
       const user = userEvent.setup();
       render(
         <TestProviders>
@@ -112,27 +117,31 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
       // Wait for popover and type in search
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('Search GitHub repositories...')).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText("Search GitHub repositories...")
+        ).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText('Search GitHub repositories...');
-      await user.type(searchInput, 'test');
+      const searchInput = screen.getByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      await user.type(searchInput, "test");
 
       // Should only show repos matching "test"
       await waitFor(() => {
-        expect(screen.getByText('test/repo-1')).toBeInTheDocument();
-        expect(screen.getByText('test/repo-2')).toBeInTheDocument();
+        expect(screen.getByText("test/repo-1")).toBeInTheDocument();
+        expect(screen.getByText("test/repo-2")).toBeInTheDocument();
       });
 
       // Should not show the one that doesn't match
-      expect(screen.queryByText('user/another-repo')).not.toBeInTheDocument();
+      expect(screen.queryByText("user/another-repo")).not.toBeInTheDocument();
     });
 
-    it('should call onChange when a recent repository is selected', async () => {
+    it("should call onChange when a recent repository is selected", async () => {
       const user = userEvent.setup();
       render(
         <TestProviders>
@@ -144,21 +153,21 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
       await waitFor(() => {
-        expect(screen.getByText('test/repo-1')).toBeInTheDocument();
+        expect(screen.getByText("test/repo-1")).toBeInTheDocument();
       });
 
       // Click on a repository
-      await user.click(screen.getByText('test/repo-1'));
+      await user.click(screen.getByText("test/repo-1"));
 
-      expect(mockOnChange).toHaveBeenCalledWith('test/repo-1');
+      expect(mockOnChange).toHaveBeenCalledWith("test/repo-1");
     });
 
-    it('should preserve case when selecting mixed-case repository names', async () => {
+    it("should preserve case when selecting mixed-case repository names", async () => {
       const user = userEvent.setup();
-      const mixedCaseRepos = ['MyOrg/MyRepo', 'AnotherOrg/CoolProject'];
+      const mixedCaseRepos = ["MyOrg/MyRepo", "AnotherOrg/CoolProject"];
 
       render(
         <TestProviders>
@@ -170,22 +179,22 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
       await waitFor(() => {
-        expect(screen.getByText('MyOrg/MyRepo')).toBeInTheDocument();
+        expect(screen.getByText("MyOrg/MyRepo")).toBeInTheDocument();
       });
 
       // Click on a repository with mixed case
-      await user.click(screen.getByText('MyOrg/MyRepo'));
+      await user.click(screen.getByText("MyOrg/MyRepo"));
 
       // Should preserve the original case, not lowercase it
-      expect(mockOnChange).toHaveBeenCalledWith('MyOrg/MyRepo');
+      expect(mockOnChange).toHaveBeenCalledWith("MyOrg/MyRepo");
     });
   });
 
-  describe('GitHub API Search', () => {
-    it('should search GitHub when typing 2+ characters', async () => {
+  describe("GitHub API Search", () => {
+    it("should search GitHub when typing 2+ characters", async () => {
       const user = userEvent.setup();
 
       // Mock successful API response
@@ -204,25 +213,33 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
 
       // Type search query
-      await user.type(searchInput, 'react');
+      await user.type(searchInput, "react");
 
       // Wait for loading state
-      await waitFor(() => {
-        expect(screen.getByText('Searching GitHub...')).toBeInTheDocument();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(screen.getByText("Searching GitHub...")).toBeInTheDocument();
+        },
+        { timeout: 500 }
+      );
 
       // Wait for results
-      await waitFor(() => {
-        expect(screen.getByText('GitHub Repositories')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText("GitHub Repositories")).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
-      expect(screen.getByText('facebook/react')).toBeInTheDocument();
-      expect(screen.getByText('vercel/next.js')).toBeInTheDocument();
+      expect(screen.getByText("facebook/react")).toBeInTheDocument();
+      expect(screen.getByText("vercel/next.js")).toBeInTheDocument();
 
       // Check for descriptions
       expect(screen.getByText(/declarative, efficient/i)).toBeInTheDocument();
@@ -230,16 +247,16 @@ describe('RepositoryCombobox', () => {
 
       // Verify API was called with correct parameters
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('api.github.com/search/repositories?q=react'),
+        expect.stringContaining("api.github.com/search/repositories?q=react"),
         expect.objectContaining({
           headers: {
-            'Accept': 'application/vnd.github.v3+json',
+            Accept: "application/vnd.github.v3+json",
           },
         })
       );
     });
 
-    it('should not search GitHub with less than 2 characters', async () => {
+    it("should not search GitHub with less than 2 characters", async () => {
       const user = userEvent.setup();
 
       render(
@@ -252,28 +269,30 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
 
       // Type only 1 character
-      await user.type(searchInput, 'r');
+      await user.type(searchInput, "r");
 
       // Wait a bit to ensure no API call is made
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       // API should not have been called
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('should handle GitHub API errors', async () => {
+    it("should handle GitHub API errors", async () => {
       const user = userEvent.setup();
 
       // Mock API error
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 403,
-        statusText: 'Forbidden',
+        statusText: "Forbidden",
       });
 
       render(
@@ -286,18 +305,25 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
-      await user.type(searchInput, 'react');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      await user.type(searchInput, "react");
 
       // Wait for error message
-      await waitFor(() => {
-        expect(screen.getByText(/GitHub API rate limit exceeded/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(/GitHub API rate limit exceeded/i)
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
 
-    it('should call onChange when a GitHub repository is selected', async () => {
+    it("should call onChange when a GitHub repository is selected", async () => {
       const user = userEvent.setup();
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -315,23 +341,28 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
-      await user.type(searchInput, 'react');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      await user.type(searchInput, "react");
 
       // Wait for results
-      await waitFor(() => {
-        expect(screen.getByText('facebook/react')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText("facebook/react")).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Click on a GitHub repository
-      await user.click(screen.getByText('facebook/react'));
+      await user.click(screen.getByText("facebook/react"));
 
-      expect(mockOnChange).toHaveBeenCalledWith('facebook/react');
+      expect(mockOnChange).toHaveBeenCalledWith("facebook/react");
     });
 
-    it('should debounce API calls', async () => {
+    it("should debounce API calls", async () => {
       const user = userEvent.setup();
 
       (global.fetch as any).mockResolvedValue({
@@ -349,22 +380,27 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
 
       // Type multiple characters quickly
-      await user.type(searchInput, 'react');
+      await user.type(searchInput, "react");
 
       // Wait for debounce + API call
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(global.fetch).toHaveBeenCalledTimes(1);
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
-  describe('Popover Behavior', () => {
-    it('should close popover after selection', async () => {
+  describe("Popover Behavior", () => {
+    it("should close popover after selection", async () => {
       const user = userEvent.setup();
 
       render(
@@ -377,21 +413,23 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
       await waitFor(() => {
-        expect(screen.getByText('test/repo-1')).toBeInTheDocument();
+        expect(screen.getByText("test/repo-1")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('test/repo-1'));
+      await user.click(screen.getByText("test/repo-1"));
 
       // Popover should close - search input should not be visible
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText('Search GitHub repositories...')).not.toBeInTheDocument();
+        expect(
+          screen.queryByPlaceholderText("Search GitHub repositories...")
+        ).not.toBeInTheDocument();
       });
     });
 
-    it('should clear search when popover closes', async () => {
+    it("should clear search when popover closes", async () => {
       const user = userEvent.setup();
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -410,11 +448,13 @@ describe('RepositoryCombobox', () => {
       );
 
       // Open and search
-      const triggerButton = screen.getByText('Select repository...');
+      const triggerButton = screen.getByText("Select repository...");
       await user.click(triggerButton);
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
-      await user.type(searchInput, 'react');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      await user.type(searchInput, "react");
 
       // Close by clicking the button again
       await user.click(triggerButton);
@@ -423,13 +463,15 @@ describe('RepositoryCombobox', () => {
       await user.click(triggerButton);
 
       // Search input should be empty
-      const newSearchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
-      expect(newSearchInput).toHaveValue('');
+      const newSearchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      expect(newSearchInput).toHaveValue("");
     });
   });
 
-  describe('Empty States', () => {
-    it('should show empty state when no results found', async () => {
+  describe("Empty States", () => {
+    it("should show empty state when no results found", async () => {
       const user = userEvent.setup();
 
       render(
@@ -442,10 +484,12 @@ describe('RepositoryCombobox', () => {
         </TestProviders>
       );
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole("combobox"));
 
-      const searchInput = await screen.findByPlaceholderText('Search GitHub repositories...');
-      await user.type(searchInput, 'xyz');
+      const searchInput = await screen.findByPlaceholderText(
+        "Search GitHub repositories..."
+      );
+      await user.type(searchInput, "xyz");
 
       // Mock empty response
       (global.fetch as any).mockResolvedValueOnce({
@@ -453,9 +497,12 @@ describe('RepositoryCombobox', () => {
         json: async () => ({ items: [], total_count: 0 }),
       });
 
-      await waitFor(() => {
-        expect(screen.getByText('No repository found.')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText("No repository found.")).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 });

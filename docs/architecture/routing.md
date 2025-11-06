@@ -38,7 +38,7 @@ The selected session is **derived from the URL parameter**, not stored in local 
 const { id } = useParams();
 const selectedSession = useMemo(() => {
   if (!id) return null;
-  return sessions.find(s => s.id === id) || null;
+  return sessions.find((s) => s.id === id) || null;
 }, [id, sessions]);
 ```
 
@@ -51,7 +51,7 @@ No local state for `selectedSession` - it's always derived from the URL.
 When a user clicks a session in the sidebar:
 
 ```tsx
-navigate(`/session/${session.id}`)
+navigate(`/session/${session.id}`);
 ```
 
 This updates the URL, which triggers React Router to re-render with the new session ID, which updates the displayed session.
@@ -61,7 +61,7 @@ This updates the URL, which triggers React Router to re-render with the new sess
 When clearing the selection (e.g., after archiving the current session):
 
 ```tsx
-navigate('/')
+navigate("/");
 ```
 
 ### Creating a New Session
@@ -71,7 +71,7 @@ After successful session creation, navigate to the new session:
 ```tsx
 onSuccess: (newSession) => {
   navigate(`/session/${newSession.id}`);
-}
+};
 ```
 
 ### Canceling Task Creation
@@ -102,8 +102,8 @@ Implementation:
 useEffect(() => {
   // Only check after sessions have loaded
   if (!isLoadingSessions && id && sessions.length > 0 && !selectedSession) {
-    toast.error('Session not found');
-    navigate('/');
+    toast.error("Session not found");
+    navigate("/");
   }
 }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 ```
@@ -122,7 +122,11 @@ useEffect(() => {
 All tests wrap components with `MemoryRouter` to provide routing context:
 
 ```tsx
-export function TestProviders({ children, client, queryClient }: TestProvidersProps) {
+export function TestProviders({
+  children,
+  client,
+  queryClient,
+}: TestProvidersProps) {
   const testQueryClient = queryClient || createTestQueryClient();
 
   return (
@@ -142,21 +146,22 @@ Routing-specific tests use `createMemoryRouter` with initial entries to test nav
 ```tsx
 const router = createMemoryRouter(
   [
-    { path: '/', element: <App /> },
-    { path: '/session/:id', element: <App /> },
+    { path: "/", element: <App /> },
+    { path: "/session/:id", element: <App /> },
   ],
-  { initialEntries: ['/'] } // Start at home
+  { initialEntries: ["/"] } // Start at home
 );
 
 render(<RouterProvider router={router} />, { client: mockClient });
 
 // Verify navigation
-expect(router.state.location.pathname).toBe('/session/session-1');
+expect(router.state.location.pathname).toBe("/session/session-1");
 ```
 
 ### Test Coverage
 
 Tests verify:
+
 - URL navigation when clicking sessions
 - Direct navigation to session URLs
 - Invalid session ID redirect

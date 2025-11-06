@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useOidc } from '@axa-fr/react-oidc';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useOidc } from "@axa-fr/react-oidc";
 
 export function AuthCallback() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export function AuthCallback() {
   useEffect(() => {
     if (isAuthenticated) {
       // User is authenticated, redirect to home
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 

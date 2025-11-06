@@ -1,8 +1,8 @@
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { BackendClient } from '../services/api/types';
-import { BackendClientImpl } from '../services/api/backendClient';
-import { PromptBackendClient } from '../services/api/promptBackendClient';
-import { MockHttpClient } from '../services/http/mockClient';
+import React, { createContext, useContext, ReactNode, useMemo } from "react";
+import { BackendClient } from "../services/api/types";
+import { BackendClientImpl } from "../services/api/backendClient";
+import { PromptBackendClient } from "../services/api/promptBackendClient";
+import { MockHttpClient } from "../services/http/mockClient";
 
 /**
  * Context for the Backend API client.
@@ -43,7 +43,7 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
   children,
   client,
   useMock = false,
-  backendUrl
+  backendUrl,
 }) => {
   // Create backend client once - Service Worker handles token injection
   const backendClient = useMemo(() => {
@@ -54,7 +54,9 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
     return new PromptBackendClient(backendUrl);
   }, [client, useMock, backendUrl]);
 
-  return <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>;
+  return (
+    <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>
+  );
 };
 
 /**
@@ -81,7 +83,7 @@ export const useApi = (): BackendClient => {
   const context = useContext(ApiContext);
 
   if (!context) {
-    throw new Error('useApi must be used within an ApiProvider');
+    throw new Error("useApi must be used within an ApiProvider");
   }
 
   return context;

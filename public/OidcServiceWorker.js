@@ -4,11 +4,11 @@ const TOKEN = {
   REFRESH_TOKEN: "REFRESH_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER",
   ACCESS_TOKEN: "ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER",
   NONCE_TOKEN: "NONCE_SECURED_BY_OIDC_SERVICE_WORKER",
-  CODE_VERIFIER: "CODE_VERIFIER_SECURED_BY_OIDC_SERVICE_WORKER"
+  CODE_VERIFIER: "CODE_VERIFIER_SECURED_BY_OIDC_SERVICE_WORKER",
 };
 const TokenRenewMode = {
   access_token_invalid: "access_token_invalid",
-  id_token_invalid: "id_token_invalid"
+  id_token_invalid: "id_token_invalid",
 };
 const openidWellknownUrlEndWith = "/.well-known/openid-configuration";
 function strToUint8(str) {
@@ -19,13 +19,13 @@ function binToUrlBase64(bin) {
 }
 function utf8ToBinaryString(str) {
   const escstr = encodeURIComponent(str);
-  return escstr.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+  return escstr.replace(/%([0-9A-F]{2})/g, function (match, p1) {
     return String.fromCharCode(parseInt(p1, 16));
   });
 }
 const uint8ToUrlBase64 = (uint8) => {
   let bin = "";
-  uint8.forEach(function(code) {
+  uint8.forEach(function (code) {
     bin += String.fromCharCode(code);
   });
   return binToUrlBase64(bin);
@@ -37,54 +37,79 @@ const defaultDemonstratingProofOfPossessionConfiguration = {
   importKeyAlgorithm: {
     name: "ECDSA",
     namedCurve: "P-256",
-    hash: { name: "ES256" }
+    hash: { name: "ES256" },
   },
   signAlgorithm: { name: "ECDSA", hash: { name: "SHA-256" } },
   generateKeyAlgorithm: {
     name: "ECDSA",
-    namedCurve: "P-256"
+    namedCurve: "P-256",
   },
   digestAlgorithm: { name: "SHA-256" },
-  jwtHeaderAlgorithm: "ES256"
+  jwtHeaderAlgorithm: "ES256",
 };
-const sign = (w) => async (jwk, headers, claims, demonstratingProofOfPossessionConfiguration, jwtHeaderType = "dpop+jwt") => {
-  jwk = Object.assign({}, jwk);
-  headers.typ = jwtHeaderType;
-  headers.alg = demonstratingProofOfPossessionConfiguration.jwtHeaderAlgorithm;
-  switch (headers.alg) {
-    case "ES256":
-      headers.jwk = { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
-      break;
-    case "RS256":
-      headers.jwk = { kty: jwk.kty, n: jwk.n, e: jwk.e, kid: headers.kid };
-      break;
-    default:
-      throw new Error("Unknown or not implemented JWS algorithm");
-  }
-  const jws = {
-    // @ts-ignore
-    // JWT "headers" really means JWS "protected headers"
-    protected: strToUrlBase64(JSON.stringify(headers)),
-    // @ts-ignore
-    // JWT "claims" are really a JSON-defined JWS "payload"
-    payload: strToUrlBase64(JSON.stringify(claims))
+const sign =
+  (w) =>
+  async (
+    jwk,
+    headers,
+    claims,
+    demonstratingProofOfPossessionConfiguration,
+    jwtHeaderType = "dpop+jwt"
+  ) => {
+    jwk = Object.assign({}, jwk);
+    headers.typ = jwtHeaderType;
+    headers.alg =
+      demonstratingProofOfPossessionConfiguration.jwtHeaderAlgorithm;
+    switch (headers.alg) {
+      case "ES256":
+        headers.jwk = { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
+        break;
+      case "RS256":
+        headers.jwk = { kty: jwk.kty, n: jwk.n, e: jwk.e, kid: headers.kid };
+        break;
+      default:
+        throw new Error("Unknown or not implemented JWS algorithm");
+    }
+    const jws = {
+      // @ts-ignore
+      // JWT "headers" really means JWS "protected headers"
+      protected: strToUrlBase64(JSON.stringify(headers)),
+      // @ts-ignore
+      // JWT "claims" are really a JSON-defined JWS "payload"
+      payload: strToUrlBase64(JSON.stringify(claims)),
+    };
+    const keyType =
+      demonstratingProofOfPossessionConfiguration.importKeyAlgorithm;
+    const exportable = true;
+    const privileges = ["sign"];
+    const privateKey = await w.crypto.subtle.importKey(
+      "jwk",
+      jwk,
+      keyType,
+      exportable,
+      privileges
+    );
+    const data = strToUint8(`${jws.protected}.${jws.payload}`);
+    const signatureType =
+      demonstratingProofOfPossessionConfiguration.signAlgorithm;
+    const signature = await w.crypto.subtle.sign(
+      signatureType,
+      privateKey,
+      data
+    );
+    jws.signature = uint8ToUrlBase64(new Uint8Array(signature));
+    return `${jws.protected}.${jws.payload}.${jws.signature}`;
   };
-  const keyType = demonstratingProofOfPossessionConfiguration.importKeyAlgorithm;
-  const exportable = true;
-  const privileges = ["sign"];
-  const privateKey = await w.crypto.subtle.importKey("jwk", jwk, keyType, exportable, privileges);
-  const data = strToUint8(`${jws.protected}.${jws.payload}`);
-  const signatureType = demonstratingProofOfPossessionConfiguration.signAlgorithm;
-  const signature = await w.crypto.subtle.sign(signatureType, privateKey, data);
-  jws.signature = uint8ToUrlBase64(new Uint8Array(signature));
-  return `${jws.protected}.${jws.payload}.${jws.signature}`;
-};
 const JWT = { sign };
 const generate = (w) => async (generateKeyAlgorithm) => {
   const keyType = generateKeyAlgorithm;
   const exportable = true;
   const privileges = ["sign", "verify"];
-  const key = await w.crypto.subtle.generateKey(keyType, exportable, privileges);
+  const key = await w.crypto.subtle.generateKey(
+    keyType,
+    exportable,
+    privileges
+  );
   return await w.crypto.subtle.exportKey("jwk", key.privateKey);
 };
 const neuter = (jwk) => {
@@ -95,21 +120,29 @@ const neuter = (jwk) => {
 };
 const EC = {
   generate,
-  neuter
+  neuter,
 };
 const thumbprint = (w) => async (jwk, digestAlgorithm) => {
   let sortedPub;
   switch (jwk.kty) {
     case "EC":
-      sortedPub = '{"crv":"CRV","kty":"EC","x":"X","y":"Y"}'.replace("CRV", jwk.crv).replace("X", jwk.x).replace("Y", jwk.y);
+      sortedPub = '{"crv":"CRV","kty":"EC","x":"X","y":"Y"}'
+        .replace("CRV", jwk.crv)
+        .replace("X", jwk.x)
+        .replace("Y", jwk.y);
       break;
     case "RSA":
-      sortedPub = '{"e":"E","kty":"RSA","n":"N"}'.replace("E", jwk.e).replace("N", jwk.n);
+      sortedPub = '{"e":"E","kty":"RSA","n":"N"}'
+        .replace("E", jwk.e)
+        .replace("N", jwk.n);
       break;
     default:
       throw new Error("Unknown or not implemented JWK type");
   }
-  const hash = await w.crypto.subtle.digest(digestAlgorithm, strToUint8(sortedPub));
+  const hash = await w.crypto.subtle.digest(
+    digestAlgorithm,
+    strToUint8(sortedPub)
+  );
   return uint8ToUrlBase64(new Uint8Array(hash));
 };
 const JWK = { thumbprint };
@@ -117,27 +150,30 @@ const generateJwkAsync = (w) => async (generateKeyAlgorithm) => {
   const jwk = await EC.generate(w)(generateKeyAlgorithm);
   return jwk;
 };
-const generateJwtDemonstratingProofOfPossessionAsync = (w) => (demonstratingProofOfPossessionConfiguration) => async (jwk, method = "POST", url, extrasClaims = {}) => {
-  const claims = {
-    // https://www.rfc-editor.org/rfc/rfc9449.html#name-concept
-    jti: btoa(guid()),
-    htm: method,
-    htu: url,
-    iat: Math.round(Date.now() / 1e3),
-    ...extrasClaims
+const generateJwtDemonstratingProofOfPossessionAsync =
+  (w) =>
+  (demonstratingProofOfPossessionConfiguration) =>
+  async (jwk, method = "POST", url, extrasClaims = {}) => {
+    const claims = {
+      // https://www.rfc-editor.org/rfc/rfc9449.html#name-concept
+      jti: btoa(guid()),
+      htm: method,
+      htu: url,
+      iat: Math.round(Date.now() / 1e3),
+      ...extrasClaims,
+    };
+    const kid = await JWK.thumbprint(w)(
+      jwk,
+      demonstratingProofOfPossessionConfiguration.digestAlgorithm
+    );
+    const jwt = await JWT.sign(w)(
+      jwk,
+      { kid },
+      claims,
+      demonstratingProofOfPossessionConfiguration
+    );
+    return jwt;
   };
-  const kid = await JWK.thumbprint(w)(
-    jwk,
-    demonstratingProofOfPossessionConfiguration.digestAlgorithm
-  );
-  const jwt = await JWT.sign(w)(
-    jwk,
-    { kid },
-    claims,
-    demonstratingProofOfPossessionConfiguration
-  );
-  return jwt;
-};
 const guid = () => {
   const guidHolder = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
   const hex = "0123456789abcdef";
@@ -145,7 +181,7 @@ const guid = () => {
   let guidResponse = "";
   for (let i = 0; i < 36; i++) {
     if (guidHolder[i] !== "-" && guidHolder[i] !== "4") {
-      r = Math.random() * 16 | 0;
+      r = (Math.random() * 16) | 0;
     }
     if (guidHolder[i] === "x") {
       guidResponse += hex[r];
@@ -190,7 +226,10 @@ const getDpopConfiguration = (trustedDomain) => {
   if (Array.isArray(trustedDomain)) {
     return null;
   }
-  return trustedDomain.demonstratingProofOfPossessionConfiguration ?? defaultDemonstratingProofOfPossessionConfiguration;
+  return (
+    trustedDomain.demonstratingProofOfPossessionConfiguration ??
+    defaultDemonstratingProofOfPossessionConfiguration
+  );
 };
 const getDpopOnlyWhenDpopHeaderPresent = (trustedDomain) => {
   if (!isDpop(trustedDomain)) {
@@ -199,7 +238,10 @@ const getDpopOnlyWhenDpopHeaderPresent = (trustedDomain) => {
   if (Array.isArray(trustedDomain)) {
     return null;
   }
-  return trustedDomain.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent ?? true;
+  return (
+    trustedDomain.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent ??
+    true
+  );
 };
 function normalizeUrl(url) {
   try {
@@ -225,7 +267,10 @@ function checkDomain(domains, endpoint) {
   });
   if (!domain) {
     throw new Error(
-      "Domain " + endpoint + " is not trusted, please add domain in " + scriptFilename
+      "Domain " +
+        endpoint +
+        " is not trusted, please add domain in " +
+        scriptFilename
     );
   }
 }
@@ -246,15 +291,24 @@ const getCurrentDatabaseDomain = (database2, url, trustedDomains2) => {
     if (!oidcServerConfiguration) {
       continue;
     }
-    if (oidcServerConfiguration.tokenEndpoint && url === normalizeUrl(oidcServerConfiguration.tokenEndpoint)) {
+    if (
+      oidcServerConfiguration.tokenEndpoint &&
+      url === normalizeUrl(oidcServerConfiguration.tokenEndpoint)
+    ) {
       continue;
     }
-    if (oidcServerConfiguration.revocationEndpoint && url === normalizeUrl(oidcServerConfiguration.revocationEndpoint)) {
+    if (
+      oidcServerConfiguration.revocationEndpoint &&
+      url === normalizeUrl(oidcServerConfiguration.revocationEndpoint)
+    ) {
       continue;
     }
-    const trustedDomain = trustedDomains2 == null ? [] : trustedDomains2[key.split("#")[0]];
+    const trustedDomain =
+      trustedDomains2 == null ? [] : trustedDomains2[key.split("#")[0]];
     const domains = getDomains(trustedDomain, "accessToken");
-    const domainsToSendTokens = oidcServerConfiguration.userInfoEndpoint ? [normalizeUrl(oidcServerConfiguration.userInfoEndpoint), ...domains] : [...domains];
+    const domainsToSendTokens = oidcServerConfiguration.userInfoEndpoint
+      ? [normalizeUrl(oidcServerConfiguration.userInfoEndpoint), ...domains]
+      : [...domains];
     let hasToSendToken = false;
     if (domainsToSendTokens.find((f) => f === acceptAnyDomainToken)) {
       hasToSendToken = true;
@@ -292,16 +346,27 @@ function countLetter(str, find) {
   return str.split(find).length - 1;
 }
 const parseJwt = (payload) => {
-  return JSON.parse(b64DecodeUnicode(payload.replaceAll(/-/g, "+").replaceAll(/_/g, "/")));
+  return JSON.parse(
+    b64DecodeUnicode(payload.replaceAll(/-/g, "+").replaceAll(/_/g, "/"))
+  );
 };
 function b64DecodeUnicode(str) {
   return decodeURIComponent(
-    Array.prototype.map.call(atob(str), (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+    Array.prototype.map
+      .call(
+        atob(str),
+        (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+      )
+      .join("")
   );
 }
 function computeTimeLeft(refreshTimeBeforeTokensExpirationInSecond, expiresAt) {
-  const currentTimeUnixSecond = (/* @__PURE__ */ new Date()).getTime() / 1e3;
-  return Math.round(expiresAt - refreshTimeBeforeTokensExpirationInSecond - currentTimeUnixSecond);
+  const currentTimeUnixSecond = /* @__PURE__ */ new Date().getTime() / 1e3;
+  return Math.round(
+    expiresAt -
+      refreshTimeBeforeTokensExpirationInSecond -
+      currentTimeUnixSecond
+  );
 }
 function isTokensValid(tokens) {
   if (!tokens) {
@@ -327,30 +392,46 @@ const extractTokenPayload = (token) => {
 const isTokensOidcValid = (tokens, nonce, oidcServerConfiguration) => {
   if (tokens.idTokenPayload) {
     const idTokenPayload = tokens.idTokenPayload;
-    if (idTokenPayload && oidcServerConfiguration.issuer !== idTokenPayload.iss) {
+    if (
+      idTokenPayload &&
+      oidcServerConfiguration.issuer !== idTokenPayload.iss
+    ) {
       return {
         isValid: false,
-        reason: `Issuer does not match (oidcServerConfiguration issuer) ${oidcServerConfiguration.issuer} !== (idTokenPayload issuer) ${idTokenPayload.iss}`
+        reason: `Issuer does not match (oidcServerConfiguration issuer) ${oidcServerConfiguration.issuer} !== (idTokenPayload issuer) ${idTokenPayload.iss}`,
       };
     }
-    const currentTimeUnixSecond = (/* @__PURE__ */ new Date()).getTime() / 1e3;
-    if (idTokenPayload && idTokenPayload.exp && idTokenPayload.exp < currentTimeUnixSecond) {
+    const currentTimeUnixSecond = /* @__PURE__ */ new Date().getTime() / 1e3;
+    if (
+      idTokenPayload &&
+      idTokenPayload.exp &&
+      idTokenPayload.exp < currentTimeUnixSecond
+    ) {
       return {
         isValid: false,
-        reason: `Token expired at (idTokenPayload exp) ${idTokenPayload.exp} < (currentTimeUnixSecond) ${currentTimeUnixSecond}`
+        reason: `Token expired at (idTokenPayload exp) ${idTokenPayload.exp} < (currentTimeUnixSecond) ${currentTimeUnixSecond}`,
       };
     }
     const timeInSevenDays = 60 * 60 * 24 * 7;
-    if (idTokenPayload && idTokenPayload.iat && idTokenPayload.iat + timeInSevenDays < currentTimeUnixSecond) {
+    if (
+      idTokenPayload &&
+      idTokenPayload.iat &&
+      idTokenPayload.iat + timeInSevenDays < currentTimeUnixSecond
+    ) {
       return {
         isValid: false,
-        reason: `Token is used from too long time (idTokenPayload iat + timeInSevenDays) ${idTokenPayload.iat + timeInSevenDays} < (currentTimeUnixSecond) ${currentTimeUnixSecond}`
+        reason: `Token is used from too long time (idTokenPayload iat + timeInSevenDays) ${idTokenPayload.iat + timeInSevenDays} < (currentTimeUnixSecond) ${currentTimeUnixSecond}`,
       };
     }
-    if (idTokenPayload && nonce && idTokenPayload.nonce && idTokenPayload.nonce !== nonce) {
+    if (
+      idTokenPayload &&
+      nonce &&
+      idTokenPayload.nonce &&
+      idTokenPayload.nonce !== nonce
+    ) {
       return {
         isValid: false,
-        reason: `Nonce does not match (nonce) ${nonce} !== (idTokenPayload nonce) ${idTokenPayload.nonce}`
+        reason: `Nonce does not match (nonce) ${nonce} !== (idTokenPayload nonce) ${idTokenPayload.nonce}`,
       };
     }
   }
@@ -363,7 +444,7 @@ function extractedIssueAt(tokens, accessTokenPayload, _idTokenPayload) {
     } else if (_idTokenPayload && _idTokenPayload.iat) {
       return _idTokenPayload.iat;
     } else {
-      const currentTimeUnixSecond = (/* @__PURE__ */ new Date()).getTime() / 1e3;
+      const currentTimeUnixSecond = /* @__PURE__ */ new Date().getTime() / 1e3;
       return currentTimeUnixSecond;
     }
   } else if (typeof tokens.issued_at == "string") {
@@ -373,7 +454,7 @@ function extractedIssueAt(tokens, accessTokenPayload, _idTokenPayload) {
 }
 function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   if (!tokens.issued_at) {
-    const currentTimeUnixSecond = (/* @__PURE__ */ new Date()).getTime() / 1e3;
+    const currentTimeUnixSecond = /* @__PURE__ */ new Date().getTime() / 1e3;
     tokens.issued_at = currentTimeUnixSecond;
   } else if (typeof tokens.issued_at == "string") {
     tokens.issued_at = parseInt(tokens.issued_at, 10);
@@ -381,7 +462,7 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   const accessTokenPayload = extractTokenPayload(tokens.access_token);
   const secureTokens = {
     ...tokens,
-    accessTokenPayload
+    accessTokenPayload,
   };
   if (currentDatabaseElement.hideAccessToken) {
     secureTokens.access_token = `${TOKEN.ACCESS_TOKEN}_${configurationName}`;
@@ -398,8 +479,13 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   let _idTokenPayload = null;
   if (id_token) {
     _idTokenPayload = extractTokenPayload(id_token);
-    tokens.idTokenPayload = _idTokenPayload != null ? { ..._idTokenPayload } : null;
-    if (_idTokenPayload && _idTokenPayload.nonce && currentDatabaseElement.nonce != null) {
+    tokens.idTokenPayload =
+      _idTokenPayload != null ? { ..._idTokenPayload } : null;
+    if (
+      _idTokenPayload &&
+      _idTokenPayload.nonce &&
+      currentDatabaseElement.nonce != null
+    ) {
       const keyNonce = `${TOKEN.NONCE_TOKEN}_${currentDatabaseElement.configurationName}`;
       _idTokenPayload.nonce = keyNonce;
     }
@@ -408,22 +494,41 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   if (tokens.refresh_token) {
     secureTokens.refresh_token = `${TOKEN.REFRESH_TOKEN}_${configurationName}`;
   }
-  tokens.issued_at = extractedIssueAt(tokens, accessTokenPayload, _idTokenPayload);
-  const expireIn = typeof tokens.expires_in == "string" ? parseInt(tokens.expires_in, 10) : tokens.expires_in;
-  const idTokenExpiresAt = _idTokenPayload && _idTokenPayload.exp ? _idTokenPayload.exp : Number.MAX_VALUE;
-  const accessTokenExpiresAt = accessTokenPayload && accessTokenPayload.exp ? accessTokenPayload.exp : tokens.issued_at + expireIn;
+  tokens.issued_at = extractedIssueAt(
+    tokens,
+    accessTokenPayload,
+    _idTokenPayload
+  );
+  const expireIn =
+    typeof tokens.expires_in == "string"
+      ? parseInt(tokens.expires_in, 10)
+      : tokens.expires_in;
+  const idTokenExpiresAt =
+    _idTokenPayload && _idTokenPayload.exp
+      ? _idTokenPayload.exp
+      : Number.MAX_VALUE;
+  const accessTokenExpiresAt =
+    accessTokenPayload && accessTokenPayload.exp
+      ? accessTokenPayload.exp
+      : tokens.issued_at + expireIn;
   let expiresAt;
-  const tokenRenewMode = currentDatabaseElement.oidcConfiguration.token_renew_mode;
+  const tokenRenewMode =
+    currentDatabaseElement.oidcConfiguration.token_renew_mode;
   if (tokenRenewMode === TokenRenewMode.access_token_invalid) {
     expiresAt = accessTokenExpiresAt;
   } else if (tokenRenewMode === TokenRenewMode.id_token_invalid) {
     expiresAt = idTokenExpiresAt;
   } else {
-    expiresAt = idTokenExpiresAt < accessTokenExpiresAt ? idTokenExpiresAt : accessTokenExpiresAt;
+    expiresAt =
+      idTokenExpiresAt < accessTokenExpiresAt
+        ? idTokenExpiresAt
+        : accessTokenExpiresAt;
   }
   secureTokens.expiresAt = expiresAt;
   tokens.expiresAt = expiresAt;
-  const nonce = currentDatabaseElement.nonce ? currentDatabaseElement.nonce.nonce : null;
+  const nonce = currentDatabaseElement.nonce
+    ? currentDatabaseElement.nonce.nonce
+    : null;
   const { isValid, reason } = isTokensOidcValid(
     tokens,
     nonce,
@@ -432,11 +537,15 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   if (!isValid) {
     throw Error(`Tokens are not OpenID valid, reason: ${reason}`);
   }
-  if (oldTokens != null && "refresh_token" in oldTokens && !("refresh_token" in tokens)) {
+  if (
+    oldTokens != null &&
+    "refresh_token" in oldTokens &&
+    !("refresh_token" in tokens)
+  ) {
     const refreshToken = oldTokens.refresh_token;
     currentDatabaseElement.tokens = {
       ...tokens,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     };
   } else {
     currentDatabaseElement.tokens = tokens;
@@ -452,19 +561,24 @@ function hideTokens(currentDatabaseElement) {
       return response;
     }
     const newHeaders = new Headers(response.headers);
-    if (response.headers.has(demonstratingProofOfPossessionNonceResponseHeader)) {
-      currentDatabaseElement.demonstratingProofOfPossessionNonce = response.headers.get(
-        demonstratingProofOfPossessionNonceResponseHeader
-      );
+    if (
+      response.headers.has(demonstratingProofOfPossessionNonceResponseHeader)
+    ) {
+      currentDatabaseElement.demonstratingProofOfPossessionNonce =
+        response.headers.get(demonstratingProofOfPossessionNonceResponseHeader);
       newHeaders.delete(demonstratingProofOfPossessionNonceResponseHeader);
     }
     return response.json().then((tokens) => {
-      const secureTokens = _hideTokens(tokens, currentDatabaseElement, configurationName);
+      const secureTokens = _hideTokens(
+        tokens,
+        currentDatabaseElement,
+        configurationName
+      );
       const body = JSON.stringify(secureTokens);
       return new Response(body, {
         status: response.status,
         statusText: response.statusText,
-        headers: newHeaders
+        headers: newHeaders,
       });
     });
   };
@@ -474,7 +588,12 @@ const getMatchingOidcConfigurations = (database2, url) => {
     const { oidcServerConfiguration } = config || {};
     const { tokenEndpoint, revocationEndpoint } = oidcServerConfiguration || {};
     const normalizedUrl = normalizeUrl(url);
-    return tokenEndpoint && normalizedUrl.startsWith(normalizeUrl(tokenEndpoint)) || revocationEndpoint && normalizedUrl.startsWith(normalizeUrl(revocationEndpoint));
+    return (
+      (tokenEndpoint &&
+        normalizedUrl.startsWith(normalizeUrl(tokenEndpoint))) ||
+      (revocationEndpoint &&
+        normalizedUrl.startsWith(normalizeUrl(revocationEndpoint)))
+    );
   });
 };
 function replaceCodeVerifier(codeVerifier, newCodeVerifier) {
@@ -482,7 +601,8 @@ function replaceCodeVerifier(codeVerifier, newCodeVerifier) {
   return codeVerifier.replace(regex, `&code_verifier=${newCodeVerifier}`);
 }
 const extractConfigurationNameFromCodeVerifier = (chaine) => {
-  const regex = /[?&]code_verifier=CODE_VERIFIER_SECURED_BY_OIDC_SERVICE_WORKER_([^&]+)/;
+  const regex =
+    /[?&]code_verifier=CODE_VERIFIER_SECURED_BY_OIDC_SERVICE_WORKER_([^&]+)/;
   const match = chaine.match(regex);
   if (match && match.length > 0) {
     return decodeURIComponent(match[1]);
@@ -491,20 +611,23 @@ const extractConfigurationNameFromCodeVerifier = (chaine) => {
   }
 };
 const version = "7.26.0";
-if (typeof trustedTypes !== "undefined" && typeof trustedTypes.createPolicy === "function") {
+if (
+  typeof trustedTypes !== "undefined" &&
+  typeof trustedTypes.createPolicy === "function"
+) {
   trustedTypes.createPolicy("default", {
-    createScriptURL: function(url) {
+    createScriptURL: function (url) {
       if (url === scriptFilename) {
         return url;
       } else {
         throw new Error("Untrusted script URL blocked: " + url);
       }
-    }
+    },
   });
 }
 const _self = self;
 _self.importScripts(scriptFilename);
-const id = Math.round((/* @__PURE__ */ new Date()).getTime() / 1e3).toString();
+const id = Math.round(/* @__PURE__ */ new Date().getTime() / 1e3).toString();
 console.log("init service worker with id", id);
 const keepAliveJsonFilename = "OidcKeepAliveServiceWorker.json";
 const database = {};
@@ -515,7 +638,8 @@ const keepAliveAsync = async (event) => {
   const response = new Response("{}", init);
   if (!isFromVanilla) {
     const originalRequestUrl = new URL(originalRequest.url);
-    const minSleepSeconds = Number(originalRequestUrl.searchParams.get("minSleepSeconds")) || 240;
+    const minSleepSeconds =
+      Number(originalRequestUrl.searchParams.get("minSleepSeconds")) || 240;
     for (let i = 0; i < minSleepSeconds; i++) {
       await sleep(1e3 + Math.floor(Math.random() * 1e3));
       const cache = await caches.open("oidc_dummy_cache");
@@ -524,18 +648,29 @@ const keepAliveAsync = async (event) => {
   }
   return response;
 };
-async function generateDpopAsync(originalRequest, currentDatabase, url, extrasClaims = {}) {
+async function generateDpopAsync(
+  originalRequest,
+  currentDatabase,
+  url,
+  extrasClaims = {}
+) {
   const headersExtras = serializeHeaders(originalRequest.headers);
-  if ((currentDatabase == null ? void 0 : currentDatabase.demonstratingProofOfPossessionConfiguration) && currentDatabase.demonstratingProofOfPossessionJwkJson && (!currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent || currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent && headersExtras.dpop)) {
-    const dpopConfiguration = currentDatabase.demonstratingProofOfPossessionConfiguration;
+  if (
+    (currentDatabase == null
+      ? void 0
+      : currentDatabase.demonstratingProofOfPossessionConfiguration) &&
+    currentDatabase.demonstratingProofOfPossessionJwkJson &&
+    (!currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent ||
+      (currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent &&
+        headersExtras.dpop))
+  ) {
+    const dpopConfiguration =
+      currentDatabase.demonstratingProofOfPossessionConfiguration;
     const jwk = currentDatabase.demonstratingProofOfPossessionJwkJson;
     const method = originalRequest.method;
-    const dpop = await generateJwtDemonstratingProofOfPossessionAsync(self)(dpopConfiguration)(
-      jwk,
-      method,
-      url,
-      extrasClaims
-    );
+    const dpop = await generateJwtDemonstratingProofOfPossessionAsync(self)(
+      dpopConfiguration
+    )(jwk, method, url, extrasClaims);
     headersExtras.dpop = dpop;
     if (currentDatabase.demonstratingProofOfPossessionNonce != null) {
       headersExtras.nonce = currentDatabase.demonstratingProofOfPossessionNonce;
@@ -564,32 +699,61 @@ const handleFetch = (event) => {
         if (authorization) {
           const split = authorization.split(" ");
           authenticationMode = split[0];
-          if ((_a = split[1]) == null ? void 0 : _a.includes("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")) {
-            key = split[1].split("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")[1];
+          if (
+            (_a = split[1]) == null
+              ? void 0
+              : _a.includes("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")
+          ) {
+            key = split[1].split(
+              "ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_"
+            )[1];
           }
         }
-        const currentDatabaseForRequestAccessToken = currentDatabasesForRequestAccessToken == null ? void 0 : currentDatabasesForRequestAccessToken.find(
-          (c) => c.configurationName.endsWith(key)
-        );
-        if ((_b = currentDatabaseForRequestAccessToken == null ? void 0 : currentDatabaseForRequestAccessToken.tokens) == null ? void 0 : _b.access_token) {
-          while (currentDatabaseForRequestAccessToken.tokens && !isTokensValid(currentDatabaseForRequestAccessToken.tokens)) {
+        const currentDatabaseForRequestAccessToken =
+          currentDatabasesForRequestAccessToken == null
+            ? void 0
+            : currentDatabasesForRequestAccessToken.find((c) =>
+                c.configurationName.endsWith(key)
+              );
+        if (
+          (_b =
+            currentDatabaseForRequestAccessToken == null
+              ? void 0
+              : currentDatabaseForRequestAccessToken.tokens) == null
+            ? void 0
+            : _b.access_token
+        ) {
+          while (
+            currentDatabaseForRequestAccessToken.tokens &&
+            !isTokensValid(currentDatabaseForRequestAccessToken.tokens)
+          ) {
             await sleep(200);
           }
           let requestMode = originalRequest.mode;
-          if (originalRequest.mode !== "navigate" && currentDatabaseForRequestAccessToken.convertAllRequestsToCorsExceptNavigate) {
+          if (
+            originalRequest.mode !== "navigate" &&
+            currentDatabaseForRequestAccessToken.convertAllRequestsToCorsExceptNavigate
+          ) {
             requestMode = "cors";
           }
           let headers;
-          if (originalRequest.mode === "navigate" && !currentDatabaseForRequestAccessToken.setAccessTokenToNavigateRequests) {
+          if (
+            originalRequest.mode === "navigate" &&
+            !currentDatabaseForRequestAccessToken.setAccessTokenToNavigateRequests
+          ) {
             headers = {
-              ...serializeHeaders(originalRequest.headers)
+              ...serializeHeaders(originalRequest.headers),
             };
           } else {
-            if (authenticationMode.toLowerCase() === "dpop" || !currentDatabaseForRequestAccessToken.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent && currentDatabaseForRequestAccessToken.demonstratingProofOfPossessionConfiguration) {
+            if (
+              authenticationMode.toLowerCase() === "dpop" ||
+              (!currentDatabaseForRequestAccessToken.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent &&
+                currentDatabaseForRequestAccessToken.demonstratingProofOfPossessionConfiguration)
+            ) {
               const claimsExtras = {
                 ath: await base64urlOfHashOfASCIIEncodingAsync(
                   currentDatabaseForRequestAccessToken.tokens.access_token
-                )
+                ),
               };
               const dpopHeaders = await generateDpopAsync(
                 originalRequest,
@@ -599,12 +763,12 @@ const handleFetch = (event) => {
               );
               headers = {
                 ...dpopHeaders,
-                authorization: `DPoP ${currentDatabaseForRequestAccessToken.tokens.access_token}`
+                authorization: `DPoP ${currentDatabaseForRequestAccessToken.tokens.access_token}`,
               };
             } else {
               headers = {
                 ...serializeHeaders(originalRequest.headers),
-                authorization: `${authenticationMode} ${currentDatabaseForRequestAccessToken.tokens.access_token}`
+                authorization: `${authenticationMode} ${currentDatabaseForRequestAccessToken.tokens.access_token}`,
               };
             }
           }
@@ -612,13 +776,13 @@ const handleFetch = (event) => {
           if (originalRequest.mode === "navigate") {
             init = {
               headers,
-              credentials: originalRequest.credentials
+              credentials: originalRequest.credentials,
             };
           } else {
             init = {
               headers,
               mode: requestMode,
-              credentials: originalRequest.credentials
+              credentials: originalRequest.credentials,
             };
           }
           const newRequest = new Request(originalRequest, init);
@@ -632,124 +796,148 @@ const handleFetch = (event) => {
         if (numberDatabase > 0) {
           const responsePromise = new Promise((resolve, reject) => {
             const clonedRequest = originalRequest.clone();
-            clonedRequest.text().then(async (actualBody) => {
-              var _a2;
-              let currentDatabase = null;
-              try {
-                if (actualBody.includes(TOKEN.REFRESH_TOKEN) || actualBody.includes(TOKEN.ACCESS_TOKEN)) {
-                  let headers = serializeHeaders(originalRequest.headers);
-                  let newBody = actualBody;
-                  for (let i = 0; i < numberDatabase; i++) {
-                    const currentDb = currentDatabases[i];
-                    if (currentDb == null ? void 0 : currentDb.tokens) {
-                      const claimsExtras = {
-                        ath: await base64urlOfHashOfASCIIEncodingAsync(
-                          currentDb.tokens.access_token
-                        )
-                      };
-                      headers = await generateDpopAsync(
-                        originalRequest,
-                        currentDb,
-                        url,
-                        claimsExtras
-                      );
-                      const keyRefreshToken = encodeURIComponent(
-                        `${TOKEN.REFRESH_TOKEN}_${currentDb.configurationName}`
-                      );
-                      if (actualBody.includes(keyRefreshToken)) {
-                        newBody = newBody.replace(
-                          keyRefreshToken,
-                          encodeURIComponent(currentDb.tokens.refresh_token)
+            clonedRequest
+              .text()
+              .then(async (actualBody) => {
+                var _a2;
+                let currentDatabase = null;
+                try {
+                  if (
+                    actualBody.includes(TOKEN.REFRESH_TOKEN) ||
+                    actualBody.includes(TOKEN.ACCESS_TOKEN)
+                  ) {
+                    let headers = serializeHeaders(originalRequest.headers);
+                    let newBody = actualBody;
+                    for (let i = 0; i < numberDatabase; i++) {
+                      const currentDb = currentDatabases[i];
+                      if (currentDb == null ? void 0 : currentDb.tokens) {
+                        const claimsExtras = {
+                          ath: await base64urlOfHashOfASCIIEncodingAsync(
+                            currentDb.tokens.access_token
+                          ),
+                        };
+                        headers = await generateDpopAsync(
+                          originalRequest,
+                          currentDb,
+                          url,
+                          claimsExtras
                         );
-                        currentDatabase = currentDb;
-                        break;
-                      }
-                      const keyAccessToken = encodeURIComponent(
-                        `${TOKEN.ACCESS_TOKEN}_${currentDb.configurationName}`
-                      );
-                      if (actualBody.includes(keyAccessToken)) {
-                        newBody = newBody.replace(
-                          keyAccessToken,
-                          encodeURIComponent(currentDb.tokens.access_token)
+                        const keyRefreshToken = encodeURIComponent(
+                          `${TOKEN.REFRESH_TOKEN}_${currentDb.configurationName}`
                         );
-                        currentDatabase = currentDb;
-                        break;
+                        if (actualBody.includes(keyRefreshToken)) {
+                          newBody = newBody.replace(
+                            keyRefreshToken,
+                            encodeURIComponent(currentDb.tokens.refresh_token)
+                          );
+                          currentDatabase = currentDb;
+                          break;
+                        }
+                        const keyAccessToken = encodeURIComponent(
+                          `${TOKEN.ACCESS_TOKEN}_${currentDb.configurationName}`
+                        );
+                        if (actualBody.includes(keyAccessToken)) {
+                          newBody = newBody.replace(
+                            keyAccessToken,
+                            encodeURIComponent(currentDb.tokens.access_token)
+                          );
+                          currentDatabase = currentDb;
+                          break;
+                        }
                       }
                     }
-                  }
-                  const fetchPromise = fetch(originalRequest, {
-                    body: newBody,
-                    method: clonedRequest.method,
-                    headers,
-                    mode: clonedRequest.mode,
-                    cache: clonedRequest.cache,
-                    redirect: clonedRequest.redirect,
-                    referrer: clonedRequest.referrer,
-                    credentials: clonedRequest.credentials,
-                    integrity: clonedRequest.integrity
-                  });
-                  if (((_a2 = currentDatabase == null ? void 0 : currentDatabase.oidcServerConfiguration) == null ? void 0 : _a2.revocationEndpoint) && url.startsWith(
-                    normalizeUrl(currentDatabase.oidcServerConfiguration.revocationEndpoint)
-                  )) {
-                    const resp = await fetchPromise;
-                    const txt = await resp.text();
-                    resolve(new Response(txt, resp));
+                    const fetchPromise = fetch(originalRequest, {
+                      body: newBody,
+                      method: clonedRequest.method,
+                      headers,
+                      mode: clonedRequest.mode,
+                      cache: clonedRequest.cache,
+                      redirect: clonedRequest.redirect,
+                      referrer: clonedRequest.referrer,
+                      credentials: clonedRequest.credentials,
+                      integrity: clonedRequest.integrity,
+                    });
+                    if (
+                      ((_a2 =
+                        currentDatabase == null
+                          ? void 0
+                          : currentDatabase.oidcServerConfiguration) == null
+                        ? void 0
+                        : _a2.revocationEndpoint) &&
+                      url.startsWith(
+                        normalizeUrl(
+                          currentDatabase.oidcServerConfiguration
+                            .revocationEndpoint
+                        )
+                      )
+                    ) {
+                      const resp = await fetchPromise;
+                      const txt = await resp.text();
+                      resolve(new Response(txt, resp));
+                      return;
+                    }
+                    const hidden = await fetchPromise.then(
+                      hideTokens(currentDatabase)
+                    );
+                    resolve(hidden);
                     return;
                   }
-                  const hidden = await fetchPromise.then(
-                    hideTokens(currentDatabase)
-                  );
-                  resolve(hidden);
-                  return;
-                }
-                const isCodeVerifier = actualBody.includes("code_verifier=");
-                if (isCodeVerifier) {
-                  const currentLoginCallbackConfigurationName = extractConfigurationNameFromCodeVerifier(actualBody);
-                  if (!currentLoginCallbackConfigurationName || currentLoginCallbackConfigurationName === "") {
-                    throw new Error("No configuration name found in code_verifier");
+                  const isCodeVerifier = actualBody.includes("code_verifier=");
+                  if (isCodeVerifier) {
+                    const currentLoginCallbackConfigurationName =
+                      extractConfigurationNameFromCodeVerifier(actualBody);
+                    if (
+                      !currentLoginCallbackConfigurationName ||
+                      currentLoginCallbackConfigurationName === ""
+                    ) {
+                      throw new Error(
+                        "No configuration name found in code_verifier"
+                      );
+                    }
+                    currentDatabase =
+                      database[currentLoginCallbackConfigurationName];
+                    let newBody = actualBody;
+                    const codeVerifier = currentDatabase.codeVerifier;
+                    if (codeVerifier != null) {
+                      newBody = replaceCodeVerifier(newBody, codeVerifier);
+                    }
+                    const headersExtras = await generateDpopAsync(
+                      originalRequest,
+                      currentDatabase,
+                      url
+                    );
+                    const resp = await fetch(originalRequest, {
+                      body: newBody,
+                      method: clonedRequest.method,
+                      headers: headersExtras,
+                      mode: clonedRequest.mode,
+                      cache: clonedRequest.cache,
+                      redirect: clonedRequest.redirect,
+                      referrer: clonedRequest.referrer,
+                      credentials: clonedRequest.credentials,
+                      integrity: clonedRequest.integrity,
+                    });
+                    const hidden = await hideTokens(currentDatabase)(resp);
+                    resolve(hidden);
+                    return;
                   }
-                  currentDatabase = database[currentLoginCallbackConfigurationName];
-                  let newBody = actualBody;
-                  const codeVerifier = currentDatabase.codeVerifier;
-                  if (codeVerifier != null) {
-                    newBody = replaceCodeVerifier(newBody, codeVerifier);
-                  }
-                  const headersExtras = await generateDpopAsync(
-                    originalRequest,
-                    currentDatabase,
-                    url
-                  );
-                  const resp = await fetch(originalRequest, {
-                    body: newBody,
+                  const normalResp = await fetch(originalRequest, {
+                    body: actualBody,
                     method: clonedRequest.method,
-                    headers: headersExtras,
+                    headers: serializeHeaders(originalRequest.headers),
                     mode: clonedRequest.mode,
                     cache: clonedRequest.cache,
                     redirect: clonedRequest.redirect,
                     referrer: clonedRequest.referrer,
                     credentials: clonedRequest.credentials,
-                    integrity: clonedRequest.integrity
+                    integrity: clonedRequest.integrity,
                   });
-                  const hidden = await hideTokens(currentDatabase)(resp);
-                  resolve(hidden);
-                  return;
+                  resolve(normalResp);
+                } catch (err) {
+                  reject(err);
                 }
-                const normalResp = await fetch(originalRequest, {
-                  body: actualBody,
-                  method: clonedRequest.method,
-                  headers: serializeHeaders(originalRequest.headers),
-                  mode: clonedRequest.mode,
-                  cache: clonedRequest.cache,
-                  redirect: clonedRequest.redirect,
-                  referrer: clonedRequest.referrer,
-                  credentials: clonedRequest.credentials,
-                  integrity: clonedRequest.integrity
-                });
-                resolve(normalResp);
-              } catch (err) {
-                reject(err);
-              }
-            }).catch(reject);
+              })
+              .catch(reject);
           });
           return responsePromise;
         }
@@ -777,14 +965,22 @@ const handleMessage = async (event) => {
     trustedDomains = {};
   }
   const trustedDomain = trustedDomains[configurationName];
-  const allowMultiTabLogin = Array.isArray(trustedDomain) ? false : trustedDomain.allowMultiTabLogin;
+  const allowMultiTabLogin = Array.isArray(trustedDomain)
+    ? false
+    : trustedDomain.allowMultiTabLogin;
   const tabId = allowMultiTabLogin ? data.tabId : "default";
   const configurationNameWithTabId = `${configurationName}#tabId=${tabId}`;
   let currentDatabase = database[configurationNameWithTabId];
   if (!currentDatabase) {
-    const showAccessToken = Array.isArray(trustedDomain) ? false : trustedDomain.showAccessToken;
-    const doNotSetAccessTokenToNavigateRequests = Array.isArray(trustedDomain) ? true : trustedDomain.setAccessTokenToNavigateRequests;
-    const convertAllRequestsToCorsExceptNavigate = Array.isArray(trustedDomain) ? false : trustedDomain.convertAllRequestsToCorsExceptNavigate;
+    const showAccessToken = Array.isArray(trustedDomain)
+      ? false
+      : trustedDomain.showAccessToken;
+    const doNotSetAccessTokenToNavigateRequests = Array.isArray(trustedDomain)
+      ? true
+      : trustedDomain.setAccessTokenToNavigateRequests;
+    const convertAllRequestsToCorsExceptNavigate = Array.isArray(trustedDomain)
+      ? false
+      : trustedDomain.convertAllRequestsToCorsExceptNavigate;
     database[configurationNameWithTabId] = {
       tokens: null,
       state: null,
@@ -795,13 +991,15 @@ const handleMessage = async (event) => {
       status: null,
       configurationName: configurationNameWithTabId,
       hideAccessToken: !showAccessToken,
-      setAccessTokenToNavigateRequests: doNotSetAccessTokenToNavigateRequests ?? true,
-      convertAllRequestsToCorsExceptNavigate: convertAllRequestsToCorsExceptNavigate ?? false,
+      setAccessTokenToNavigateRequests:
+        doNotSetAccessTokenToNavigateRequests ?? true,
+      convertAllRequestsToCorsExceptNavigate:
+        convertAllRequestsToCorsExceptNavigate ?? false,
       demonstratingProofOfPossessionNonce: null,
       demonstratingProofOfPossessionJwkJson: null,
       demonstratingProofOfPossessionConfiguration: null,
       demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent: false,
-      allowMultiTabLogin: allowMultiTabLogin ?? false
+      allowMultiTabLogin: allowMultiTabLogin ?? false,
     };
     currentDatabase = database[configurationNameWithTabId];
     if (!trustedDomains[configurationName]) {
@@ -829,7 +1027,7 @@ const handleMessage = async (event) => {
           oidcServerConfiguration.tokenEndpoint,
           oidcServerConfiguration.revocationEndpoint,
           oidcServerConfiguration.userInfoEndpoint,
-          oidcServerConfiguration.issuer
+          oidcServerConfiguration.issuer,
         ].forEach((u) => {
           checkDomain(domains, u);
         });
@@ -837,18 +1035,24 @@ const handleMessage = async (event) => {
       currentDatabase.oidcServerConfiguration = oidcServerConfiguration;
       currentDatabase.oidcConfiguration = data.data.oidcConfiguration;
       if (currentDatabase.demonstratingProofOfPossessionConfiguration == null) {
-        const demonstratingProofOfPossessionConfiguration = getDpopConfiguration(trustedDomain);
+        const demonstratingProofOfPossessionConfiguration =
+          getDpopConfiguration(trustedDomain);
         if (demonstratingProofOfPossessionConfiguration != null) {
-          if (currentDatabase.oidcConfiguration.demonstrating_proof_of_possession) {
+          if (
+            currentDatabase.oidcConfiguration.demonstrating_proof_of_possession
+          ) {
             console.warn(
               "In service worker, demonstrating_proof_of_possession must be configured from trustedDomains file"
             );
           }
-          currentDatabase.demonstratingProofOfPossessionConfiguration = demonstratingProofOfPossessionConfiguration;
-          currentDatabase.demonstratingProofOfPossessionJwkJson = await generateJwkAsync(self)(
-            demonstratingProofOfPossessionConfiguration.generateKeyAlgorithm
-          );
-          currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent = getDpopOnlyWhenDpopHeaderPresent(trustedDomain) ?? false;
+          currentDatabase.demonstratingProofOfPossessionConfiguration =
+            demonstratingProofOfPossessionConfiguration;
+          currentDatabase.demonstratingProofOfPossessionJwkJson =
+            await generateJwkAsync(self)(
+              demonstratingProofOfPossessionConfiguration.generateKeyAlgorithm
+            );
+          currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent =
+            getDpopOnlyWhenDpopHeaderPresent(trustedDomain) ?? false;
         }
       }
       if (!currentDatabase.tokens) {
@@ -856,7 +1060,7 @@ const handleMessage = async (event) => {
           tokens: null,
           status: currentDatabase.status,
           configurationName,
-          version
+          version,
         });
       } else {
         const tokens = { ...currentDatabase.tokens };
@@ -866,28 +1070,35 @@ const handleMessage = async (event) => {
         if (tokens.refresh_token) {
           tokens.refresh_token = `${TOKEN.REFRESH_TOKEN}_${configurationName}#tabId=${tabId}`;
         }
-        if (((_b = tokens == null ? void 0 : tokens.idTokenPayload) == null ? void 0 : _b.nonce) && currentDatabase.nonce != null) {
+        if (
+          ((_b = tokens == null ? void 0 : tokens.idTokenPayload) == null
+            ? void 0
+            : _b.nonce) &&
+          currentDatabase.nonce != null
+        ) {
           tokens.idTokenPayload.nonce = `${TOKEN.NONCE_TOKEN}_${configurationName}#tabId=${tabId}`;
         }
         port.postMessage({
           tokens,
           status: currentDatabase.status,
           configurationName,
-          version
+          version,
         });
       }
       return;
     }
     case "setDemonstratingProofOfPossessionNonce": {
-      currentDatabase.demonstratingProofOfPossessionNonce = data.data.demonstratingProofOfPossessionNonce;
+      currentDatabase.demonstratingProofOfPossessionNonce =
+        data.data.demonstratingProofOfPossessionNonce;
       port.postMessage({ configurationName });
       return;
     }
     case "getDemonstratingProofOfPossessionNonce": {
-      const demonstratingProofOfPossessionNonce = currentDatabase.demonstratingProofOfPossessionNonce;
+      const demonstratingProofOfPossessionNonce =
+        currentDatabase.demonstratingProofOfPossessionNonce;
       port.postMessage({
         configurationName,
-        demonstratingProofOfPossessionNonce
+        demonstratingProofOfPossessionNonce,
       });
       return;
     }
@@ -907,10 +1118,13 @@ const handleMessage = async (event) => {
       return;
     }
     case "getCodeVerifier": {
-      const codeVerifier = currentDatabase.codeVerifier != null ? `${TOKEN.CODE_VERIFIER}_${configurationName}#tabId=${tabId}` : null;
+      const codeVerifier =
+        currentDatabase.codeVerifier != null
+          ? `${TOKEN.CODE_VERIFIER}_${configurationName}#tabId=${tabId}`
+          : null;
       port.postMessage({
         configurationName,
-        codeVerifier
+        codeVerifier,
       });
       return;
     }

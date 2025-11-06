@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { cn } from './ui/utils';
-import { Button } from './ui/button';
+import * as React from "react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { cn } from "./ui/utils";
+import { Button } from "./ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,9 +11,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { useGitHubRepoSearch } from '../hooks/useGitHubRepoSearch';
+} from "./ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useGitHubRepoSearch } from "../hooks/useGitHubRepoSearch";
 
 interface RepositoryComboboxProps {
   value: string;
@@ -22,10 +22,21 @@ interface RepositoryComboboxProps {
   id?: string;
 }
 
-export function RepositoryCombobox({ value, onChange, repositories, id }: RepositoryComboboxProps) {
+export function RepositoryCombobox({
+  value,
+  onChange,
+  repositories,
+  id,
+}: RepositoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const { repos: githubRepos, isLoading, error, search, clear } = useGitHubRepoSearch();
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const {
+    repos: githubRepos,
+    isLoading,
+    error,
+    search,
+    clear,
+  } = useGitHubRepoSearch();
 
   const handleSearchChange = (newQuery: string) => {
     setSearchQuery(newQuery);
@@ -35,7 +46,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      setSearchQuery('');
+      setSearchQuery("");
       clear();
     }
   };
@@ -56,8 +67,13 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
   const hasRecentRepos = filteredRecentRepos.length > 0;
   const hasGitHubRepos = githubRepos.length > 0;
   const hasAnyRepos = hasRecentRepos || hasGitHubRepos;
-  const showEmptyState = !hasAnyRepos && !isLoading && searchQuery.trim().length >= 2;
-  const showInitialState = !hasAnyRepos && !isLoading && repositories.length === 0 && searchQuery.trim().length < 2;
+  const showEmptyState =
+    !hasAnyRepos && !isLoading && searchQuery.trim().length >= 2;
+  const showInitialState =
+    !hasAnyRepos &&
+    !isLoading &&
+    repositories.length === 0 &&
+    searchQuery.trim().length < 2;
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -69,7 +85,7 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value || 'Select repository...'}
+          {value || "Select repository..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -84,14 +100,14 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
             {isLoading && (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Searching GitHub...</span>
+                <span className="text-sm text-muted-foreground">
+                  Searching GitHub...
+                </span>
               </div>
             )}
 
             {error && (
-              <div className="px-2 py-3 text-sm text-red-500">
-                {error}
-              </div>
+              <div className="px-2 py-3 text-sm text-red-500">{error}</div>
             )}
 
             {showInitialState && (
@@ -101,7 +117,9 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
               </div>
             )}
 
-            {showEmptyState && <CommandEmpty>No repository found.</CommandEmpty>}
+            {showEmptyState && (
+              <CommandEmpty>No repository found.</CommandEmpty>
+            )}
 
             {hasRecentRepos && (
               <CommandGroup heading="Recent Repositories">
@@ -113,8 +131,8 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                   >
                     <Check
                       className={cn(
-                        'mr-2 h-4 w-4',
-                        value === repo ? 'opacity-100' : 'opacity-0'
+                        "mr-2 h-4 w-4",
+                        value === repo ? "opacity-100" : "opacity-0"
                       )}
                     />
                     {repo}
@@ -133,8 +151,8 @@ export function RepositoryCombobox({ value, onChange, repositories, id }: Reposi
                   >
                     <Check
                       className={cn(
-                        'mr-2 h-4 w-4',
-                        value === repo.full_name ? 'opacity-100' : 'opacity-0'
+                        "mr-2 h-4 w-4",
+                        value === repo.full_name ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div className="flex flex-col">

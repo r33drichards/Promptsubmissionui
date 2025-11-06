@@ -12,22 +12,37 @@ export interface HttpClient {
   /**
    * Makes a POST request to the specified URL
    */
-  post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
+  post<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
 
   /**
    * Makes a PUT request to the specified URL
    */
-  put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
+  put<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
 
   /**
    * Makes a PATCH request to the specified URL
    */
-  patch<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>;
+  patch<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
 
   /**
    * Makes a DELETE request to the specified URL
    */
-  delete<T = any>(url: string, config?: RequestConfig): Promise<HttpResponse<T>>;
+  delete<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>>;
 }
 
 export interface RequestConfig {
@@ -51,6 +66,6 @@ export class HttpError extends Error {
     public response?: any
   ) {
     super(message);
-    this.name = 'HttpError';
+    this.name = "HttpError";
   }
 }

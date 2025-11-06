@@ -1,9 +1,13 @@
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
-import { useApi } from '../providers/ApiProvider';
-import { Session } from '../types/session';
-import { CreateSessionData, UpdateSessionData } from '../services/api/types';
-import { queryKeys } from './queryKeys';
-import { toast } from 'sonner';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from "@tanstack/react-query";
+import { useApi } from "../providers/ApiProvider";
+import { Session } from "../types/session";
+import { CreateSessionData, UpdateSessionData } from "../services/api/types";
+import { queryKeys } from "./queryKeys";
+import { toast } from "sonner";
 
 /**
  * Hook to create a new session.
@@ -28,7 +32,10 @@ import { toast } from 'sonner';
  * ```
  */
 export function useCreateSession(
-  options?: Omit<UseMutationOptions<Session, Error, CreateSessionData>, 'mutationFn'>
+  options?: Omit<
+    UseMutationOptions<Session, Error, CreateSessionData>,
+    "mutationFn"
+  >
 ) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -37,7 +44,10 @@ export function useCreateSession(
     mutationFn: (data: CreateSessionData) => api.sessions.create(data),
     onSuccess: (newSession, variables, context) => {
       // Set the new session in the detail cache
-      queryClient.setQueryData(queryKeys.sessions.detail(newSession.id), newSession);
+      queryClient.setQueryData(
+        queryKeys.sessions.detail(newSession.id),
+        newSession
+      );
 
       // Optimistically add the new session to all list caches
       queryClient.setQueriesData(
@@ -52,17 +62,17 @@ export function useCreateSession(
       // Invalidate and refetch to ensure consistency with backend
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active'
+        refetchType: "active",
       });
 
-      toast.success('Task created successfully');
+      toast.success("Task created successfully");
 
       // Call user-provided onSuccess if it exists
       options?.onSuccess?.(newSession, variables, context);
     },
     onError: (error, variables, context) => {
-      console.error('Failed to create session:', error);
-      toast.error('Failed to create task');
+      console.error("Failed to create session:", error);
+      toast.error("Failed to create task");
 
       // Call user-provided onError if it exists
       options?.onError?.(error, variables, context);
@@ -94,7 +104,7 @@ export function useCreateSession(
 export function useUpdateSession(
   options?: Omit<
     UseMutationOptions<Session, Error, { id: string; data: UpdateSessionData }>,
-    'mutationFn'
+    "mutationFn"
   >
 ) {
   const api = useApi();
@@ -105,10 +115,14 @@ export function useUpdateSession(
       api.sessions.update(id, data),
     onMutate: async ({ id, data }) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.sessions.detail(id) });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
 
       // Snapshot the previous value
-      const previousSession = queryClient.getQueryData<Session>(queryKeys.sessions.detail(id));
+      const previousSession = queryClient.getQueryData<Session>(
+        queryKeys.sessions.detail(id)
+      );
 
       // Optimistically update to the new value
       if (previousSession) {
@@ -123,15 +137,18 @@ export function useUpdateSession(
     },
     onSuccess: (updatedSession, variables, context) => {
       // Update the cache with the server response
-      queryClient.setQueryData(queryKeys.sessions.detail(updatedSession.id), updatedSession);
+      queryClient.setQueryData(
+        queryKeys.sessions.detail(updatedSession.id),
+        updatedSession
+      );
 
       // Invalidate session lists to reflect changes in the sidebar
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active'
+        refetchType: "active",
       });
 
-      toast.success('Task updated successfully');
+      toast.success("Task updated successfully");
 
       options?.onSuccess?.(updatedSession, variables, context);
     },
@@ -144,14 +161,16 @@ export function useUpdateSession(
         );
       }
 
-      console.error('Failed to update session:', error);
-      toast.error('Failed to update task');
+      console.error("Failed to update session:", error);
+      toast.error("Failed to update task");
 
       options?.onError?.(error, variables, context);
     },
     onSettled: (data, error, variables) => {
       // Always refetch after error or success to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(variables.id),
+      });
     },
     ...options,
   });
@@ -170,7 +189,7 @@ export function useUpdateSession(
  * ```
  */
 export function useArchiveSession(
-  options?: Omit<UseMutationOptions<Session, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Session, Error, string>, "mutationFn">
 ) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -178,42 +197,54 @@ export function useArchiveSession(
   return useMutation({
     mutationFn: (id: string) => api.sessions.archive(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.sessions.detail(id) });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
 
-      const previousSession = queryClient.getQueryData<Session>(queryKeys.sessions.detail(id));
+      const previousSession = queryClient.getQueryData<Session>(
+        queryKeys.sessions.detail(id)
+      );
 
       if (previousSession) {
         queryClient.setQueryData<Session>(queryKeys.sessions.detail(id), {
           ...previousSession,
-          sessionStatus: 'Archived',
+          sessionStatus: "Archived",
         });
       }
 
       return { previousSession };
     },
     onSuccess: (archivedSession, id, context) => {
-      queryClient.setQueryData(queryKeys.sessions.detail(archivedSession.id), archivedSession);
+      queryClient.setQueryData(
+        queryKeys.sessions.detail(archivedSession.id),
+        archivedSession
+      );
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active'
+        refetchType: "active",
       });
 
-      toast.success('Task archived');
+      toast.success("Task archived");
 
       options?.onSuccess?.(archivedSession, id, context);
     },
     onError: (error, id, context) => {
       if (context?.previousSession) {
-        queryClient.setQueryData(queryKeys.sessions.detail(id), context.previousSession);
+        queryClient.setQueryData(
+          queryKeys.sessions.detail(id),
+          context.previousSession
+        );
       }
 
-      console.error('Failed to archive session:', error);
-      toast.error('Failed to archive task');
+      console.error("Failed to archive session:", error);
+      toast.error("Failed to archive task");
 
       options?.onError?.(error, id, context);
     },
     onSettled: (data, error, id) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
     },
     ...options,
   });
@@ -232,7 +263,7 @@ export function useArchiveSession(
  * ```
  */
 export function useUnarchiveSession(
-  options?: Omit<UseMutationOptions<Session, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Session, Error, string>, "mutationFn">
 ) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -240,19 +271,22 @@ export function useUnarchiveSession(
   return useMutation({
     mutationFn: (id: string) => api.sessions.unarchive(id),
     onSuccess: (unarchivedSession, id, context) => {
-      queryClient.setQueryData(queryKeys.sessions.detail(unarchivedSession.id), unarchivedSession);
+      queryClient.setQueryData(
+        queryKeys.sessions.detail(unarchivedSession.id),
+        unarchivedSession
+      );
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active'
+        refetchType: "active",
       });
 
-      toast.success('Task unarchived');
+      toast.success("Task unarchived");
 
       options?.onSuccess?.(unarchivedSession, id, context);
     },
     onError: (error, id, context) => {
-      console.error('Failed to unarchive session:', error);
-      toast.error('Failed to unarchive task');
+      console.error("Failed to unarchive session:", error);
+      toast.error("Failed to unarchive task");
 
       options?.onError?.(error, id, context);
     },
@@ -273,7 +307,7 @@ export function useUnarchiveSession(
  * ```
  */
 export function useDeleteSession(
-  options?: Omit<UseMutationOptions<void, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<void, Error, string>, "mutationFn">
 ) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -287,16 +321,16 @@ export function useDeleteSession(
       // Invalidate session lists to update the sidebar
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active'
+        refetchType: "active",
       });
 
-      toast.success('Task deleted');
+      toast.success("Task deleted");
 
       options?.onSuccess?.(data, id, context);
     },
     onError: (error, id, context) => {
-      console.error('Failed to delete session:', error);
-      toast.error('Failed to delete task');
+      console.error("Failed to delete session:", error);
+      toast.error("Failed to delete task");
 
       options?.onError?.(error, id, context);
     },

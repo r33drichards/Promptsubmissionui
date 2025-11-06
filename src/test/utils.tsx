@@ -1,9 +1,9 @@
-import { ReactElement, ReactNode } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
-import { ApiProvider } from '@/providers/ApiProvider';
-import { BackendClient } from '@/services/api/types';
+import { ReactElement, ReactNode } from "react";
+import { render, RenderOptions } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router-dom";
+import { ApiProvider } from "@/providers/ApiProvider";
+import { BackendClient } from "@/services/api/types";
 
 /**
  * Create a fresh QueryClient for each test to avoid cache pollution
@@ -31,7 +31,11 @@ interface TestProvidersProps {
 /**
  * Test wrapper that provides all necessary contexts
  */
-export function TestProviders({ children, client, queryClient }: TestProvidersProps) {
+export function TestProviders({
+  children,
+  client,
+  queryClient,
+}: TestProvidersProps) {
   const testQueryClient = queryClient || createTestQueryClient();
 
   return (
@@ -43,7 +47,7 @@ export function TestProviders({ children, client, queryClient }: TestProvidersPr
   );
 }
 
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   client?: BackendClient;
   queryClient?: QueryClient;
 }
@@ -72,5 +76,5 @@ export function renderWithProviders(
 }
 
 // Re-export everything from React Testing Library
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 export { renderWithProviders as render };

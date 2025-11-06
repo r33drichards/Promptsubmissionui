@@ -1,13 +1,18 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Enums - matching existing types
-export const InboxStatusSchema = z.enum(['pending', 'in-progress', 'completed', 'failed']);
-export const SessionStatusSchema = z.enum(['Active', 'Archived']);
+export const InboxStatusSchema = z.enum([
+  "pending",
+  "in-progress",
+  "completed",
+  "failed",
+]);
+export const SessionStatusSchema = z.enum(["Active", "Archived"]);
 
 // Message schema - matching existing Message interface
 export const MessageSchema = z.object({
   id: z.string(),
-  role: z.enum(['user', 'assistant']),
+  role: z.enum(["user", "assistant"]),
   content: z.string(),
   createdAt: z.coerce.date(), // Coerce strings to Date objects
 });
@@ -16,17 +21,19 @@ export const MessageSchema = z.object({
 export const SessionSchema = z.object({
   id: z.string(),
   title: z.string(),
-  repo: z.string().min(1, 'Repository is required'),
-  branch: z.string().min(1, 'Branch is required'),
-  targetBranch: z.string().min(1, 'Target branch is required'),
+  repo: z.string().min(1, "Repository is required"),
+  branch: z.string().min(1, "Branch is required"),
+  targetBranch: z.string().min(1, "Target branch is required"),
   inboxStatus: InboxStatusSchema,
   sessionStatus: SessionStatusSchema,
   createdAt: z.coerce.date(), // Coerce strings to Date objects
   prUrl: z.string().optional(),
-  diffStats: z.object({
-    additions: z.number(),
-    deletions: z.number(),
-  }).optional(),
+  diffStats: z
+    .object({
+      additions: z.number(),
+      deletions: z.number(),
+    })
+    .optional(),
   messages: z.array(MessageSchema).nullable(),
   children: z.lazy(() => z.array(SessionSchema)).optional(),
   parentId: z.string().nullable(),
@@ -39,8 +46,11 @@ export const SessionsArraySchema = z.array(SessionSchema);
 
 // Create Session Data schema (for API requests)
 export const CreateSessionDataSchema = z.object({
-  repo: z.string().trim().min(1, 'Repository is required to create a session'),
-  targetBranch: z.string().trim().min(1, 'Target branch is required to create a session'),
+  repo: z.string().trim().min(1, "Repository is required to create a session"),
+  targetBranch: z
+    .string()
+    .trim()
+    .min(1, "Target branch is required to create a session"),
   messages: z.any().optional(), // Backend expects flexible format
   parentId: z.string().nullable().optional(),
 });
@@ -50,10 +60,12 @@ export const UpdateSessionDataSchema = z.object({
   title: z.string().optional(),
   inboxStatus: InboxStatusSchema.optional(),
   prUrl: z.string().optional(),
-  diffStats: z.object({
-    additions: z.number(),
-    deletions: z.number(),
-  }).optional(),
+  diffStats: z
+    .object({
+      additions: z.number(),
+      deletions: z.number(),
+    })
+    .optional(),
   sessionStatus: SessionStatusSchema.optional(),
   repo: z.string().optional(),
   branch: z.string().optional(),

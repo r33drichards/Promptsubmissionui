@@ -54,17 +54,17 @@ src/
 Use the custom `render` function from `src/test/utils.tsx` to wrap components with necessary providers:
 
 ```tsx
-import { render, screen } from '@/test/utils';
-import { createMockBackendClient } from '@/test/mockBackendClient';
-import { MyComponent } from '../MyComponent';
+import { render, screen } from "@/test/utils";
+import { createMockBackendClient } from "@/test/mockBackendClient";
+import { MyComponent } from "../MyComponent";
 
-describe('MyComponent', () => {
-  it('should render correctly', () => {
+describe("MyComponent", () => {
+  it("should render correctly", () => {
     const mockClient = createMockBackendClient();
 
     render(<MyComponent />, { client: mockClient });
 
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 });
 ```
@@ -74,11 +74,11 @@ describe('MyComponent', () => {
 For testing API boundaries:
 
 ```tsx
-import { describe, it, expect, vi } from 'vitest';
-import { BackendClientImpl } from '../backendClient';
+import { describe, it, expect, vi } from "vitest";
+import { BackendClientImpl } from "../backendClient";
 
-describe('BackendClient', () => {
-  it('should fetch sessions', async () => {
+describe("BackendClient", () => {
+  it("should fetch sessions", async () => {
     const mockHttpClient = {
       get: vi.fn().mockResolvedValue({ data: [] }),
       // ... other methods
@@ -97,13 +97,13 @@ describe('BackendClient', () => {
 For testing complete user flows:
 
 ```tsx
-import { render, screen, waitFor } from '@/test/utils';
-import { createMockBackendClient } from '@/test/mockBackendClient';
-import userEvent from '@testing-library/user-event';
-import App from '@/App';
+import { render, screen, waitFor } from "@/test/utils";
+import { createMockBackendClient } from "@/test/mockBackendClient";
+import userEvent from "@testing-library/user-event";
+import App from "@/App";
 
-describe('User Flow', () => {
-  it('should create a new task', async () => {
+describe("User Flow", () => {
+  it("should create a new task", async () => {
     const user = userEvent.setup();
     const mockClient = createMockBackendClient();
 
@@ -111,11 +111,11 @@ describe('User Flow', () => {
 
     // Wait for app to load
     await waitFor(() => {
-      expect(screen.getByText('Claude Code')).toBeInTheDocument();
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
 
     // Click new task button
-    const newTaskBtn = screen.getByRole('button', { name: /new task/i });
+    const newTaskBtn = screen.getByRole("button", { name: /new task/i });
     await user.click(newTaskBtn);
 
     // Fill in form and submit
@@ -129,7 +129,7 @@ describe('User Flow', () => {
 The `createMockBackendClient` function creates a fully mocked backend client with default test data:
 
 ```tsx
-import { createMockBackendClient } from '@/test/mockBackendClient';
+import { createMockBackendClient } from "@/test/mockBackendClient";
 
 // Default mock client with test data
 const mockClient = createMockBackendClient();
@@ -137,12 +137,14 @@ const mockClient = createMockBackendClient();
 // Override specific methods
 const customClient = createMockBackendClient({
   sessions: {
-    list: vi.fn().mockResolvedValue([/* custom data */]),
+    list: vi.fn().mockResolvedValue([
+      /* custom data */
+    ]),
   },
 });
 
 // Create error mock client
-import { createErrorMockBackendClient } from '@/test/mockBackendClient';
+import { createErrorMockBackendClient } from "@/test/mockBackendClient";
 const errorClient = createErrorMockBackendClient();
 ```
 
@@ -151,6 +153,7 @@ const errorClient = createErrorMockBackendClient();
 ### 1. Use Testing Library Queries Properly
 
 Prefer queries in this order:
+
 1. `getByRole` - Most accessible
 2. `getByLabelText` - For form fields
 3. `getByPlaceholderText` - For inputs
@@ -162,11 +165,11 @@ Prefer queries in this order:
 Always use `@testing-library/user-event` instead of `fireEvent`:
 
 ```tsx
-import userEvent from '@testing-library/user-event';
+import userEvent from "@testing-library/user-event";
 
 const user = userEvent.setup();
 await user.click(button);
-await user.type(input, 'text');
+await user.type(input, "text");
 ```
 
 ### 3. Wait for Async Updates
@@ -175,20 +178,22 @@ Use `waitFor` for async state changes:
 
 ```tsx
 await waitFor(() => {
-  expect(screen.getByText('Loaded')).toBeInTheDocument();
+  expect(screen.getByText("Loaded")).toBeInTheDocument();
 });
 ```
 
 ### 4. Test User Behavior, Not Implementation
 
 ❌ Bad: Testing implementation details
+
 ```tsx
 expect(component.state.isOpen).toBe(true);
 ```
 
 ✅ Good: Testing user-visible behavior
+
 ```tsx
-expect(screen.getByText('Modal Content')).toBeInTheDocument();
+expect(screen.getByText("Modal Content")).toBeInTheDocument();
 ```
 
 ### 5. Mock External Dependencies
@@ -223,7 +228,7 @@ Tests run automatically on every push and pull request via GitHub Actions. See `
 Increase timeout for slow tests:
 
 ```tsx
-it('slow test', async () => {
+it("slow test", async () => {
   // test code
 }, 10000); // 10 second timeout
 ```

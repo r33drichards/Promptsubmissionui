@@ -1,9 +1,13 @@
-import { Session } from '../types/session';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
-import { useState } from 'react';
+import { Session } from "../types/session";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
+import { ChevronRight, ChevronDown, Plus, Archive } from "lucide-react";
+import { useState } from "react";
 
 interface SessionListItemProps {
   session: Session;
@@ -25,18 +29,18 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  const getStatusColor = (status: Session['inboxStatus']) => {
+  const getStatusColor = (status: Session["inboxStatus"]) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'in-progress':
-        return 'bg-blue-500/10 text-blue-600 border-green-500/20';
-      case 'pending':
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-      case 'failed':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
+      case "completed":
+        return "bg-green-500/10 text-green-600 border-green-500/20";
+      case "in-progress":
+        return "bg-blue-500/10 text-blue-600 border-green-500/20";
+      case "pending":
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
+      case "failed":
+        return "bg-red-500/10 text-red-600 border-red-500/20";
       default:
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
     }
   };
 
@@ -44,7 +48,7 @@ export function SessionListItem({
     <div>
       <div
         className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-          isActive ? 'bg-gray-100' : ''
+          isActive ? "bg-gray-100" : ""
         }`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
@@ -64,7 +68,7 @@ export function SessionListItem({
             </CollapsibleTrigger>
           </Collapsible>
         )}
-        
+
         <div className="flex-1 min-w-0" onClick={() => onSelect(session)}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -81,7 +85,7 @@ export function SessionListItem({
                 </a>
               </p>
             </div>
-            
+
             <div className="flex items-center gap-1 flex-shrink-0">
               {session.diffStats && (
                 <>
@@ -94,7 +98,10 @@ export function SessionListItem({
                 </>
               )}
               {session.prUrl && (
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-green-50 text-green-700 border-green-300"
+                >
                   Open
                 </Badge>
               )}
@@ -117,7 +124,10 @@ export function SessionListItem({
             className="flex-shrink-0 hover:bg-gray-200 rounded p-1"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('[SessionListItem] Archive button clicked for session:', session.id);
+              console.log(
+                "[SessionListItem] Archive button clicked for session:",
+                session.id
+              );
               onArchive(session.id);
             }}
             title="Archive"

@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
-import { createMockBackendClient } from '@/test/mockBackendClient';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { createTestQueryClient } from '@/test/utils';
-import { ApiProvider } from '@/providers/ApiProvider';
-import App from '@/App';
-import { toast } from 'sonner';
-import { render as rtlRender } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, waitFor } from "@testing-library/react";
+import { createMockBackendClient } from "@/test/mockBackendClient";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createTestQueryClient } from "@/test/utils";
+import { ApiProvider } from "@/providers/ApiProvider";
+import App from "@/App";
+import { toast } from "sonner";
+import { render as rtlRender } from "@testing-library/react";
 
 // Mock toast
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: {
     error: vi.fn(),
     success: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('sonner', () => ({
   Toaster: () => null,
 }));
 
-describe('Invalid Session ID Handling', () => {
+describe("Invalid Session ID Handling", () => {
   let mockClient: ReturnType<typeof createMockBackendClient>;
 
   beforeEach(() => {
@@ -27,13 +27,13 @@ describe('Invalid Session ID Handling', () => {
     vi.clearAllMocks();
   });
 
-  it('should redirect to home and show error toast for invalid session ID', async () => {
+  it("should redirect to home and show error toast for invalid session ID", async () => {
     const router = createMemoryRouter(
       [
-        { path: '/', element: <App /> },
-        { path: '/session/:id', element: <App /> },
+        { path: "/", element: <App /> },
+        { path: "/session/:id", element: <App /> },
       ],
-      { initialEntries: ['/session/invalid-session-id-12345'] }
+      { initialEntries: ["/session/invalid-session-id-12345"] }
     );
 
     const queryClient = createTestQueryClient();
@@ -52,26 +52,31 @@ describe('Invalid Session ID Handling', () => {
     });
 
     // Should redirect to home
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/');
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(router.state.location.pathname).toBe("/");
+      },
+      { timeout: 3000 }
+    );
 
     // Should show error toast
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Session not found');
+      expect(toast.error).toHaveBeenCalledWith("Session not found");
     });
 
     // Should show empty state
-    expect(screen.getByText('Select a task to view details')).toBeInTheDocument();
+    expect(
+      screen.getByText("Select a task to view details")
+    ).toBeInTheDocument();
   });
 
-  it('should load valid session ID correctly', async () => {
+  it("should load valid session ID correctly", async () => {
     const router = createMemoryRouter(
       [
-        { path: '/', element: <App /> },
-        { path: '/session/:id', element: <App /> },
+        { path: "/", element: <App /> },
+        { path: "/session/:id", element: <App /> },
       ],
-      { initialEntries: ['/session/test-session-1'] }
+      { initialEntries: ["/session/test-session-1"] }
     );
 
     const queryClient = createTestQueryClient();
@@ -86,15 +91,15 @@ describe('Invalid Session ID Handling', () => {
 
     // Wait for sessions to load
     await waitFor(() => {
-      expect(screen.getAllByText('Test Session 1').length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Test Session 1").length).toBeGreaterThan(0);
     });
 
     // Should stay on session route
-    expect(router.state.location.pathname).toBe('/session/test-session-1');
+    expect(router.state.location.pathname).toBe("/session/test-session-1");
 
     // Should display session details
     await waitFor(() => {
-      const repoElements = screen.getAllByText('test/repo');
+      const repoElements = screen.getAllByText("test/repo");
       expect(repoElements.length).toBeGreaterThan(0);
     });
 

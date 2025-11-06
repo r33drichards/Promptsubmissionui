@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface MonacoEditorProps {
   value: string;
@@ -8,7 +8,11 @@ interface MonacoEditorProps {
   language?: string;
 }
 
-export function MonacoEditor({ value, onChange, placeholder }: MonacoEditorProps) {
+export function MonacoEditor({
+  value,
+  onChange,
+  placeholder,
+}: MonacoEditorProps) {
   return (
     <textarea
       aria-label="Prompt"

@@ -1,11 +1,11 @@
-import { HttpClient } from '../http/types';
-import { Session, Message } from '../../types/session';
+import { HttpClient } from "../http/types";
+import { Session, Message } from "../../types/session";
 import {
   BackendClient,
   CreateSessionData,
   UpdateSessionData,
   ListSessionsParams,
-} from './types';
+} from "./types";
 
 /**
  * Converts snake_case string to camelCase
@@ -33,7 +33,7 @@ function keysToCamel(obj: any): any {
     return obj.map(keysToCamel);
   }
 
-  if (typeof obj === 'object' && obj.constructor === Object) {
+  if (typeof obj === "object" && obj.constructor === Object) {
     return Object.keys(obj).reduce((acc, key) => {
       const camelKey = snakeToCamel(key);
       acc[camelKey] = keysToCamel(obj[key]);
@@ -56,7 +56,7 @@ function keysToSnake(obj: any): any {
     return obj.map(keysToSnake);
   }
 
-  if (typeof obj === 'object' && obj.constructor === Object) {
+  if (typeof obj === "object" && obj.constructor === Object) {
     return Object.keys(obj).reduce((acc, key) => {
       const snakeKey = camelToSnake(key);
       acc[snakeKey] = keysToSnake(obj[key]);
@@ -76,7 +76,7 @@ export class BackendClientImpl implements BackendClient {
 
   sessions = {
     list: async (params?: ListSessionsParams): Promise<Session[]> => {
-      const response = await this.httpClient.get<any[]>('/api/sessions', {
+      const response = await this.httpClient.get<any[]>("/api/sessions", {
         params,
       });
       return this.deserializeSessions(response.data);
@@ -89,13 +89,19 @@ export class BackendClientImpl implements BackendClient {
 
     create: async (data: CreateSessionData): Promise<Session> => {
       const snakeData = keysToSnake(data);
-      const response = await this.httpClient.post<any>('/api/sessions', snakeData);
+      const response = await this.httpClient.post<any>(
+        "/api/sessions",
+        snakeData
+      );
       return this.deserializeSession(response.data);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
       const snakeData = keysToSnake(data);
-      const response = await this.httpClient.patch<any>(`/api/sessions/${id}`, snakeData);
+      const response = await this.httpClient.patch<any>(
+        `/api/sessions/${id}`,
+        snakeData
+      );
       return this.deserializeSession(response.data);
     },
 
@@ -104,26 +110,35 @@ export class BackendClientImpl implements BackendClient {
     },
 
     archive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${id}/archive`);
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${id}/archive`
+      );
       return this.deserializeSession(response.data);
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${id}/unarchive`);
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${id}/unarchive`
+      );
       return this.deserializeSession(response.data);
     },
   };
 
   messages = {
     list: async (sessionId: string): Promise<Message[]> => {
-      const response = await this.httpClient.get<any[]>(`/api/sessions/${sessionId}/messages`);
+      const response = await this.httpClient.get<any[]>(
+        `/api/sessions/${sessionId}/messages`
+      );
       return this.deserializeMessages(response.data);
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
-      const response = await this.httpClient.post<any>(`/api/sessions/${sessionId}/messages`, {
-        content,
-      });
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${sessionId}/messages`,
+        {
+          content,
+        }
+      );
       return this.deserializeMessage(response.data);
     },
   };
@@ -136,8 +151,12 @@ export class BackendClientImpl implements BackendClient {
     return {
       ...camelSession,
       createdAt: new Date(camelSession.createdAt),
-      messages: camelSession.messages ? this.deserializeMessages(camelSession.messages) : null,
-      children: camelSession.children ? this.deserializeSessions(camelSession.children) : undefined,
+      messages: camelSession.messages
+        ? this.deserializeMessages(camelSession.messages)
+        : null,
+      children: camelSession.children
+        ? this.deserializeSessions(camelSession.children)
+        : undefined,
     };
   }
 

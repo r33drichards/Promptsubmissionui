@@ -5,6 +5,7 @@ This document describes the TanStack Query (React Query) integration for managin
 ## Overview
 
 TanStack Query provides:
+
 - **Automatic Caching**: Data is cached and reused across components
 - **Background Refetching**: Keeps data fresh automatically
 - **Optimistic Updates**: UI updates instantly, rolls back on error
@@ -69,21 +70,25 @@ Query keys are centralized in `src/hooks/queryKeys.ts` for consistent cache mana
 ```typescript
 export const queryKeys = {
   sessions: {
-    all: ['sessions'],
-    lists: () => [...queryKeys.sessions.all, 'list'],
-    list: (params?: ListSessionsParams) => [...queryKeys.sessions.lists(), params],
-    details: () => [...queryKeys.sessions.all, 'detail'],
+    all: ["sessions"],
+    lists: () => [...queryKeys.sessions.all, "list"],
+    list: (params?: ListSessionsParams) => [
+      ...queryKeys.sessions.lists(),
+      params,
+    ],
+    details: () => [...queryKeys.sessions.all, "detail"],
     detail: (id: string) => [...queryKeys.sessions.details(), id],
   },
   messages: {
-    all: ['messages'],
-    lists: () => [...queryKeys.messages.all, 'list'],
+    all: ["messages"],
+    lists: () => [...queryKeys.messages.all, "list"],
     list: (sessionId: string) => [...queryKeys.messages.lists(), sessionId],
   },
 };
 ```
 
 This structure allows for:
+
 - **Granular invalidation**: Invalidate specific queries or entire groups
 - **Type safety**: Keys are strongly typed
 - **Consistency**: Same keys used across the app
@@ -95,12 +100,16 @@ This structure allows for:
 #### List Sessions with Filters
 
 ```tsx
-import { useSessions } from './hooks';
+import { useSessions } from "./hooks";
 
 function SessionList() {
-  const { data: sessions, isLoading, error } = useSessions({
+  const {
+    data: sessions,
+    isLoading,
+    error,
+  } = useSessions({
     archived: false,
-    status: 'pending',
+    status: "pending",
   });
 
   if (isLoading) return <div>Loading...</div>;
@@ -119,7 +128,7 @@ function SessionList() {
 #### Get Single Session
 
 ```tsx
-import { useSession } from './hooks';
+import { useSession } from "./hooks";
 
 function SessionDetail({ id }: { id: string }) {
   const { data: session, isLoading } = useSession(id);
@@ -133,7 +142,7 @@ function SessionDetail({ id }: { id: string }) {
 #### Fetch Messages for a Session
 
 ```tsx
-import { useMessages } from './hooks';
+import { useMessages } from "./hooks";
 
 function MessageList({ sessionId }: { sessionId: string }) {
   const { data: messages, isLoading } = useMessages(sessionId);
@@ -155,7 +164,7 @@ function MessageList({ sessionId }: { sessionId: string }) {
 #### Create a New Session
 
 ```tsx
-import { useCreateSession } from './hooks';
+import { useCreateSession } from "./hooks";
 
 function CreateSessionButton() {
   const createSession = useCreateSession();
@@ -163,14 +172,14 @@ function CreateSessionButton() {
   const handleCreate = () => {
     createSession.mutate(
       {
-        title: 'Fix bug in login',
-        repo: 'owner/repo',
-        branch: 'feature/fix-login',
-        targetBranch: 'main',
+        title: "Fix bug in login",
+        repo: "owner/repo",
+        branch: "feature/fix-login",
+        targetBranch: "main",
       },
       {
         onSuccess: (newSession) => {
-          console.log('Created:', newSession);
+          console.log("Created:", newSession);
           // Navigate to the new session or update UI
         },
       }
@@ -179,7 +188,7 @@ function CreateSessionButton() {
 
   return (
     <button onClick={handleCreate} disabled={createSession.isPending}>
-      {createSession.isPending ? 'Creating...' : 'Create Session'}
+      {createSession.isPending ? "Creating..." : "Create Session"}
     </button>
   );
 }
@@ -188,7 +197,7 @@ function CreateSessionButton() {
 #### Update a Session
 
 ```tsx
-import { useUpdateSession } from './hooks';
+import { useUpdateSession } from "./hooks";
 
 function UpdateStatusButton({ sessionId }: { sessionId: string }) {
   const updateSession = useUpdateSession();
@@ -196,7 +205,7 @@ function UpdateStatusButton({ sessionId }: { sessionId: string }) {
   const handleComplete = () => {
     updateSession.mutate({
       id: sessionId,
-      data: { inboxStatus: 'completed' },
+      data: { inboxStatus: "completed" },
     });
   };
 
@@ -211,7 +220,7 @@ function UpdateStatusButton({ sessionId }: { sessionId: string }) {
 #### Archive a Session (with Optimistic Update)
 
 ```tsx
-import { useArchiveSession } from './hooks';
+import { useArchiveSession } from "./hooks";
 
 function ArchiveButton({ sessionId }: { sessionId: string }) {
   const archiveSession = useArchiveSession();
@@ -236,16 +245,16 @@ function ArchiveButton({ sessionId }: { sessionId: string }) {
 #### Create a Message (with Optimistic Update)
 
 ```tsx
-import { useCreateMessage } from './hooks';
+import { useCreateMessage } from "./hooks";
 
 function MessageInput({ sessionId }: { sessionId: string }) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const createMessage = useCreateMessage(sessionId);
 
   const handleSend = () => {
     createMessage.mutate(message, {
       onSuccess: () => {
-        setMessage(''); // Clear input
+        setMessage(""); // Clear input
         // Message appears instantly in UI (optimistic)
         // Rolled back if server returns error
       },
@@ -348,7 +357,7 @@ Errors are automatically handled with toast notifications, but you can add custo
 const createSession = useCreateSession({
   onError: (error) => {
     // Custom error handling
-    console.error('Failed to create session:', error);
+    console.error("Failed to create session:", error);
     // Show custom error UI
   },
 });
@@ -418,11 +427,13 @@ export function useSessions(params?: ListSessionsParams) {
 ```
 
 The backend client handles:
+
 - HTTP requests
 - Serialization/deserialization
 - Error formatting
 
 TanStack Query handles:
+
 - Caching
 - Refetching
 - Loading states
@@ -431,6 +442,7 @@ TanStack Query handles:
 ## Migrating from Local State
 
 Before (local state):
+
 ```tsx
 const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -445,6 +457,7 @@ const createSession = async (data) => {
 ```
 
 After (TanStack Query):
+
 ```tsx
 const { data: sessions = [] } = useSessions();
 const createSession = useCreateSession();
@@ -454,6 +467,7 @@ createSession.mutate(data);
 ```
 
 Benefits:
+
 - No manual state management
 - Automatic cache invalidation
 - Built-in loading/error states
@@ -465,24 +479,27 @@ Benefits:
 ### Query Not Refetching
 
 Check if data is stale:
+
 ```tsx
 const { data, isStale } = useSessions();
-console.log('Is stale:', isStale);
+console.log("Is stale:", isStale);
 ```
 
 Manually refetch:
+
 ```tsx
 const { data, refetch } = useSessions();
-<button onClick={() => refetch()}>Refresh</button>
+<button onClick={() => refetch()}>Refresh</button>;
 ```
 
 ### Mutation Not Updating UI
 
 Ensure cache is being invalidated:
+
 ```typescript
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists() });
-}
+};
 ```
 
 ### Multiple Requests for Same Data

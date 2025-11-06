@@ -4,21 +4,27 @@ import {
   SessionStatus as SDKSessionStatus,
   CreateSessionWithPromptInput,
   CreateSessionWithPromptOutput,
-} from '@wholelottahoopla/prompt-backend-client';
-import { Session, Message, SessionStatus, BackendMessage, Prompt } from '../../types/session';
+} from "@wholelottahoopla/prompt-backend-client";
+import {
+  Session,
+  Message,
+  SessionStatus,
+  BackendMessage,
+  Prompt,
+} from "../../types/session";
 import {
   BackendClient,
   CreateSessionData,
   UpdateSessionData,
   ListSessionsParams,
-} from './types';
+} from "./types";
 import {
   SessionSchema,
   SessionsArraySchema,
   MessageSchema,
   MessagesArraySchema,
   CreateSessionDataSchema,
-} from '../../schemas/session';
+} from "../../schemas/session";
 
 /**
  * Implementation of BackendClient using the @wholelottahoopla/prompt-backend-client package.
@@ -29,8 +35,11 @@ export class PromptBackendClient implements BackendClient {
 
   constructor(basePath?: string) {
     const config = new Configuration({
-      basePath: basePath || import.meta.env.VITE_BACKEND_URL || 'https://prompt-backend-production.up.railway.app',
-      credentials: 'include', // Required for Service Worker to inject Bearer tokens
+      basePath:
+        basePath ||
+        import.meta.env.VITE_BACKEND_URL ||
+        "https://prompt-backend-production.up.railway.app",
+      credentials: "include", // Required for Service Worker to inject Bearer tokens
     });
     this.api = new DefaultApi(config);
   }
@@ -49,11 +58,13 @@ export class PromptBackendClient implements BackendClient {
     },
 
     create: async (data: CreateSessionData): Promise<Session> => {
-      console.log('[PromptBackendClient] Creating session with data:', data);
+      console.log("[PromptBackendClient] Creating session with data:", data);
 
-      // Parse input data using Zod 
+      // Parse input data using Zod
       const validatedData = CreateSessionDataSchema.parse(data);
-      console.log('[PromptBackendClient] Creating session with prompt using new endpoint');
+      console.log(
+        "[PromptBackendClient] Creating session with prompt using new endpoint"
+      );
       const response = await this.api.handlersSessionsCreateWithPrompt({
         createSessionWithPromptInput: {
           repo: validatedData.repo,
@@ -63,11 +74,16 @@ export class PromptBackendClient implements BackendClient {
         },
       });
 
-      console.log('[PromptBackendClient] CreateWithPrompt response:', response);
+      console.log("[PromptBackendClient] CreateWithPrompt response:", response);
 
       if (!response || !response.sessionId) {
-        console.error('[PromptBackendClient] Invalid response structure:', response);
-        throw new Error('Failed to create session with prompt: Invalid response from backend');
+        console.error(
+          "[PromptBackendClient] Invalid response structure:",
+          response
+        );
+        throw new Error(
+          "Failed to create session with prompt: Invalid response from backend"
+        );
       }
 
       // Fetch the full session data
@@ -75,7 +91,12 @@ export class PromptBackendClient implements BackendClient {
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
-      console.log('[PromptBackendClient] Updating session:', id, 'with data:', data);
+      console.log(
+        "[PromptBackendClient] Updating session:",
+        id,
+        "with data:",
+        data
+      );
 
       // Build update input with only the fields that are provided or need to be updated
       const updateInput: any = {
@@ -84,18 +105,20 @@ export class PromptBackendClient implements BackendClient {
 
       // Only include fields that are explicitly provided in the update data
       if (data.title !== undefined) updateInput.title = data.title;
-      if (data.sessionStatus !== undefined) updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
+      if (data.sessionStatus !== undefined)
+        updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
       if (data.repo !== undefined) updateInput.repo = data.repo;
       if (data.branch !== undefined) updateInput.branch = data.branch;
-      if (data.targetBranch !== undefined) updateInput.targetBranch = data.targetBranch;
+      if (data.targetBranch !== undefined)
+        updateInput.targetBranch = data.targetBranch;
 
-      console.log('[PromptBackendClient] Update input:', updateInput);
+      console.log("[PromptBackendClient] Update input:", updateInput);
 
       const response = await this.api.handlersSessionsUpdate({
         id,
         updateSessionInput: updateInput,
       });
-      console.log('[PromptBackendClient] Update response:', response);
+      console.log("[PromptBackendClient] Update response:", response);
 
       // Fetch the updated session data
       return this.sessions.get(id);
@@ -106,19 +129,21 @@ export class PromptBackendClient implements BackendClient {
     },
 
     archive: async (id: string): Promise<Session> => {
-      console.log('[PromptBackendClient] Archiving session:', id);
+      console.log("[PromptBackendClient] Archiving session:", id);
       try {
-        const result = await this.sessions.update(id, { sessionStatus: 'Archived' });
-        console.log('[PromptBackendClient] Archive successful:', result);
+        const result = await this.sessions.update(id, {
+          sessionStatus: "Archived",
+        });
+        console.log("[PromptBackendClient] Archive successful:", result);
         return result;
       } catch (error) {
-        console.error('[PromptBackendClient] Archive failed:', error);
+        console.error("[PromptBackendClient] Archive failed:", error);
         throw error;
       }
     },
 
     unarchive: async (id: string): Promise<Session> => {
-      return this.sessions.update(id, { sessionStatus: 'Active' });
+      return this.sessions.update(id, { sessionStatus: "Active" });
     },
   };
 
@@ -128,7 +153,7 @@ export class PromptBackendClient implements BackendClient {
         const response = await this.api.handlersPromptsList({ sessionId });
         return this.deserializePrompts(response.prompts || []);
       } catch (error) {
-        console.error('[PromptBackendClient] Failed to list prompts:', error);
+        console.error("[PromptBackendClient] Failed to list prompts:", error);
         return [];
       }
     },
@@ -141,7 +166,7 @@ export class PromptBackendClient implements BackendClient {
         const response = await this.api.handlersMessagesList({ sessionId });
         return this.deserializeBackendMessages(response.messages || []);
       } catch (error) {
-        console.error('[PromptBackendClient] Failed to list messages:', error);
+        console.error("[PromptBackendClient] Failed to list messages:", error);
         return [];
       }
     },
@@ -149,8 +174,12 @@ export class PromptBackendClient implements BackendClient {
     create: async (sessionId: string, content: string): Promise<Message> => {
       // TODO: The new API structure requires creating a Prompt first, then adding Messages to it.
       // This needs to be redesigned based on the app's requirements.
-      console.error('[PromptBackendClient] messages.create is not yet implemented for the new API structure');
-      throw new Error('messages.create is not yet implemented for the new API structure. Please use the Prompts API.');
+      console.error(
+        "[PromptBackendClient] messages.create is not yet implemented for the new API structure"
+      );
+      throw new Error(
+        "messages.create is not yet implemented for the new API structure. Please use the Prompts API."
+      );
     },
   };
 
@@ -158,14 +187,19 @@ export class PromptBackendClient implements BackendClient {
    * Maps SessionStatus to our local InboxStatus format
    * Note: The new API uses SessionStatus instead of InboxStatus
    */
-  private sessionStatusToInboxStatus(sessionStatus: string): 'pending' | 'in-progress' | 'completed' | 'failed' {
-    const statusMap: Record<string, 'pending' | 'in-progress' | 'completed' | 'failed'> = {
-      'Active': 'in-progress',
-      'Archived': 'completed',
-      'Completed': 'completed',
+  private sessionStatusToInboxStatus(
+    sessionStatus: string
+  ): "pending" | "in-progress" | "completed" | "failed" {
+    const statusMap: Record<
+      string,
+      "pending" | "in-progress" | "completed" | "failed"
+    > = {
+      Active: "in-progress",
+      Archived: "completed",
+      Completed: "completed",
       // Add other mappings as needed based on SessionStatus enum
     };
-    return statusMap[sessionStatus] || 'pending';
+    return statusMap[sessionStatus] || "pending";
   }
 
   /**
@@ -173,33 +207,38 @@ export class PromptBackendClient implements BackendClient {
    */
   private deserializeSession(session: any): Session {
     if (!session) {
-      throw new Error('Cannot deserialize null or undefined session');
+      throw new Error("Cannot deserialize null or undefined session");
     }
 
     // Extract repo, branch, and targetBranch from sbxConfig if they exist there
     const sbxConfig = session.sbxConfig || {};
-    const repo = session.repo || sbxConfig.repo || '';
-    const branch = session.branch || sbxConfig.branch || '';
-    const targetBranch = session.targetBranch || sbxConfig.targetBranch || 'main';
+    const repo = session.repo || sbxConfig.repo || "";
+    const branch = session.branch || sbxConfig.branch || "";
+    const targetBranch =
+      session.targetBranch || sbxConfig.targetBranch || "main";
 
     // Map sessionStatus to inboxStatus for backwards compatibility
-    const inboxStatus = this.sessionStatusToInboxStatus(session.sessionStatus || 'Active');
+    const inboxStatus = this.sessionStatusToInboxStatus(
+      session.sessionStatus || "Active"
+    );
 
     // Prepare session data for validation
     const sessionData = {
-      id: session.id || '',
-      title: session.title || '',
+      id: session.id || "",
+      title: session.title || "",
       repo,
       branch,
       targetBranch,
       messages: null, // Messages are now separate entities in the new API
       inboxStatus,
-      sessionStatus: session.sessionStatus || 'Active',
+      sessionStatus: session.sessionStatus || "Active",
       parentId: session.parent || null,
       createdAt: session.createdAt || new Date().toISOString(),
       diffStats: session.diffStats,
       prUrl: session.prUrl,
-      children: session.children ? this.deserializeSessions(session.children) : undefined,
+      children: session.children
+        ? this.deserializeSessions(session.children)
+        : undefined,
       sbxConfig: session.sbxConfig || null,
     };
 
@@ -219,9 +258,9 @@ export class PromptBackendClient implements BackendClient {
    */
   private deserializeMessage(message: any): Message {
     const messageData = {
-      id: message.id || '',
-      role: message.role || 'user',
-      content: message.content || '',
+      id: message.id || "",
+      role: message.role || "user",
+      content: message.content || "",
       createdAt: message.createdAt || new Date().toISOString(),
     };
 
@@ -240,9 +279,9 @@ export class PromptBackendClient implements BackendClient {
     // Parse and validate the entire array (parse don't validate)
     return MessagesArraySchema.parse(
       messages.map((message) => ({
-        id: message.id || '',
-        role: message.role || 'user',
-        content: message.content || '',
+        id: message.id || "",
+        role: message.role || "user",
+        content: message.content || "",
         createdAt: message.createdAt || new Date().toISOString(),
       }))
     );
@@ -257,10 +296,10 @@ export class PromptBackendClient implements BackendClient {
     }
 
     return messages.map((msg) => ({
-      type: msg.type || 'user',
-      uuid: msg.uuid || msg.id || '',
+      type: msg.type || "user",
+      uuid: msg.uuid || msg.id || "",
       message: msg.message || {},
-      session_id: msg.session_id || msg.sessionId || '',
+      session_id: msg.session_id || msg.sessionId || "",
       parent_tool_use_id: msg.parent_tool_use_id || null,
     }));
   }
@@ -270,11 +309,11 @@ export class PromptBackendClient implements BackendClient {
    */
   private deserializePrompt(prompt: any): Prompt {
     return {
-      id: prompt.id || '',
-      sessionId: prompt.sessionId || prompt.session_id || '',
-      content: prompt.content || '',
+      id: prompt.id || "",
+      sessionId: prompt.sessionId || prompt.session_id || "",
+      content: prompt.content || "",
       createdAt: prompt.createdAt ? new Date(prompt.createdAt) : new Date(),
-      status: prompt.status || 'pending',
+      status: prompt.status || "pending",
     };
   }
 

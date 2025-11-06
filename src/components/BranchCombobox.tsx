@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from './ui/utils';
-import { Button } from './ui/button';
+import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "./ui/utils";
+import { Button } from "./ui/button";
 import {
   Command,
   CommandEmpty,
@@ -9,8 +9,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+} from "./ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface BranchComboboxProps {
   value: string;
@@ -20,7 +20,13 @@ interface BranchComboboxProps {
   disabled?: boolean;
 }
 
-export function BranchCombobox({ value, onChange, branches, id, disabled = false }: BranchComboboxProps) {
+export function BranchCombobox({
+  value,
+  onChange,
+  branches,
+  id,
+  disabled = false,
+}: BranchComboboxProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -34,7 +40,7 @@ export function BranchCombobox({ value, onChange, branches, id, disabled = false
           className="w-full justify-between"
           disabled={disabled}
         >
-          {value || 'Select branch...'}
+          {value || "Select branch..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -57,8 +63,8 @@ export function BranchCombobox({ value, onChange, branches, id, disabled = false
                 >
                   <Check
                     className={cn(
-                      'mr-2 h-4 w-4',
-                      value === branch ? 'opacity-100' : 'opacity-0'
+                      "mr-2 h-4 w-4",
+                      value === branch ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {branch}

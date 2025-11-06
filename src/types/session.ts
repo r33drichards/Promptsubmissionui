@@ -1,5 +1,5 @@
-export type InboxStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
-export type SessionStatus = 'Active' | 'Archived';
+export type InboxStatus = "pending" | "in-progress" | "completed" | "failed";
+export type SessionStatus = "Active" | "Archived";
 
 export interface Session {
   id: string;
@@ -23,19 +23,19 @@ export interface Session {
 
 export interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   createdAt: Date;
 }
 
 // New backend message structure (from Claude Code output)
 export interface BackendMessage {
-  type: 'assistant' | 'user' | 'system' | 'result';
+  type: "assistant" | "user" | "system" | "result";
   uuid: string;
   message: {
     id?: string;
-    role?: 'user' | 'assistant';
-    type?: 'message';
+    role?: "user" | "assistant";
+    type?: "message";
     model?: string;
     usage?: {
       input_tokens: number;
@@ -45,7 +45,7 @@ export interface BackendMessage {
       service_tier?: string;
     };
     content: Array<{
-      type: 'text' | 'tool_use' | 'tool_result';
+      type: "text" | "tool_use" | "tool_result";
       text?: string;
       id?: string;
       name?: string;
@@ -65,5 +65,5 @@ export interface Prompt {
   sessionId: string;
   content: string;
   createdAt: Date;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
 }

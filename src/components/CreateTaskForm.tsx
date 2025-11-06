@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { z } from 'zod';
-import { Label } from './ui/label';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Session } from '../types/session';
-import { CreateSessionData } from '../services/api/types';
-import { RepositoryCombobox } from './RepositoryCombobox';
-import { BranchCombobox } from './BranchCombobox';
-import { MonacoEditor } from './MonacoEditor';
-import { useGitHubBranches } from '../hooks';
-import { X, Loader2 } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { z } from "zod";
+import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Session } from "../types/session";
+import { CreateSessionData } from "../services/api/types";
+import { RepositoryCombobox } from "./RepositoryCombobox";
+import { BranchCombobox } from "./BranchCombobox";
+import { MonacoEditor } from "./MonacoEditor";
+import { useGitHubBranches } from "../hooks";
+import { X, Loader2 } from "lucide-react";
 
 // Zod schema for form validation
 const createTaskFormSchema = z.object({
-  repo: z.string().trim().min(1, 'Repository is required'),
-  targetBranch: z.string().trim().min(1, 'Target branch is required'),
-  prompt: z.string().trim().min(1, 'Prompt is required'),
+  repo: z.string().trim().min(1, "Repository is required"),
+  targetBranch: z.string().trim().min(1, "Target branch is required"),
+  prompt: z.string().trim().min(1, "Prompt is required"),
 });
 
 interface CreateTaskFormProps {
@@ -34,13 +34,20 @@ export function CreateTaskForm({
   parentSession,
   repositories,
 }: CreateTaskFormProps) {
-  const [repo, setRepo] = useState(parentSession?.repo || '');
-  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
-  const [prompt, setPrompt] = useState('');
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateTaskFormData, string>>>({});
+  const [repo, setRepo] = useState(parentSession?.repo || "");
+  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || "");
+  const [prompt, setPrompt] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateTaskFormData, string>>
+  >({});
 
   // Fetch branches from GitHub API based on selected repository
-  const { branches, defaultBranch, isLoading: isLoadingBranches, error: branchesError } = useGitHubBranches(repo);
+  const {
+    branches,
+    defaultBranch,
+    isLoading: isLoadingBranches,
+    error: branchesError,
+  } = useGitHubBranches(repo);
 
   // Update targetBranch when repository changes and default branch is loaded
   useEffect(() => {
@@ -73,7 +80,7 @@ export function CreateTaskForm({
       });
 
       setErrors(fieldErrors);
-      console.error('[CreateTaskForm] Validation failed:', fieldErrors);
+      console.error("[CreateTaskForm] Validation failed:", fieldErrors);
       return;
     }
 
@@ -82,7 +89,7 @@ export function CreateTaskForm({
 
     // Use the parsed (validated and typed) data
     const validatedData = result.data;
-    console.log('[CreateTaskForm] Submitting with:', validatedData);
+    console.log("[CreateTaskForm] Submitting with:", validatedData);
 
     onSubmit({
       repo: validatedData.repo,
@@ -91,16 +98,18 @@ export function CreateTaskForm({
       parentId: parentSession?.id || null,
     });
 
-    setRepo('');
-    setTargetBranch('main');
-    setPrompt('');
+    setRepo("");
+    setTargetBranch("main");
+    setPrompt("");
   };
 
   return (
     <div className="flex flex-col h-full">
       <div className="border-b p-4 flex items-center justify-between">
         <h2>
-          {parentSession ? `Create Subtask for "${parentSession.title}"` : 'Create New Task'}
+          {parentSession
+            ? `Create Subtask for "${parentSession.title}"`
+            : "Create New Task"}
         </h2>
         <Button variant="ghost" size="sm" onClick={onCancel}>
           <X className="w-4 h-4" />
@@ -112,12 +121,17 @@ export function CreateTaskForm({
           {/* Repository and Target Branch in flex-row at the top */}
           <div className="flex flex-row gap-4">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="repo" className="text-sm">Repository</Label>
+              <Label htmlFor="repo" className="text-sm">
+                Repository
+              </Label>
               <RepositoryCombobox
                 id="repo"
                 value={repo}
                 onChange={(newRepo) => {
-                  console.log('[CreateTaskForm] RepositoryCombobox onChange called with:', newRepo);
+                  console.log(
+                    "[CreateTaskForm] RepositoryCombobox onChange called with:",
+                    newRepo
+                  );
                   setRepo(newRepo);
                   // Clear error when user starts typing
                   if (errors.repo) {
@@ -125,7 +139,7 @@ export function CreateTaskForm({
                   }
                   // Reset targetBranch when repo changes so useEffect can set it to the new repo's default
                   if (!parentSession) {
-                    setTargetBranch('');
+                    setTargetBranch("");
                   }
                 }}
                 repositories={repositories}
@@ -139,7 +153,9 @@ export function CreateTaskForm({
               <Label htmlFor="targetBranch" className="text-sm">
                 Target Branch (for PR)
                 {parentSession && (
-                  <span className="text-muted-foreground text-xs ml-2">(inherited from parent)</span>
+                  <span className="text-muted-foreground text-xs ml-2">
+                    (inherited from parent)
+                  </span>
                 )}
               </Label>
               {parentSession ? (
@@ -158,14 +174,19 @@ export function CreateTaskForm({
                       setTargetBranch(newBranch);
                       // Clear error when user starts typing
                       if (errors.targetBranch) {
-                        setErrors((prev) => ({ ...prev, targetBranch: undefined }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          targetBranch: undefined,
+                        }));
                       }
                     }}
                     branches={branches}
                     disabled={isLoadingBranches || !repo}
                   />
                   {errors.targetBranch && (
-                    <div className="text-xs text-red-600">{errors.targetBranch}</div>
+                    <div className="text-xs text-red-600">
+                      {errors.targetBranch}
+                    </div>
                   )}
                   {isLoadingBranches && repo && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -174,9 +195,7 @@ export function CreateTaskForm({
                     </div>
                   )}
                   {branchesError && (
-                    <div className="text-xs text-red-600">
-                      {branchesError}
-                    </div>
+                    <div className="text-xs text-red-600">{branchesError}</div>
                   )}
                   {!repo && (
                     <div className="text-xs text-muted-foreground">
@@ -194,7 +213,7 @@ export function CreateTaskForm({
             <MonacoEditor
               value={prompt}
               onChange={(value) => {
-                setPrompt(value || '');
+                setPrompt(value || "");
                 // Clear error when user starts typing
                 if (errors.prompt) {
                   setErrors((prev) => ({ ...prev, prompt: undefined }));

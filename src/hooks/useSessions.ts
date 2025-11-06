@@ -1,8 +1,8 @@
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { useApi } from '../providers/ApiProvider';
-import { Session } from '../types/session';
-import { ListSessionsParams } from '../services/api/types';
-import { queryKeys } from './queryKeys';
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useApi } from "../providers/ApiProvider";
+import { Session } from "../types/session";
+import { ListSessionsParams } from "../services/api/types";
+import { queryKeys } from "./queryKeys";
 
 /**
  * Hook to fetch a list of sessions with optional filters.
@@ -14,7 +14,7 @@ import { queryKeys } from './queryKeys';
  */
 export function useSessions(
   params?: ListSessionsParams,
-  options?: Omit<UseQueryOptions<Session[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Session[]>, "queryKey" | "queryFn">
 ) {
   const api = useApi();
 
@@ -35,7 +35,7 @@ export function useSessions(
  */
 export function useSession(
   id: string,
-  options?: Omit<UseQueryOptions<Session>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Session>, "queryKey" | "queryFn">
 ) {
   const api = useApi();
 

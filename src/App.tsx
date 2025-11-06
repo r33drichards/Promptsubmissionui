@@ -1,29 +1,29 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
-import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
-import { Session } from './types/session';
-import { CreateSessionData } from './services/api/types';
-import { SessionListItem } from './components/SessionListItem';
-import { SessionDetail } from './components/SessionDetail';
-import { CreateTaskForm } from './components/CreateTaskForm';
-import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
-import { Plus, Search, Github, Loader2, LogOut } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState, useMemo, useEffect } from "react";
+import { Routes, Route, useParams, useNavigate } from "react-router-dom";
+import { OidcSecure, useOidc } from "@axa-fr/react-oidc";
+import { Session } from "./types/session";
+import { CreateSessionData } from "./services/api/types";
+import { SessionListItem } from "./components/SessionListItem";
+import { SessionDetail } from "./components/SessionDetail";
+import { CreateTaskForm } from "./components/CreateTaskForm";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
+import { Plus, Search, Github, Loader2, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import {
   useSessions,
   useCreateSession,
   useUpdateSession,
   useArchiveSession,
-} from './hooks';
+} from "./hooks";
 
-type FilterType = 'active' | 'archived' | 'all';
+type FilterType = "active" | "archived" | "all";
 
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('active');
+  const [filter, setFilter] = useState<FilterType>("active");
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -36,26 +36,28 @@ function AppLayout() {
   // Derive selectedSession from URL parameter
   const selectedSession = useMemo(() => {
     if (!id) return null;
-    return sessions.find(s => s.id === id) || null;
+    return sessions.find((s) => s.id === id) || null;
   }, [id, sessions]);
 
   // Handle invalid session IDs
   useEffect(() => {
     // Only check after sessions have loaded
     if (!isLoadingSessions && id && !selectedSession) {
-      toast.error('Session not found');
-      navigate('/');
+      toast.error("Session not found");
+      navigate("/");
     }
   }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCreatingTask, setIsCreatingTask] = useState(false);
-  const [parentForNewTask, setParentForNewTask] = useState<Session | null>(null);
+  const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
+    null
+  );
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
     const repoMap = new Map<string, Date>();
-    
+
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
       const existing = repoMap.get(session.repo);
@@ -80,10 +82,10 @@ function AppLayout() {
 
     // Filter sessions based on filter type
     let filteredSessions = sessions;
-    if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
-    } else if (filter === 'archived') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
+    if (filter === "active") {
+      filteredSessions = sessions.filter((s) => s.sessionStatus === "Active");
+    } else if (filter === "archived") {
+      filteredSessions = sessions.filter((s) => s.sessionStatus === "Archived");
     }
     // 'all' shows everything
 
@@ -145,22 +147,19 @@ function AppLayout() {
   }, [sortedSessions, searchQuery]);
 
   const handleCreateTask = (task: CreateSessionData) => {
-    createSessionMutation.mutate(
-      task,
-      {
-        onSuccess: (newSession) => {
-          navigate(`/session/${newSession.id}`);
-          setIsCreatingTask(false);
-          setParentForNewTask(null);
-        },
-      }
-    );
+    createSessionMutation.mutate(task, {
+      onSuccess: (newSession) => {
+        navigate(`/session/${newSession.id}`);
+        setIsCreatingTask(false);
+        setParentForNewTask(null);
+      },
+    });
   };
 
   const handleCreateSubtask = (parentId: string) => {
     const parent = sessions.find((s) => s.id === parentId);
     setParentForNewTask(parent || null);
-    navigate('/');
+    navigate("/");
     setIsCreatingTask(true);
   };
 
@@ -192,22 +191,22 @@ function AppLayout() {
     // Update the session status to in-progress
     updateSessionMutation.mutate({
       id: sessionId,
-      data: { inboxStatus: 'in-progress' },
+      data: { inboxStatus: "in-progress" },
     });
 
     // Note: In a real implementation, you would also create the message
     // using useCreateMessage hook, but for now we're just updating the status
-    toast.success('Message sent');
+    toast.success("Message sent");
   };
 
   const handleArchive = (sessionId: string) => {
-    console.log('[App] handleArchive called for session:', sessionId);
-    console.log('[App] archiveSessionMutation:', archiveSessionMutation);
+    console.log("[App] handleArchive called for session:", sessionId);
+    console.log("[App] archiveSessionMutation:", archiveSessionMutation);
     archiveSessionMutation.mutate(sessionId, {
       onSuccess: () => {
-        console.log('[App] Archive mutation succeeded');
+        console.log("[App] Archive mutation succeeded");
         if (selectedSession?.id === sessionId) {
-          navigate('/');
+          navigate("/");
         }
       },
     });
@@ -233,7 +232,7 @@ function AppLayout() {
               size="sm"
               onClick={() => {
                 setParentForNewTask(null);
-                navigate('/');
+                navigate("/");
                 setIsCreatingTask(true);
               }}
               disabled={createSessionMutation.isPending}
@@ -265,31 +264,31 @@ function AppLayout() {
               <span className="text-xs text-gray-500">Sessions</span>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setFilter('active')}
+                  onClick={() => setFilter("active")}
                   className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'active'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
+                    filter === "active"
+                      ? "bg-gray-200 text-gray-900"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   Active
                 </button>
                 <button
-                  onClick={() => setFilter('archived')}
+                  onClick={() => setFilter("archived")}
                   className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'archived'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
+                    filter === "archived"
+                      ? "bg-gray-200 text-gray-900"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   Archived
                 </button>
                 <button
-                  onClick={() => setFilter('all')}
+                  onClick={() => setFilter("all")}
                   className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'all'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
+                    filter === "all"
+                      ? "bg-gray-200 text-gray-900"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   All
@@ -314,7 +313,7 @@ function AppLayout() {
               ))
             ) : (
               <div className="text-center py-8 text-gray-500 text-sm">
-                {searchQuery ? 'No tasks found' : 'No tasks yet'}
+                {searchQuery ? "No tasks found" : "No tasks yet"}
               </div>
             )}
           </div>
@@ -345,7 +344,7 @@ function AppLayout() {
                 variant="outline"
                 onClick={() => {
                   setParentForNewTask(null);
-                  navigate('/');
+                  navigate("/");
                   setIsCreatingTask(true);
                 }}
               >

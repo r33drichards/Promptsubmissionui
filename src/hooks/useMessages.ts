@@ -4,12 +4,12 @@ import {
   useQueryClient,
   UseQueryOptions,
   UseMutationOptions,
-} from '@tanstack/react-query';
-import { useApi } from '../providers/ApiProvider';
-import { Message, BackendMessage, Prompt } from '../types/session';
-import { queryKeys } from './queryKeys';
-import { toast } from 'sonner';
-import { useMemo } from 'react';
+} from "@tanstack/react-query";
+import { useApi } from "../providers/ApiProvider";
+import { Message, BackendMessage, Prompt } from "../types/session";
+import { queryKeys } from "./queryKeys";
+import { toast } from "sonner";
+import { useMemo } from "react";
 
 /**
  * Hook to fetch messages for a specific session with polling.
@@ -24,7 +24,7 @@ import { useMemo } from 'react';
  */
 export function useMessages(
   sessionId: string,
-  options?: Omit<UseQueryOptions<BackendMessage[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<BackendMessage[]>, "queryKey" | "queryFn">
 ) {
   const api = useApi();
 
@@ -57,7 +57,7 @@ export function useMessages(
  */
 export function useCreateMessage(
   sessionId: string,
-  options?: Omit<UseMutationOptions<Message, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Message, Error, string>, "mutationFn">
 ) {
   const api = useApi();
   const queryClient = useQueryClient();
@@ -66,7 +66,9 @@ export function useCreateMessage(
     mutationFn: (content: string) => api.messages.create(sessionId, content),
     onMutate: async (content) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.messages.list(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.messages.list(sessionId),
+      });
 
       // Snapshot the previous messages
       const previousMessages = queryClient.getQueryData<Message[]>(
@@ -76,52 +78,64 @@ export function useCreateMessage(
       // Optimistically add the new message
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
-        role: 'user',
+        role: "user",
         content,
         timestamp: new Date(),
       };
 
       if (previousMessages) {
-        queryClient.setQueryData<Message[]>(queryKeys.messages.list(sessionId), [
-          ...previousMessages,
-          optimisticMessage,
-        ]);
+        queryClient.setQueryData<Message[]>(
+          queryKeys.messages.list(sessionId),
+          [...previousMessages, optimisticMessage]
+        );
       }
 
       return { previousMessages, optimisticMessage };
     },
     onSuccess: (newMessage, content, context) => {
       // Replace optimistic message with real one
-      const messages = queryClient.getQueryData<Message[]>(queryKeys.messages.list(sessionId));
+      const messages = queryClient.getQueryData<Message[]>(
+        queryKeys.messages.list(sessionId)
+      );
 
       if (messages && context?.optimisticMessage) {
         const updatedMessages = messages.map((msg) =>
           msg.id === context.optimisticMessage.id ? newMessage : msg
         );
-        queryClient.setQueryData(queryKeys.messages.list(sessionId), updatedMessages);
+        queryClient.setQueryData(
+          queryKeys.messages.list(sessionId),
+          updatedMessages
+        );
       }
 
       // Also invalidate session details as the message count may have changed
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(sessionId),
+      });
 
-      toast.success('Message sent');
+      toast.success("Message sent");
 
       options?.onSuccess?.(newMessage, content, context);
     },
     onError: (error, content, context) => {
       // Rollback to previous messages on error
       if (context?.previousMessages) {
-        queryClient.setQueryData(queryKeys.messages.list(sessionId), context.previousMessages);
+        queryClient.setQueryData(
+          queryKeys.messages.list(sessionId),
+          context.previousMessages
+        );
       }
 
-      console.error('Failed to send message:', error);
-      toast.error('Failed to send message');
+      console.error("Failed to send message:", error);
+      toast.error("Failed to send message");
 
       options?.onError?.(error, content, context);
     },
     onSettled: () => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages.list(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.messages.list(sessionId),
+      });
     },
     ...options,
   });
@@ -140,7 +154,7 @@ export function useCreateMessage(
  */
 export function usePrompts(
   sessionId: string,
-  options?: Omit<UseQueryOptions<Prompt[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Prompt[]>, "queryKey" | "queryFn">
 ) {
   const api = useApi();
 
@@ -166,8 +180,10 @@ export function usePrompts(
  * ```
  */
 export function useSessionConversation(sessionId: string) {
-  const { data: messages = [], isLoading: messagesLoading } = useMessages(sessionId);
-  const { data: prompts = [], isLoading: promptsLoading } = usePrompts(sessionId);
+  const { data: messages = [], isLoading: messagesLoading } =
+    useMessages(sessionId);
+  const { data: prompts = [], isLoading: promptsLoading } =
+    usePrompts(sessionId);
 
   // Sort messages by creation time (newest first for conversation display)
   const sortedMessages = useMemo(() => {

@@ -1,5 +1,5 @@
-import Editor from '@monaco-editor/react';
-import { useTheme } from 'next-themes';
+import Editor from "@monaco-editor/react";
+import { useTheme } from "next-themes";
 
 interface MonacoEditorProps {
   value: string;
@@ -12,8 +12,8 @@ interface MonacoEditorProps {
 export function MonacoEditor({
   value,
   onChange,
-  placeholder = 'Start typing...',
-  language = 'markdown',
+  placeholder = "Start typing...",
+  language = "markdown",
 }: MonacoEditorProps) {
   const { theme } = useTheme();
 
@@ -28,9 +28,8 @@ export function MonacoEditor({
         defaultLanguage={language}
         value={value}
         onChange={handleEditorChange}
-        theme={theme === 'dark' ? 'vs-dark' : 'light'}
-        options={{
-        }}
+        theme={theme === "dark" ? "vs-dark" : "light"}
+        options={{}}
       />
     </div>
   );
