@@ -2,8 +2,6 @@
 
 ## Pre-Submission Checklist
 
-Before submitting any code changes, **ALWAYS** run the following commands to ensure code quality:
-
 ### 1. Run the Linter
 ```bash
 npm run lint
@@ -39,13 +37,6 @@ You can run all checks sequentially:
 ```bash
 npm run lint && npm run format:check && npm test
 ```
-
-## Important Notes
-
-- **Never skip these steps** - they help maintain code quality and prevent issues in production
-- Fix all linting errors before committing
-- Ensure all tests pass before pushing code
-- The formatter should be run to maintain consistent code style across the project
 
 ## Git Workflow
 
