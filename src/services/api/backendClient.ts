@@ -152,13 +152,13 @@ export class BackendClientImpl implements BackendClient {
 
     const statusMap: Record<string, Session['inboxStatus']> = {
       // Capitalized format (from actual API)
-      'pending': 'pending',
-      'active': 'in-progress',
-      'completed': 'completed',
-      'archived': 'completed',
-      'failed': 'failed',
+      pending: 'pending',
+      active: 'in-progress',
+      completed: 'completed',
+      archived: 'completed',
+      failed: 'failed',
       // Lowercase with hyphens (from tests and old API)
-      'inprogress': 'in-progress',
+      inprogress: 'in-progress',
     };
 
     return statusMap[normalizedStatus] || 'pending';
@@ -173,7 +173,10 @@ export class BackendClientImpl implements BackendClient {
     // Handle API field name differences
     // API returns 'session_status' but we expect 'inboxStatus'
     const rawStatus = camelSession.inboxStatus || camelSession.sessionStatus;
-    const inboxStatus = typeof rawStatus === 'string' ? this.mapInboxStatus(rawStatus) : 'pending';
+    const inboxStatus =
+      typeof rawStatus === 'string'
+        ? this.mapInboxStatus(rawStatus)
+        : 'pending';
 
     return {
       ...camelSession,

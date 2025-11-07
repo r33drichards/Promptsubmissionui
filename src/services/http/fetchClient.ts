@@ -7,23 +7,41 @@ import { HttpClient, HttpResponse, HttpError, RequestConfig } from './types';
 export class FetchHttpClient implements HttpClient {
   constructor(private baseURL: string = '') {}
 
-  async get<T = any>(url: string, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async get<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.request<T>('GET', url, undefined, config);
   }
 
-  async post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.request<T>('POST', url, data, config);
   }
 
-  async put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.request<T>('PUT', url, data, config);
   }
 
-  async patch<T = any>(url: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.request<T>('PATCH', url, data, config);
   }
 
-  async delete<T = any>(url: string, config?: RequestConfig): Promise<HttpResponse<T>> {
+  async delete<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<HttpResponse<T>> {
     return this.request<T>('DELETE', url, undefined, config);
   }
 
@@ -65,7 +83,7 @@ export class FetchHttpClient implements HttpClient {
       if (contentType?.includes('application/json')) {
         responseData = await response.json();
       } else {
-        responseData = await response.text() as any;
+        responseData = (await response.text()) as any;
       }
 
       // Convert headers to object
