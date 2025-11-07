@@ -108,11 +108,14 @@ export function SessionDetail({
             <p>Loading conversation...</p>
           </div>
         ) : conversation && conversation.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-6 w-full max-w-full">
             {conversation.map((item, itemIdx) => (
-              <div key={`conversation-${itemIdx}`} className="space-y-4">
+              <div
+                key={`conversation-${itemIdx}`}
+                className="space-y-4 w-full max-w-full"
+              >
                 {/* Render the prompt */}
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border-l-4 border-indigo-500">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border-l-4 border-indigo-500 w-full max-w-full overflow-hidden">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-indigo-900">
                       Prompt
@@ -141,7 +144,7 @@ export function SessionDetail({
                 {item.messages.map((message) => (
                   <div
                     key={message.uuid}
-                    className={`p-4 rounded-lg ${
+                    className={`p-4 rounded-lg w-full max-w-full overflow-hidden ${
                       message.type === 'user'
                         ? 'bg-gray-50'
                         : message.type === 'assistant'
@@ -205,21 +208,21 @@ export function SessionDetail({
                             </div>
                           )}
                           {content.type === 'tool_use' && (
-                            <div className="bg-white/50 p-2 rounded border border-gray-200">
+                            <div className="bg-white/50 p-2 rounded border border-gray-200 w-full max-w-full overflow-hidden">
                               <p className="text-xs text-gray-600 mb-1">
                                 Tool: {content.name}
                               </p>
-                              <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
+                              <pre className="text-xs overflow-x-hidden whitespace-pre-wrap break-words max-w-full w-full">
                                 {JSON.stringify(content.input, null, 2)}
                               </pre>
                             </div>
                           )}
                           {content.type === 'tool_result' && (
-                            <div className="bg-white/50 p-2 rounded border border-gray-200">
+                            <div className="bg-white/50 p-2 rounded border border-gray-200 w-full max-w-full overflow-hidden">
                               <p className="text-xs text-gray-600 mb-1">
                                 Tool Result
                               </p>
-                              <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
+                              <pre className="text-xs overflow-x-hidden whitespace-pre-wrap break-words max-w-full w-full">
                                 {typeof content.content === 'string'
                                   ? content.content
                                   : JSON.stringify(content.content, null, 2)}
