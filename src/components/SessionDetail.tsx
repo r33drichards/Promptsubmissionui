@@ -5,7 +5,10 @@ import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { useState } from 'react';
 import { useSessionConversation } from '../hooks/useMessages';
-import { SessionThread } from './chat/SessionThread';
+import { AssistantRuntimeProvider } from '@assistant-ui/react';
+import { Thread } from '@assistant-ui/react-ui';
+import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
+import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
   session: Session;
@@ -20,6 +23,7 @@ export function SessionDetail({
 }: SessionDetailProps) {
   const [reply, setReply] = useState('');
   const { conversation, isLoading } = useSessionConversation(session.id);
+  const runtime = useAssistantRuntime(conversation || [], isLoading);
 
   const handleReply = () => {
     if (reply.trim()) {
@@ -97,11 +101,10 @@ export function SessionDetail({
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 min-h-0">
-        <SessionThread
-          conversation={conversation || []}
-          isLoading={isLoading}
-        />
+      <div className="flex-1 min-h-0 flex flex-col">
+        <AssistantRuntimeProvider runtime={runtime}>
+          <Thread className="flex-1" />
+        </AssistantRuntimeProvider>
 
         {session.inboxStatus === 'completed' && session.diffStats && (
           <div className="p-4 border-t">
