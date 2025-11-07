@@ -83,3 +83,6 @@ HTMLElement.prototype.scrollIntoView = vi.fn();
 // Mock scrollTo (required for @assistant-ui/react Thread component)
 Element.prototype.scrollTo = vi.fn();
 HTMLElement.prototype.scrollTo = vi.fn();
+
+// Mock @assistant-ui/react-ui CSS import
+vi.mock('@assistant-ui/react-ui/styles/index.css', () => ({}));

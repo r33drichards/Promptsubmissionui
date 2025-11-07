@@ -8,7 +8,6 @@ import { BackendClient } from '@/services/api/types';
 
 describe('SessionDetail', () => {
   const mockOnCreatePR = vi.fn();
-  const mockOnReply = vi.fn();
 
   // Mock backend messages in the new format
   const mockBackendMessages: BackendMessage[] = [
@@ -105,7 +104,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -122,7 +120,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -137,8 +134,7 @@ describe('SessionDetail', () => {
       ).toBeInTheDocument();
     });
 
-    it.skip('should show "No conversation yet" when there are no prompts', async () => {
-      // Skipped: @assistant-ui/react shows "How can I help you today?" instead of "No conversation yet"
+    it('should render Thread component when there are no prompts', async () => {
       // Create mock with no prompts
       const mockClient: BackendClient = {
         sessions: {
@@ -168,37 +164,34 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
 
+      // Verify Thread component is rendered with its input
       await waitFor(() => {
-        expect(screen.getByText('No conversation yet')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Write a message...')).toBeInTheDocument();
       });
     });
 
-    it.skip('should render prompt with no messages when messages array is empty', async () => {
-      // Skipped: @assistant-ui/react renders messages differently, "Prompt" label no longer exists
+    it('should render prompt content when messages array is empty', async () => {
       const mockClient = createMockClient([]);
 
       render(
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
 
-      // Should show the prompt content
+      // Should show the prompt content in the Thread component
       await waitFor(() => {
         expect(screen.getByText('Test prompt')).toBeInTheDocument();
       });
 
-      // Prompt should be visible with its status badge
-      expect(screen.getByText('Prompt')).toBeInTheDocument();
-      expect(screen.getByText('completed')).toBeInTheDocument();
+      // Thread component should be rendered
+      expect(screen.getByPlaceholderText('Write a message...')).toBeInTheDocument();
     });
   });
 
@@ -213,7 +206,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={pendingSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -233,7 +225,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={inProgressSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -253,7 +244,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={completedSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -270,7 +260,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={failedSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -294,7 +283,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={completedSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -318,7 +306,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={inProgressSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -341,7 +328,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={completedSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -364,7 +350,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={completedSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -388,7 +373,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={sessionWithPR}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -418,7 +402,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={sessionWithPR}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -444,7 +427,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={pendingSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -455,195 +437,6 @@ describe('SessionDetail', () => {
     });
   });
 
-  describe('Reply Functionality', () => {
-    it.skip('should render reply textarea and send button', () => {
-      // Skipped: Multiple Send buttons exist now due to @assistant-ui/react integration
-      const mockClient = createMockClient();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      expect(screen.getByPlaceholderText(/reply/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument();
-    });
-
-    it('should update reply textarea value as user types', async () => {
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(
-        /reply/i
-      ) as HTMLTextAreaElement;
-      await user.type(replyTextarea, 'My reply message');
-
-      expect(replyTextarea.value).toBe('My reply message');
-    });
-
-    it.skip('should call onReply when send button is clicked', async () => {
-      // Skipped: Multiple Send buttons exist now due to @assistant-ui/react integration
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(/reply/i);
-      await user.type(replyTextarea, 'My reply message');
-
-      const sendButton = screen.getByRole('button', { name: /send/i });
-      await user.click(sendButton);
-
-      expect(mockOnReply).toHaveBeenCalledWith(
-        'test-session-1',
-        'My reply message'
-      );
-    });
-
-    it.skip('should clear reply textarea after sending', async () => {
-      // Skipped: Multiple Send buttons exist now due to @assistant-ui/react integration
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(
-        /reply/i
-      ) as HTMLTextAreaElement;
-      await user.type(replyTextarea, 'My reply message');
-
-      const sendButton = screen.getByRole('button', { name: /send/i });
-      await user.click(sendButton);
-
-      expect(replyTextarea.value).toBe('');
-    });
-
-    it.skip('should disable send button when reply is empty', () => {
-      // Skipped: Multiple Send buttons exist now due to @assistant-ui/react integration
-      const mockClient = createMockClient();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const sendButton = screen.getByRole('button', { name: /send/i });
-      expect(sendButton).toBeDisabled();
-    });
-
-    it.skip('should disable send button when reply contains only whitespace', async () => {
-      // Skipped: Multiple Send buttons exist now due to @assistant-ui/react integration
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(/reply/i);
-      await user.type(replyTextarea, '   ');
-
-      const sendButton = screen.getByRole('button', { name: /send/i });
-      expect(sendButton).toBeDisabled();
-    });
-
-    it.skip('should send reply when Cmd+Enter is pressed', async () => {
-      // Skipped: Test uses keyboard shortcuts, but UI has changed with @assistant-ui/react
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(/reply/i);
-      await user.type(replyTextarea, 'My reply message');
-      await user.keyboard('{Meta>}{Enter}{/Meta}');
-
-      expect(mockOnReply).toHaveBeenCalledWith(
-        'test-session-1',
-        'My reply message'
-      );
-    });
-
-    it.skip('should send reply when Ctrl+Enter is pressed', async () => {
-      // Skipped: Test uses keyboard shortcuts, but UI has changed with @assistant-ui/react
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(/reply/i);
-      await user.type(replyTextarea, 'My reply message');
-      await user.keyboard('{Control>}{Enter}{/Control}');
-
-      expect(mockOnReply).toHaveBeenCalledWith(
-        'test-session-1',
-        'My reply message'
-      );
-    });
-
-    it.skip('should not send reply when Enter is pressed without modifier key', async () => {
-      // Skipped: Test behavior changed with @assistant-ui/react integration
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
-        />,
-        { client: mockClient }
-      );
-
-      const replyTextarea = screen.getByPlaceholderText(/reply/i);
-      await user.type(replyTextarea, 'My reply message{Enter}');
-
-      // Reply should not be sent, just a newline added
-      expect(mockOnReply).not.toHaveBeenCalled();
-    });
-  });
-
   describe('Message Display', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
@@ -651,7 +444,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -670,7 +462,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );
@@ -691,7 +482,6 @@ describe('SessionDetail', () => {
         <SessionDetail
           session={baseSession}
           onCreatePR={mockOnCreatePR}
-          onReply={mockOnReply}
         />,
         { client: mockClient }
       );

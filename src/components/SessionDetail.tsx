@@ -2,8 +2,6 @@ import { Session } from '../types/session';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
-import { Textarea } from './ui/textarea';
-import { useState } from 'react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -13,28 +11,18 @@ import '@assistant-ui/react-ui/styles/index.css';
 interface SessionDetailProps {
   session: Session;
   onCreatePR: (sessionId: string) => void;
-  onReply: (sessionId: string, message: string) => void;
 }
 
 export function SessionDetail({
   session,
   onCreatePR,
-  onReply,
 }: SessionDetailProps) {
-  const [reply, setReply] = useState('');
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
     session.id,
     conversation || [],
     isLoading
   );
-
-  const handleReply = () => {
-    if (reply.trim()) {
-      onReply(session.id, reply);
-      setReply('');
-    }
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -127,8 +115,8 @@ export function SessionDetail({
         )}
       </div>
 
-      {/* Action Buttons and Message Input */}
-      <div className="border-t p-4 space-y-3">
+      {/* Action Buttons */}
+      <div className="border-t p-4">
         {session.prUrl ? (
           <Button
             variant="outline"
@@ -150,23 +138,6 @@ export function SessionDetail({
             Create PR
           </Button>
         ) : null}
-
-        <div className="flex gap-2">
-          <Textarea
-            placeholder="Reply..."
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            className="flex-1 min-h-[80px] resize-none"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                handleReply();
-              }
-            }}
-          />
-          <Button onClick={handleReply} disabled={!reply.trim()}>
-            Send
-          </Button>
-        </div>
       </div>
     </div>
   );
