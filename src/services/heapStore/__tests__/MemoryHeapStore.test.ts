@@ -136,6 +136,9 @@ describe('MemoryHeapStore', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
       await limitedStore.put('key2', 'value2');
 
+      // Small delay to ensure different timestamp
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Access key1 to make it more recently used
       await limitedStore.get('key1');
 
