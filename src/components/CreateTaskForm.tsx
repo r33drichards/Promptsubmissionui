@@ -75,6 +75,15 @@ export function CreateTaskForm({
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
 
+    console.log('[CreateTaskForm] handleSubmit called with state:', {
+      repo,
+      targetBranch,
+      prompt,
+      repoLength: repo.length,
+      targetBranchLength: targetBranch.length,
+      promptLength: prompt.length,
+    });
+
     // Parse and validate form data using Zod (parse don't validate)
     const result = createTaskFormSchema.safeParse({
       repo,

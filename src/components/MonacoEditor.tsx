@@ -27,6 +27,7 @@ export function MonacoEditor({
     // Register Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) keyboard shortcut
     if (onSubmit) {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+        console.log('[MonacoEditor] Cmd+Enter pressed, calling onSubmit');
         onSubmit();
       });
     }
