@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
@@ -19,18 +20,27 @@ export function MonacoEditor({
 }: MonacoEditorProps) {
   const { theme } = useTheme();
 
+  // Use a ref to store the latest onSubmit callback to avoid stale closures
+  const onSubmitRef = useRef(onSubmit);
+
+  // Update the ref whenever onSubmit changes
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
   const handleEditorChange = (value: string | undefined) => {
     onChange(value);
   };
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     // Register Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) keyboard shortcut
-    if (onSubmit) {
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-        console.log('[MonacoEditor] Cmd+Enter pressed, calling onSubmit');
-        onSubmit();
-      });
-    }
+    // Use the ref so we always call the latest onSubmit callback
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      console.log('[MonacoEditor] Cmd+Enter pressed, calling onSubmit');
+      if (onSubmitRef.current) {
+        onSubmitRef.current();
+      }
+    });
   };
 
   return (
