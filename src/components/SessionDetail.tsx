@@ -99,7 +99,10 @@ export function SessionDetail({
         </div>
       </div>
 
-      <ScrollToBottom className="flex-1 p-4" mode="bottom">
+      <ScrollToBottom
+        className="flex-1 p-4 min-w-0 overflow-x-hidden"
+        mode="bottom"
+      >
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             <p>Loading conversation...</p>
