@@ -44,7 +44,9 @@ export function convertConversationToThreadMessages(
         }
 
         const content = msg.message.content.map((c) => {
+          console.log('[assistantUiAdapter] Processing content part:', c);
           if (c.type === 'text') {
+            console.log('[assistantUiAdapter] Text part - text value:', c.text);
             return { type: 'text' as const, text: c.text || '' };
           }
           if (c.type === 'tool_use') {
