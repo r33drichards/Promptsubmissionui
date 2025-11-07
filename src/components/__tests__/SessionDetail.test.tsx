@@ -101,10 +101,7 @@ describe('SessionDetail', () => {
     it('should render session title and metadata', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -117,10 +114,7 @@ describe('SessionDetail', () => {
     it('should render all messages', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -161,16 +155,15 @@ describe('SessionDetail', () => {
       };
 
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
       // Verify Thread component is rendered with its input
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('Write a message...')).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText('Write a message...')
+        ).toBeInTheDocument();
       });
     });
 
@@ -178,10 +171,7 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient([]);
 
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -191,7 +181,9 @@ describe('SessionDetail', () => {
       });
 
       // Thread component should be rendered
-      expect(screen.getByPlaceholderText('Write a message...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Write a message...')
+      ).toBeInTheDocument();
     });
   });
 
@@ -203,10 +195,7 @@ describe('SessionDetail', () => {
         inboxStatus: 'pending',
       };
       render(
-        <SessionDetail
-          session={pendingSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -257,10 +246,7 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
       render(
-        <SessionDetail
-          session={failedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={failedSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -370,10 +356,7 @@ describe('SessionDetail', () => {
       };
 
       render(
-        <SessionDetail
-          session={sessionWithPR}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -399,10 +382,7 @@ describe('SessionDetail', () => {
       };
 
       render(
-        <SessionDetail
-          session={sessionWithPR}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -424,10 +404,7 @@ describe('SessionDetail', () => {
       };
 
       render(
-        <SessionDetail
-          session={pendingSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -441,10 +418,7 @@ describe('SessionDetail', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -459,10 +433,7 @@ describe('SessionDetail', () => {
     it('should display assistant messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 
@@ -479,10 +450,7 @@ describe('SessionDetail', () => {
     it('should display message types', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail
-          session={baseSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
         { client: mockClient }
       );
 

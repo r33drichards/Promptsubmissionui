@@ -13,10 +13,7 @@ interface SessionDetailProps {
   onCreatePR: (sessionId: string) => void;
 }
 
-export function SessionDetail({
-  session,
-  onCreatePR,
-}: SessionDetailProps) {
+export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
     session.id,
