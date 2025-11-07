@@ -90,9 +90,9 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 overflow-auto">
         <AssistantRuntimeProvider runtime={runtime}>
-          <Thread className="flex-1" />
+          <Thread />
         </AssistantRuntimeProvider>
 
         {session.inboxStatus === 'completed' && session.diffStats && (
