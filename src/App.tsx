@@ -10,11 +10,7 @@ import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Plus, Search, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  useSessions,
-  useCreateSession,
-  useArchiveSession,
-} from './hooks';
+import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
 type FilterType = 'active' | 'archived' | 'all';
 
