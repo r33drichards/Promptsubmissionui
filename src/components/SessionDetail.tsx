@@ -11,9 +11,10 @@ import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
   session: Session;
+  onCreatePR?: (sessionId: string) => void;
 }
 
-export function SessionDetail({ session }: SessionDetailProps) {
+export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
     session.id,
@@ -125,6 +126,16 @@ export function SessionDetail({ session }: SessionDetailProps) {
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             View PR
+          </Button>
+        ) : session.inboxStatus === 'completed' && onCreatePR ? (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => onCreatePR(session.id)}
+            className="w-full"
+          >
+            <GitBranch className="w-4 h-4 mr-2" />
+            Create PR
           </Button>
         ) : null}
       </div>
