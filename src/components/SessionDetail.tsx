@@ -27,7 +27,28 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
       <div className="border-b p-4 flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h2 className="mb-2">{session.title}</h2>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="flex-1">{session.title}</h2>
+              {session.prUrl ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(session.prUrl, '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View PR
+                </Button>
+              ) : session.inboxStatus === 'completed' ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCreatePR(session.id)}
+                >
+                  <Github className="w-4 h-4 mr-2" />
+                  Create PR
+                </Button>
+              ) : null}
+            </div>
             {session.statusMessage && (
               <p className="text-sm text-gray-600 mb-2 italic">
                 {session.statusMessage}
@@ -110,31 +131,6 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="border-t p-4">
-        {session.prUrl ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open(session.prUrl, '_blank')}
-            className="w-full"
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View PR
-          </Button>
-        ) : session.inboxStatus === 'completed' ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onCreatePR(session.id)}
-            className="w-full"
-          >
-            <Github className="w-4 h-4 mr-2" />
-            Create PR
-          </Button>
-        ) : null}
       </div>
     </div>
   );
