@@ -26,6 +26,7 @@ export interface BackendClient {
   // Prompt operations
   prompts: {
     list(sessionId: string): Promise<Prompt[]>;
+    create(sessionId: string, content: string): Promise<Prompt>;
   };
 
   // Message operations

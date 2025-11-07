@@ -183,6 +183,24 @@ export class PromptBackendClient implements BackendClient {
         return [];
       }
     },
+
+    create: withErrorHandler(
+      async (sessionId: string, content: string): Promise<Prompt> => {
+        const response = await this.api.handlersPromptsCreate({
+          createPromptInput: {
+            sessionId,
+            data: [{ content, type: 'text' }]
+          }
+        });
+
+        if (!response.prompt) {
+          throw new Error('Failed to create prompt: Invalid response from backend');
+        }
+
+        return this.deserializePrompt(response.prompt);
+      },
+      'Creating prompt'
+    ),
   };
 
   messages = {
