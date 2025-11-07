@@ -8,7 +8,7 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import { Plus, Search, Github, Loader2, LogOut } from 'lucide-react';
+import { Plus, Search, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useSessions,
@@ -338,7 +338,6 @@ function AppLayout() {
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
             <div className="text-center space-y-3">
-              <Github className="w-12 h-12 mx-auto text-gray-300" />
               <p>Select a task to view details</p>
               <Button
                 variant="outline"
