@@ -33,7 +33,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@tanstack/react-query": "^5.90.6",
     "@tanstack/react-query-devtools": "^5.90.2",
-    "@wholelottahoopla/prompt-backend-client": "^0.1.4",
+    "@wholelottahoopla/prompt-backend-client": "^0.1.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "*",
     "cmdk": "^1.1.1",

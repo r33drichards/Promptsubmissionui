@@ -38,6 +38,11 @@ export function SessionDetail({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h2 className="mb-2">{session.title}</h2>
+            {session.statusMessage && (
+              <p className="text-sm text-gray-600 mb-2 italic">
+                {session.statusMessage}
+              </p>
+            )}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <Github className="w-4 h-4 flex-shrink-0" />

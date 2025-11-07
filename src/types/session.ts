@@ -9,6 +9,7 @@ export interface Session {
   targetBranch: string;
   messages: Message[] | null;
   inboxStatus: InboxStatus;
+  statusMessage?: string;
   sbxConfig: Record<string, any> | null;
   parentId: string | null;
   diffStats?: {
