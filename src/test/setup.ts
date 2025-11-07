@@ -79,3 +79,7 @@ Element.prototype.scrollIntoView = vi.fn();
 // Mock HTMLElement.prototype.hasPointerCapture
 HTMLElement.prototype.hasPointerCapture = vi.fn();
 HTMLElement.prototype.scrollIntoView = vi.fn();
+
+// Mock scrollTo (required for @assistant-ui/react Thread component)
+Element.prototype.scrollTo = vi.fn();
+HTMLElement.prototype.scrollTo = vi.fn();

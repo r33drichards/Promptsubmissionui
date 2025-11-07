@@ -9,6 +9,11 @@ export function convertConversationToThreadMessages(
 ): ThreadMessageLike[] {
   const messages: ThreadMessageLike[] = [];
 
+  // Handle empty conversation
+  if (!conversation || conversation.length === 0) {
+    return messages;
+  }
+
   for (const item of conversation) {
     if (item.type === 'prompt') {
       // Add prompt as user message (showing what the user requested)
@@ -19,6 +24,7 @@ export function convertConversationToThreadMessages(
         createdAt: new Date(item.data.createdAt),
         status: { type: 'complete', reason: 'stop' },
         metadata: {
+          submittedFeedback: undefined,
           custom: {
             isPrompt: true,
             status: item.data.status,
@@ -66,13 +72,14 @@ export function convertConversationToThreadMessages(
           content,
           createdAt: new Date(),
           status: { type: 'complete', reason: 'stop' },
-          metadata: msg.message.usage
-            ? {
-                custom: {
+          metadata: {
+            submittedFeedback: undefined,
+            custom: msg.message.usage
+              ? {
                   usage: msg.message.usage,
-                },
-              }
-            : undefined,
+                }
+              : undefined,
+          },
         });
       }
     }
