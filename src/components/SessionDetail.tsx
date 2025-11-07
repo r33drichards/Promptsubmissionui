@@ -5,16 +5,7 @@ import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { useState } from 'react';
 import { useSessionConversation } from '../hooks/useMessages';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-} from '@chatscope/chat-ui-kit-react';
+import { SessionThread } from './chat/SessionThread';
 
 interface SessionDetailProps {
   session: Session;
@@ -106,237 +97,26 @@ export function SessionDetail({
       </div>
 
       {/* Chat Container */}
-      <div style={{ position: 'relative', flexGrow: 1 }}>
-        {!isLoading && (!conversation || conversation.length === 0) ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p>No conversation yet</p>
+      <div className="flex-1 min-h-0">
+        <SessionThread
+          conversation={conversation || []}
+          isLoading={isLoading}
+        />
+
+        {session.inboxStatus === 'completed' && session.diffStats && (
+          <div className="p-4 border-t">
+            <div className="bg-white border rounded-lg p-4 space-y-3">
+              <h3 className="text-sm font-medium">Changes</h3>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-green-600">
+                  +{session.diffStats.additions} additions
+                </span>
+                <span className="text-sm text-red-600">
+                  -{session.diffStats.deletions} deletions
+                </span>
+              </div>
+            </div>
           </div>
-        ) : (
-          <MainContainer>
-            <ChatContainer>
-              <MessageList
-                loading={isLoading}
-                loadingMore={false}
-                autoScrollToBottom
-                autoScrollToBottomOnMount
-              >
-                {conversation && conversation.length > 0 && (
-                  <>
-                    {conversation.map((item, itemIdx) => (
-                      <div key={`conversation-${itemIdx}`}>
-                        {/* Render the prompt message */}
-                        <Message
-                          model={{
-                            message: item.data.content,
-                            sentTime: '',
-                            sender: 'Prompt',
-                            direction: 'incoming',
-                            position: 'single',
-                          }}
-                        >
-                          <Message.Header>
-                            <div className="flex items-center justify-between w-full">
-                              <span className="font-semibold text-indigo-900">
-                                Prompt
-                              </span>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  item.data.status === 'completed'
-                                    ? 'bg-green-50 text-green-700 border-green-300'
-                                    : item.data.status === 'processing'
-                                      ? 'bg-blue-50 text-blue-700 border-blue-300'
-                                      : item.data.status === 'failed'
-                                        ? 'bg-red-50 text-red-700 border-red-300'
-                                        : 'bg-gray-50 text-gray-700 border-gray-300'
-                                }
-                              >
-                                {item.data.status}
-                              </Badge>
-                            </div>
-                          </Message.Header>
-                          <Message.CustomContent>
-                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border-l-4 border-indigo-500">
-                              <p className="text-sm whitespace-pre-wrap text-gray-800 break-words">
-                                {item.data.content}
-                              </p>
-                            </div>
-                          </Message.CustomContent>
-                        </Message>
-
-                        {/* Render messages for this prompt */}
-                        {item.messages.map((message) => (
-                          <Message
-                            key={message.uuid}
-                            model={{
-                              message: '',
-                              sentTime: '',
-                              sender: message.type,
-                              direction:
-                                message.type === 'user'
-                                  ? 'outgoing'
-                                  : 'incoming',
-                              position: 'single',
-                            }}
-                          >
-                            <Message.Header>
-                              <span className="font-medium capitalize">
-                                {message.type}
-                              </span>
-                            </Message.Header>
-                            <Message.CustomContent>
-                              <div
-                                className={`p-3 rounded-lg ${
-                                  message.type === 'user'
-                                    ? 'bg-gray-50'
-                                    : message.type === 'assistant'
-                                      ? 'bg-blue-50'
-                                      : message.type === 'system'
-                                        ? 'bg-purple-50'
-                                        : 'bg-yellow-50'
-                                }`}
-                              >
-                                <div className="text-sm space-y-2">
-                                  {message.message?.content?.map(
-                                    (content, idx) => (
-                                      <div
-                                        key={
-                                          content.id ||
-                                          `${message.uuid}-content-${idx}`
-                                        }
-                                      >
-                                        {content.type === 'text' &&
-                                          content.text && (
-                                            <div className="markdown-content prose prose-sm max-w-none break-words">
-                                              <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
-                                                components={{
-                                                  code({
-                                                    inline,
-                                                    className,
-                                                    children,
-                                                    ...props
-                                                  }) {
-                                                    const match =
-                                                      /language-(\w+)/.exec(
-                                                        className || ''
-                                                      );
-                                                    return !inline && match ? (
-                                                      <SyntaxHighlighter
-                                                        style={oneDark}
-                                                        language={match[1]}
-                                                        PreTag="div"
-                                                        customStyle={{
-                                                          maxWidth: '100%',
-                                                          overflowX: 'auto',
-                                                          wordBreak:
-                                                            'break-word',
-                                                        }}
-                                                        {...props}
-                                                      >
-                                                        {String(
-                                                          children
-                                                        ).replace(/\n$/, '')}
-                                                      </SyntaxHighlighter>
-                                                    ) : (
-                                                      <code
-                                                        className="bg-gray-100 px-1 py-0.5 rounded text-sm"
-                                                        {...props}
-                                                      >
-                                                        {children}
-                                                      </code>
-                                                    );
-                                                  },
-                                                }}
-                                              >
-                                                {content.text}
-                                              </ReactMarkdown>
-                                            </div>
-                                          )}
-                                        {content.type === 'tool_use' && (
-                                          <div className="bg-white/50 p-2 rounded border border-gray-200">
-                                            <p className="text-xs text-gray-600 mb-1">
-                                              Tool: {content.name}
-                                            </p>
-                                            <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
-                                              {JSON.stringify(
-                                                content.input,
-                                                null,
-                                                2
-                                              )}
-                                            </pre>
-                                          </div>
-                                        )}
-                                        {content.type === 'tool_result' && (
-                                          <div className="bg-white/50 p-2 rounded border border-gray-200">
-                                            <p className="text-xs text-gray-600 mb-1">
-                                              Tool Result
-                                            </p>
-                                            <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
-                                              {typeof content.content ===
-                                              'string'
-                                                ? content.content
-                                                : JSON.stringify(
-                                                    content.content,
-                                                    null,
-                                                    2
-                                                  )}
-                                            </pre>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  )}
-
-                                  {message.message?.usage && (
-                                    <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
-                                      Tokens:{' '}
-                                      {message.message.usage.input_tokens} in /{' '}
-                                      {message.message.usage.output_tokens} out
-                                      {message.message.usage
-                                        .cache_read_input_tokens &&
-                                        ` / ${message.message.usage.cache_read_input_tokens} cached`}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </Message.CustomContent>
-                          </Message>
-                        ))}
-                      </div>
-                    ))}
-
-                    {session.inboxStatus === 'completed' &&
-                      session.diffStats && (
-                        <Message
-                          model={{
-                            message: '',
-                            sentTime: '',
-                            sender: 'System',
-                            direction: 'incoming',
-                            position: 'single',
-                          }}
-                        >
-                          <Message.CustomContent>
-                            <div className="bg-white border rounded-lg p-4 space-y-3">
-                              <h3 className="text-sm font-medium">Changes</h3>
-                              <div className="flex items-center gap-4">
-                                <span className="text-sm text-green-600">
-                                  +{session.diffStats.additions} additions
-                                </span>
-                                <span className="text-sm text-red-600">
-                                  -{session.diffStats.deletions} deletions
-                                </span>
-                              </div>
-                            </div>
-                          </Message.CustomContent>
-                        </Message>
-                      )}
-                  </>
-                )}
-              </MessageList>
-            </ChatContainer>
-          </MainContainer>
         )}
       </div>
 
