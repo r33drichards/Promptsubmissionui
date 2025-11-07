@@ -6,10 +6,8 @@ import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
 import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
-import { makeMarkdownText } from '@assistant-ui/react-markdown';
+import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import '@assistant-ui/react-ui/styles/index.css';
-
-const MarkdownText = makeMarkdownText();
 
 interface SessionDetailProps {
   session: Session;
@@ -95,7 +93,9 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
       {/* Chat Container */}
       <div className="flex-1 min-h-0 overflow-auto">
         <AssistantRuntimeProvider runtime={runtime}>
-          <Thread assistantMessage={{ components: { Text: MarkdownText } }} />
+          <Thread
+            assistantMessage={{ components: { Text: MarkdownTextPrimitive } }}
+          />
         </AssistantRuntimeProvider>
 
         {session.inboxStatus === 'completed' && session.diffStats && (
