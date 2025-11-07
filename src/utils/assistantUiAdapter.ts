@@ -7,15 +7,22 @@ import type { ThreadMessageLike } from '@assistant-ui/react';
 export function convertConversationToThreadMessages(
   conversation: ConversationItem[]
 ): ThreadMessageLike[] {
+  console.log('[DEBUG assistantUiAdapter] Converting conversation to thread messages');
+  console.log('[DEBUG assistantUiAdapter] Conversation items:', conversation);
+
   const messages: ThreadMessageLike[] = [];
 
   // Handle empty conversation
   if (!conversation || conversation.length === 0) {
+    console.log('[DEBUG assistantUiAdapter] Empty conversation, returning empty messages');
     return messages;
   }
 
   for (const item of conversation) {
+    console.log('[DEBUG assistantUiAdapter] Processing conversation item:', item);
+
     if (item.type === 'prompt') {
+      console.log('[DEBUG assistantUiAdapter] Adding prompt as user message:', item.data);
       // Add prompt as user message (showing what the user requested)
       messages.push({
         id: item.data.id,
@@ -32,14 +39,19 @@ export function convertConversationToThreadMessages(
         },
       });
 
+      console.log(`[DEBUG assistantUiAdapter] Processing ${item.messages.length} messages for this prompt`);
+
       // Add all messages for this prompt
       for (const msg of item.messages) {
+        console.log('[DEBUG assistantUiAdapter] Processing message:', msg);
+
         // Skip messages without content (like system/init messages)
         if (
           !msg.message ||
           !msg.message.content ||
           !Array.isArray(msg.message.content)
         ) {
+          console.log('[DEBUG assistantUiAdapter] Skipping message - no content:', msg);
           continue;
         }
 
@@ -66,7 +78,7 @@ export function convertConversationToThreadMessages(
           return { type: 'text' as const, text: '' };
         });
 
-        messages.push({
+        const threadMessage = {
           id: msg.uuid,
           role: msg.message.role || (msg.type as 'user' | 'assistant'),
           content,
@@ -80,10 +92,15 @@ export function convertConversationToThreadMessages(
                 }
               : undefined,
           },
-        });
+        };
+
+        console.log('[DEBUG assistantUiAdapter] Adding thread message:', threadMessage);
+        messages.push(threadMessage);
       }
     }
   }
 
+  console.log('[DEBUG assistantUiAdapter] Final converted messages:', messages);
+  console.log(`[DEBUG assistantUiAdapter] Total messages converted: ${messages.length}`);
   return messages;
 }
