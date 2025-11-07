@@ -1,5 +1,5 @@
 export type InboxStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
-export type SessionStatus = 'Active' | 'Archived';
+export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
 
 export interface Session {
   id: string;
