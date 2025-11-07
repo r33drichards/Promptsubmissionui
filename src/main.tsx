@@ -7,6 +7,7 @@ import { ApiProvider } from './providers/ApiProvider.tsx';
 import { QueryProvider } from './providers/QueryProvider.tsx';
 import { AuthCallback } from './pages/AuthCallback';
 import { SilentCallback } from './pages/SilentCallback';
+import { Toaster } from './components/ui/sonner';
 
 const oidcConfiguration = {
   authority: import.meta.env.VITE_OIDC_AUTHORITY,
@@ -36,6 +37,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ApiProvider backendUrl={import.meta.env.VITE_BACKEND_URL}>
         <QueryProvider>
+          <Toaster position="top-right" richColors closeButton />
           <Routes>
             <Route path="/authentication/callback" element={<AuthCallback />} />
             <Route

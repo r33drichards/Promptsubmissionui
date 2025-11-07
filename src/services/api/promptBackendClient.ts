@@ -25,6 +25,7 @@ import {
   MessagesArraySchema,
   CreateSessionDataSchema,
 } from '../../schemas/session';
+import { withErrorHandler } from '../../utils/apiErrorHandler';
 
 /**
  * Implementation of BackendClient using the @wholelottahoopla/prompt-backend-client package.
@@ -45,124 +46,131 @@ export class PromptBackendClient implements BackendClient {
   }
 
   sessions = {
-    list: async (_params?: ListSessionsParams): Promise<Session[]> => {
-      const response = await this.api.handlersSessionsList();
-      // The response should contain an array of sessions
-      // We need to transform the response to match our Session type
-      return this.deserializeSessions(response.sessions || []);
-    },
+    list: withErrorHandler(
+      async (_params?: ListSessionsParams): Promise<Session[]> => {
+        const response = await this.api.handlersSessionsList();
+        // The response should contain an array of sessions
+        // We need to transform the response to match our Session type
+        return this.deserializeSessions(response.sessions || []);
+      },
+      'Loading sessions'
+    ),
 
-    get: async (id: string): Promise<Session> => {
+    get: withErrorHandler(async (id: string): Promise<Session> => {
       const response = await this.api.handlersSessionsRead({ id });
       return this.deserializeSession(response.session);
-    },
+    }, 'Loading session'),
 
-    create: async (data: CreateSessionData): Promise<Session> => {
-      console.log('[PromptBackendClient] Creating session with data:', data);
+    create: withErrorHandler(
+      async (data: CreateSessionData): Promise<Session> => {
+        console.log('[PromptBackendClient] Creating session with data:', data);
 
-      // Parse input data using Zod
-      const validatedData = CreateSessionDataSchema.parse(data);
-      console.log(
-        '[PromptBackendClient] Creating session with prompt using new endpoint'
-      );
-      // Use Raw API to access response before SDK transformation
-      // The SDK incorrectly transforms snake_case to camelCase, but the backend
-      // actually returns camelCase already
-      const rawResponse = await this.api.handlersSessionsCreateWithPromptRaw({
-        createSessionWithPromptInput: {
-          repo: validatedData.repo,
-          targetBranch: validatedData.targetBranch,
-          messages: validatedData.messages,
-          parentId: validatedData.parentId || null,
-        },
-      });
+        // Parse input data using Zod
+        const validatedData = CreateSessionDataSchema.parse(data);
+        console.log(
+          '[PromptBackendClient] Creating session with prompt using new endpoint'
+        );
+        // Use Raw API to access response before SDK transformation
+        // The SDK incorrectly transforms snake_case to camelCase, but the backend
+        // actually returns camelCase already
+        const rawResponse = await this.api.handlersSessionsCreateWithPromptRaw({
+          createSessionWithPromptInput: {
+            repo: validatedData.repo,
+            targetBranch: validatedData.targetBranch,
+            messages: validatedData.messages,
+            parentId: validatedData.parentId || null,
+          },
+        });
 
-      // Get the raw JSON before SDK transformation
-      const rawJson = await rawResponse.raw.json();
-      console.log('[PromptBackendClient] CreateWithPrompt raw JSON:', rawJson);
-
-      // Extract IDs from raw JSON (backend sends camelCase)
-      const sessionId = rawJson.sessionId || rawJson.session_id || null;
-      const _promptId = rawJson.promptId || rawJson.prompt_id || null;
-
-      console.log('[PromptBackendClient] Extracted IDs:', {
-        sessionId,
-        promptId: _promptId,
-      });
-
-      if (!sessionId) {
-        console.error(
-          '[PromptBackendClient] Invalid response structure:',
+        // Get the raw JSON before SDK transformation
+        const rawJson = await rawResponse.raw.json();
+        console.log(
+          '[PromptBackendClient] CreateWithPrompt raw JSON:',
           rawJson
         );
-        console.error(
-          '[PromptBackendClient] Available keys:',
-          Object.keys(rawJson || {})
-        );
-        throw new Error(
-          'Failed to create session with prompt: Invalid response from backend'
-        );
-      }
 
-      // Fetch the full session data
-      return this.sessions.get(sessionId);
-    },
+        // Extract IDs from raw JSON (backend sends camelCase)
+        const sessionId = rawJson.sessionId || rawJson.session_id || null;
+        const _promptId = rawJson.promptId || rawJson.prompt_id || null;
 
-    update: async (id: string, data: UpdateSessionData): Promise<Session> => {
-      console.log(
-        '[PromptBackendClient] Updating session:',
-        id,
-        'with data:',
-        data
-      );
-
-      // Build update input with only the fields that are provided or need to be updated
-      const updateInput: any = {
-        id,
-      };
-
-      // Only include fields that are explicitly provided in the update data
-      if (data.title !== undefined) updateInput.title = data.title;
-      if (data.sessionStatus !== undefined)
-        updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
-      if (data.repo !== undefined) updateInput.repo = data.repo;
-      if (data.branch !== undefined) updateInput.branch = data.branch;
-      if (data.targetBranch !== undefined)
-        updateInput.targetBranch = data.targetBranch;
-
-      console.log('[PromptBackendClient] Update input:', updateInput);
-
-      const response = await this.api.handlersSessionsUpdate({
-        id,
-        updateSessionInput: updateInput,
-      });
-      console.log('[PromptBackendClient] Update response:', response);
-
-      // Fetch the updated session data
-      return this.sessions.get(id);
-    },
-
-    delete: async (id: string): Promise<void> => {
-      await this.api.handlersSessionsDelete({ id });
-    },
-
-    archive: async (id: string): Promise<Session> => {
-      console.log('[PromptBackendClient] Archiving session:', id);
-      try {
-        const result = await this.sessions.update(id, {
-          sessionStatus: 'Archived',
+        console.log('[PromptBackendClient] Extracted IDs:', {
+          sessionId,
+          promptId: _promptId,
         });
-        console.log('[PromptBackendClient] Archive successful:', result);
-        return result;
-      } catch (error) {
-        console.error('[PromptBackendClient] Archive failed:', error);
-        throw error;
-      }
-    },
 
-    unarchive: async (id: string): Promise<Session> => {
+        if (!sessionId) {
+          console.error(
+            '[PromptBackendClient] Invalid response structure:',
+            rawJson
+          );
+          console.error(
+            '[PromptBackendClient] Available keys:',
+            Object.keys(rawJson || {})
+          );
+          throw new Error(
+            'Failed to create session with prompt: Invalid response from backend'
+          );
+        }
+
+        // Fetch the full session data
+        return this.sessions.get(sessionId);
+      },
+      'Creating session'
+    ),
+
+    update: withErrorHandler(
+      async (id: string, data: UpdateSessionData): Promise<Session> => {
+        console.log(
+          '[PromptBackendClient] Updating session:',
+          id,
+          'with data:',
+          data
+        );
+
+        // Build update input with only the fields that are provided or need to be updated
+        const updateInput: any = {
+          id,
+        };
+
+        // Only include fields that are explicitly provided in the update data
+        if (data.title !== undefined) updateInput.title = data.title;
+        if (data.sessionStatus !== undefined)
+          updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
+        if (data.repo !== undefined) updateInput.repo = data.repo;
+        if (data.branch !== undefined) updateInput.branch = data.branch;
+        if (data.targetBranch !== undefined)
+          updateInput.targetBranch = data.targetBranch;
+
+        console.log('[PromptBackendClient] Update input:', updateInput);
+
+        const response = await this.api.handlersSessionsUpdate({
+          id,
+          updateSessionInput: updateInput,
+        });
+        console.log('[PromptBackendClient] Update response:', response);
+
+        // Fetch the updated session data
+        return this.sessions.get(id);
+      },
+      'Updating session'
+    ),
+
+    delete: withErrorHandler(async (id: string): Promise<void> => {
+      await this.api.handlersSessionsDelete({ id });
+    }, 'Deleting session'),
+
+    archive: withErrorHandler(async (id: string): Promise<Session> => {
+      console.log('[PromptBackendClient] Archiving session:', id);
+      const result = await this.sessions.update(id, {
+        sessionStatus: 'Archived',
+      });
+      console.log('[PromptBackendClient] Archive successful:', result);
+      return result;
+    }, 'Archiving session'),
+
+    unarchive: withErrorHandler(async (id: string): Promise<Session> => {
       return this.sessions.update(id, { sessionStatus: 'Active' });
-    },
+    }, 'Unarchiving session'),
   };
 
   prompts = {
@@ -229,18 +237,25 @@ export class PromptBackendClient implements BackendClient {
     }
 
     // Extract repo, branch, and targetBranch from sbxConfig if they exist there
-    const sbxConfig = session.sbxConfig || {};
+    // Handle both camelCase and snake_case from API
+    const sbxConfig = session.sbxConfig || session.sbx_config || {};
     const repo = session.repo || sbxConfig.repo || '';
     const branch = session.branch || sbxConfig.branch || '';
     const targetBranch =
-      session.targetBranch || sbxConfig.targetBranch || 'main';
+      session.targetBranch ||
+      session.target_branch ||
+      sbxConfig.targetBranch ||
+      sbxConfig.target_branch ||
+      'main';
 
     // Map sessionStatus to inboxStatus for backwards compatibility
+    // Handle both camelCase and snake_case from API
     const inboxStatus = this.sessionStatusToInboxStatus(
-      session.sessionStatus || 'Active'
+      session.sessionStatus || session.session_status || 'Active'
     );
 
     // Prepare session data for validation
+    // Handle both camelCase and snake_case from API
     const sessionData = {
       id: session.id || '',
       title: session.title || '',
@@ -249,15 +264,17 @@ export class PromptBackendClient implements BackendClient {
       targetBranch,
       messages: null, // Messages are now separate entities in the new API
       inboxStatus,
-      sessionStatus: session.sessionStatus || 'Active',
+      sessionStatus:
+        session.sessionStatus || session.session_status || 'Active',
       parentId: session.parent || null,
-      createdAt: session.createdAt || new Date().toISOString(),
-      diffStats: session.diffStats,
-      prUrl: session.prUrl,
+      createdAt:
+        session.createdAt || session.created_at || new Date().toISOString(),
+      diffStats: session.diffStats || session.diff_stats,
+      prUrl: session.prUrl || session.pr_url,
       children: session.children
         ? this.deserializeSessions(session.children)
         : undefined,
-      sbxConfig: session.sbxConfig || null,
+      sbxConfig: session.sbxConfig || session.sbx_config || null,
     };
 
     // Parse and validate the session data (parse don't validate)
