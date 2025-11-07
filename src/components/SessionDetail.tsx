@@ -98,7 +98,7 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
             assistantMessage={{
               components: {
                 Text: MarkdownTextPrimitive,
-                tools: { Fallback: ToolFallback },
+                ToolFallback: ToolFallback,
               },
             }}
           />
