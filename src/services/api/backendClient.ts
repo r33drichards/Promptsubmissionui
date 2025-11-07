@@ -144,12 +144,40 @@ export class BackendClientImpl implements BackendClient {
   };
 
   /**
+   * Maps backend status values to our InboxStatus type
+   */
+  private mapInboxStatus(status: string): Session['inboxStatus'] {
+    // Handle both formats: lowercase-with-hyphens and Capitalized
+    const normalizedStatus = status.toLowerCase().replace(/-/g, '');
+
+    const statusMap: Record<string, Session['inboxStatus']> = {
+      // Capitalized format (from actual API)
+      'pending': 'pending',
+      'active': 'in-progress',
+      'completed': 'completed',
+      'archived': 'completed',
+      'failed': 'failed',
+      // Lowercase with hyphens (from tests and old API)
+      'inprogress': 'in-progress',
+    };
+
+    return statusMap[normalizedStatus] || 'pending';
+  }
+
+  /**
    * Deserializes a single session, converting snake_case to camelCase and date strings to Date objects
    */
   private deserializeSession(session: any): Session {
     const camelSession = keysToCamel(session);
+
+    // Handle API field name differences
+    // API returns 'session_status' but we expect 'inboxStatus'
+    const rawStatus = camelSession.inboxStatus || camelSession.sessionStatus;
+    const inboxStatus = typeof rawStatus === 'string' ? this.mapInboxStatus(rawStatus) : 'pending';
+
     return {
       ...camelSession,
+      inboxStatus,
       createdAt: new Date(camelSession.createdAt),
       messages: camelSession.messages
         ? this.deserializeMessages(camelSession.messages)

@@ -1,8 +1,7 @@
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { BackendClient } from '../services/api/types';
 import { BackendClientImpl } from '../services/api/backendClient';
-import { PromptBackendClient } from '../services/api/promptBackendClient';
-import { MockHttpClient } from '../services/http/mockClient';
+import { MockHttpClient, FetchHttpClient } from '../services/http';
 
 /**
  * Context for the Backend API client.
@@ -32,9 +31,8 @@ interface ApiProviderProps {
  *   <App />
  * </ApiProvider>
  *
- * // Or inject a custom client with custom URL
- * const backendClient = new PromptBackendClient('http://localhost:8000');
- * <ApiProvider client={backendClient}>
+ * // Or provide a custom backend URL
+ * <ApiProvider backendUrl="http://localhost:8000">
  *   <App />
  * </ApiProvider>
  * ```
@@ -43,15 +41,15 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
   children,
   client,
   useMock = false,
-  backendUrl,
+  backendUrl = 'https://prompt-backend-production.up.railway.app',
 }) => {
   // Create backend client once - Service Worker handles token injection
   const backendClient = useMemo(() => {
     if (client) return client;
     if (useMock) return new BackendClientImpl(new MockHttpClient());
 
-    // No token getter needed - Service Worker injects tokens automatically
-    return new PromptBackendClient(backendUrl);
+    // Use FetchHttpClient which properly handles the backend API response format
+    return new BackendClientImpl(new FetchHttpClient(backendUrl));
   }, [client, useMock, backendUrl]);
 
   return (
