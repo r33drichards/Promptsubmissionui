@@ -79,10 +79,7 @@ export class PromptBackendClient implements BackendClient {
 
       // Get the raw JSON before SDK transformation
       const rawJson = await rawResponse.raw.json();
-      console.log(
-        '[PromptBackendClient] CreateWithPrompt raw JSON:',
-        rawJson
-      );
+      console.log('[PromptBackendClient] CreateWithPrompt raw JSON:', rawJson);
 
       // Extract IDs from raw JSON (backend sends camelCase)
       const sessionId = rawJson.sessionId || rawJson.session_id || null;
