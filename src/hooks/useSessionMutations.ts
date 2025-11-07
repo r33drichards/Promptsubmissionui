@@ -10,6 +10,15 @@ import { queryKeys } from './queryKeys';
 import { toast } from 'sonner';
 
 /**
+ * Truncate a branch name to a maximum length, adding ellipsis if needed
+ */
+function truncateBranchName(branchName: string | undefined, maxLength: number = 16): string {
+  if (!branchName) return '';
+  if (branchName.length <= maxLength) return branchName;
+  return branchName.substring(0, maxLength) + '...';
+}
+
+/**
  * Hook to create a new session.
  *
  * Features:
