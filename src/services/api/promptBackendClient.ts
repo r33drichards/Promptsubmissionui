@@ -76,7 +76,14 @@ export class PromptBackendClient implements BackendClient {
 
       console.log('[PromptBackendClient] CreateWithPrompt response:', response);
 
-      if (!response || !response.sessionId) {
+      // Handle both camelCase (backend) and snake_case (SDK expected) naming
+      // The backend returns sessionId/promptId but the SDK expects session_id/prompt_id
+      const sessionId =
+        response.sessionId || (response as any).session_id || null;
+      const _promptId =
+        response.promptId || (response as any).prompt_id || null;
+
+      if (!response || !sessionId) {
         console.error(
           '[PromptBackendClient] Invalid response structure:',
           response
@@ -87,7 +94,7 @@ export class PromptBackendClient implements BackendClient {
       }
 
       // Fetch the full session data
-      return this.sessions.get(response.sessionId);
+      return this.sessions.get(sessionId);
     },
 
     update: async (id: string, data: UpdateSessionData): Promise<Session> => {
