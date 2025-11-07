@@ -23,6 +23,7 @@ interface CreateTaskFormProps {
   onCancel: () => void;
   parentSession?: Session | null;
   repositories: string[];
+  isSubmitting?: boolean;
 }
 
 // Infer the type from the schema
@@ -33,6 +34,7 @@ export function CreateTaskForm({
   onCancel,
   parentSession,
   repositories,
+  isSubmitting = false,
 }: CreateTaskFormProps) {
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
@@ -128,14 +130,29 @@ export function CreateTaskForm({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
+            <p className="text-sm text-gray-600">Creating task...</p>
+          </div>
+        </div>
+      )}
+
       <div className="border-b p-4 flex items-center justify-between">
         <h2>
           {parentSession
             ? `Create Subtask for "${parentSession.title}"`
             : 'Create New Task'}
         </h2>
-        <Button variant="ghost" size="sm" onClick={onCancel}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           <X className="w-4 h-4" />
         </Button>
       </div>
@@ -253,11 +270,26 @@ export function CreateTaskForm({
         </div>
 
         <div className="border-t p-4 flex gap-2 justify-end">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
-          <Button type="submit" disabled={!prompt || !repo || !targetBranch}>
-            Create Task
+          <Button
+            type="submit"
+            disabled={!prompt || !repo || !targetBranch || isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Task'
+            )}
           </Button>
         </div>
       </form>

@@ -316,6 +316,7 @@ function AppLayout() {
             onCancel={handleCancelCreate}
             parentSession={parentForNewTask}
             repositories={sortedRepositories}
+            isSubmitting={createSessionMutation.isPending}
           />
         ) : selectedSession ? (
           <SessionDetail
