@@ -6,8 +6,19 @@ import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
 import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
-import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
+import { makeMarkdownText } from '@assistant-ui/react-markdown';
+import remarkGfm from 'remark-gfm';
 import '@assistant-ui/react-ui/styles/index.css';
+
+// Configure markdown text with auto-linking for URLs
+const MarkdownTextWithLinks = makeMarkdownText({
+  remarkPlugins: [remarkGfm],
+  components: {
+    a: ({ node, ...props }) => (
+      <a {...props} target="_blank" rel="noopener noreferrer" />
+    ),
+  },
+});
 
 interface SessionDetailProps {
   session: Session;
@@ -94,7 +105,7 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
       <div className="flex-1 min-h-0 overflow-auto">
         <AssistantRuntimeProvider runtime={runtime}>
           <Thread
-            assistantMessage={{ components: { Text: MarkdownTextPrimitive } }}
+            assistantMessage={{ components: { Text: MarkdownTextWithLinks } }}
           />
         </AssistantRuntimeProvider>
 

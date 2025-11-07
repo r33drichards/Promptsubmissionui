@@ -415,6 +415,49 @@ describe('SessionDetail', () => {
   });
 
   describe('Message Display', () => {
+    it('should render URLs in messages as clickable links', async () => {
+      const messagesWithUrl: BackendMessage[] = [
+        {
+          type: 'assistant',
+          uuid: 'msg-with-url',
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                type: 'text',
+                text: 'Check out this PR: https://github.com/test/repo/pull/123',
+              },
+            ],
+          },
+          session_id: 'test-session-1',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      const mockClient = createMockClient(messagesWithUrl);
+      render(
+        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        { client: mockClient }
+      );
+
+      // Wait for the message to render
+      await waitFor(() => {
+        expect(
+          screen.getByText('Check out this PR:', { exact: false })
+        ).toBeInTheDocument();
+      });
+
+      // Verify the URL is rendered as a clickable link
+      const link = screen.getByRole('link', {
+        name: 'https://github.com/test/repo/pull/123',
+      });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute(
+        'href',
+        'https://github.com/test/repo/pull/123'
+      );
+    });
+
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(
