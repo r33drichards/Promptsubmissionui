@@ -14,6 +14,15 @@ interface SessionDetailProps {
   onCreatePR: (sessionId: string) => void;
 }
 
+/**
+ * Truncate a branch name to a maximum length, adding ellipsis if needed
+ */
+function truncateBranchName(branchName: string | undefined, maxLength: number = 16): string {
+  if (!branchName) return '';
+  if (branchName.length <= maxLength) return branchName;
+  return branchName.substring(0, maxLength) + '...';
+}
+
 export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
@@ -53,9 +62,10 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
                     href={`https://github.com/${session.repo}/tree/${session.branch}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline truncate"
+                    className="hover:text-blue-600 hover:underline"
+                    title={session.branch}
                   >
-                    {session.branch}
+                    {truncateBranchName(session.branch)}
                   </a>
                 </div>
                 <GitMerge className="w-3 h-3 flex-shrink-0" />
@@ -65,9 +75,10 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
                     href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline truncate"
+                    className="hover:text-blue-600 hover:underline"
+                    title={session.targetBranch}
                   >
-                    {session.targetBranch}
+                    {truncateBranchName(session.targetBranch)}
                   </a>
                 </div>
               </div>
