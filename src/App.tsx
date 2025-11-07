@@ -13,7 +13,6 @@ import { toast } from 'sonner';
 import {
   useSessions,
   useCreateSession,
-  useUpdateSession,
   useArchiveSession,
 } from './hooks';
 
@@ -30,7 +29,6 @@ function AppLayout() {
 
   // Mutations
   const createSessionMutation = useCreateSession();
-  const updateSessionMutation = useUpdateSession();
   const archiveSessionMutation = useArchiveSession();
 
   // Derive selectedSession from URL parameter
@@ -167,17 +165,6 @@ function AppLayout() {
     setIsCreatingTask(false);
     setParentForNewTask(null);
     // Don't navigate - stay on current URL
-  };
-
-  const handleCreatePR = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      const prUrl = `https://github.com/${session.repo}/pull/${Math.floor(Math.random() * 1000)}`;
-      updateSessionMutation.mutate({
-        id: sessionId,
-        data: { prUrl },
-      });
-    }
   };
 
   const _handleOpenInCLI = (sessionId: string) => {
@@ -318,10 +305,7 @@ function AppLayout() {
             repositories={sortedRepositories}
           />
         ) : selectedSession ? (
-          <SessionDetail
-            session={selectedSession}
-            onCreatePR={handleCreatePR}
-          />
+          <SessionDetail session={selectedSession} />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
             <div className="text-center space-y-3">
