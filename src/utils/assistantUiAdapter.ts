@@ -32,19 +32,14 @@ export function convertConversationToThreadMessages(
         },
       });
 
-      // Add all messages for this prompt
+      // First pass: collect all tool_use and tool_result items across ALL messages in this prompt
+      const toolCallMap = new Map<string, any>();
+
+      // Collect all tool_use items
       for (const msg of item.messages) {
-        // Skip messages without content (like system/init messages)
-        if (
-          !msg.message ||
-          !msg.message.content ||
-          !Array.isArray(msg.message.content)
-        ) {
+        if (!msg.message?.content || !Array.isArray(msg.message.content)) {
           continue;
         }
-
-        // First pass: collect tool_use items in a map
-        const toolCallMap = new Map<string, any>();
         for (const c of msg.message.content) {
           if (c.type === 'tool_use') {
             toolCallMap.set(c.id, {
@@ -52,11 +47,17 @@ export function convertConversationToThreadMessages(
               toolName: c.name || '',
               toolCallId: c.id || '',
               args: c.input,
+              argsText: JSON.stringify(c.input, null, 2),
             });
           }
         }
+      }
 
-        // Second pass: merge tool_result into tool_use
+      // Second pass: merge tool_result into matching tool_use items
+      for (const msg of item.messages) {
+        if (!msg.message?.content || !Array.isArray(msg.message.content)) {
+          continue;
+        }
         for (const c of msg.message.content) {
           if (c.type === 'tool_result' && c.tool_use_id) {
             const toolCall = toolCallMap.get(c.tool_use_id);
@@ -73,8 +74,19 @@ export function convertConversationToThreadMessages(
             }
           }
         }
+      }
 
-        // Third pass: build the final content array
+      // Third pass: add messages to the thread, replacing tool calls with merged versions
+      for (const msg of item.messages) {
+        // Skip messages without content (like system/init messages)
+        if (
+          !msg.message ||
+          !msg.message.content ||
+          !Array.isArray(msg.message.content)
+        ) {
+          continue;
+        }
+
         const content = msg.message.content
           .map((c) => {
             if (c.type === 'text') {
@@ -90,6 +102,15 @@ export function convertConversationToThreadMessages(
             return { type: 'text' as const, text: '' };
           })
           .filter((c) => c !== null);
+
+        // Debug: log if we have tool calls
+        const toolCalls = content.filter((c: any) => c.type === 'tool-call');
+        if (toolCalls.length > 0) {
+          console.log(
+            `[assistantUiAdapter] Message ${msg.uuid} has ${toolCalls.length} tool calls:`,
+            toolCalls
+          );
+        }
 
         messages.push({
           id: msg.uuid,
