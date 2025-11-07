@@ -145,6 +145,74 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
       resultLanguage = 'json';
       formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
     }
+  } else if (toolName === 'mcp__sandbox__file_operations') {
+    try {
+      // Parse the input to extract file operation details
+      const inputData = JSON.parse(argsText);
+
+      // Show input as formatted JSON
+      inputLanguage = 'json';
+      formattedInput = JSON.stringify(inputData, null, 2);
+
+      // Extract path from input for language detection
+      if (inputData.path) {
+        filePath = inputData.path;
+      }
+
+      // Parse the result to extract content
+      if (result) {
+        const resultData =
+          typeof result === 'string' ? JSON.parse(result) : result;
+
+        // If it's a read operation and has content, show the content in an editor
+        if (inputData.action === 'read' && resultData.content) {
+          formattedResult = resultData.content;
+
+          // Infer language from file extension
+          if (filePath) {
+            const ext = filePath.split('.').pop()?.toLowerCase();
+            const langMap: Record<string, string> = {
+              ts: 'typescript',
+              tsx: 'typescript',
+              js: 'javascript',
+              jsx: 'javascript',
+              py: 'python',
+              java: 'java',
+              cpp: 'cpp',
+              c: 'c',
+              cs: 'csharp',
+              go: 'go',
+              rs: 'rust',
+              rb: 'ruby',
+              php: 'php',
+              html: 'html',
+              css: 'css',
+              scss: 'scss',
+              json: 'json',
+              xml: 'xml',
+              yaml: 'yaml',
+              yml: 'yaml',
+              md: 'markdown',
+              sh: 'shell',
+              sql: 'sql',
+            };
+            resultLanguage = langMap[ext || ''] || 'plaintext';
+          }
+        } else {
+          // For other operations, show result as JSON
+          resultLanguage = 'json';
+          formattedResult = JSON.stringify(resultData, null, 2);
+        }
+      }
+    } catch {
+      // Fallback to default JSON formatting if parsing fails
+      inputLanguage = 'json';
+      formattedInput = JSON.stringify(JSON.parse(argsText), null, 2);
+      const resultText =
+        typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+      resultLanguage = 'json';
+      formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
+    }
   } else {
     // Default formatting for other tools
     inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
@@ -245,7 +313,12 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
                   />
                 ) : (
                   <Editor
-                    height="200px"
+                    height={
+                      toolName === 'mcp__sandbox__file_operations' &&
+                      resultLanguage !== 'json'
+                        ? '400px'
+                        : '200px'
+                    }
                     language={resultLanguage}
                     value={formattedResult}
                     theme={theme === 'dark' ? 'vs-dark' : 'light'}
@@ -254,7 +327,11 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
                       minimap: { enabled: false },
                       scrollBeyondLastLine: false,
                       wordWrap: 'on',
-                      lineNumbers: 'off',
+                      lineNumbers:
+                        toolName === 'mcp__sandbox__file_operations' &&
+                        resultLanguage !== 'json'
+                          ? 'on'
+                          : 'off',
                       folding: false,
                       renderLineHighlight: 'none',
                     }}
