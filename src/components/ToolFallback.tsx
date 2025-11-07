@@ -25,21 +25,56 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
     }
   };
 
-  // Format and determine language for input
-  const inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
-  const formattedInput =
-    inputLanguage === 'json'
-      ? JSON.stringify(JSON.parse(argsText), null, 2)
-      : argsText;
+  // Special handling for mcp__sandbox__execute_code
+  let inputLanguage = 'plaintext';
+  let formattedInput = argsText;
+  let resultLanguage = 'plaintext';
+  let formattedResult = '';
 
-  // Format and determine language for result
-  const resultText =
-    typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-  const resultLanguage = isJSON(resultText) ? 'json' : 'plaintext';
-  const formattedResult =
-    resultLanguage === 'json'
-      ? JSON.stringify(JSON.parse(resultText), null, 2)
-      : resultText;
+  if (toolName === 'mcp__sandbox__execute_code') {
+    try {
+      // Parse the input to extract code and language
+      const inputData = JSON.parse(argsText);
+      if (inputData.code && inputData.language) {
+        inputLanguage = inputData.language;
+        formattedInput = inputData.code;
+      }
+
+      // Parse the result to extract the actual output
+      const resultData =
+        typeof result === 'string' ? JSON.parse(result) : result;
+      if (resultData) {
+        // Combine stdout and stderr if available
+        const output = [];
+        if (resultData.stdout) output.push(resultData.stdout);
+        if (resultData.stderr) output.push(resultData.stderr);
+        formattedResult = output.join('\n') || 'No output';
+      }
+    } catch {
+      // Fallback to default JSON formatting if parsing fails
+      inputLanguage = 'json';
+      formattedInput = JSON.stringify(JSON.parse(argsText), null, 2);
+      const resultText =
+        typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+      resultLanguage = 'json';
+      formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
+    }
+  } else {
+    // Default formatting for other tools
+    inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
+    formattedInput =
+      inputLanguage === 'json'
+        ? JSON.stringify(JSON.parse(argsText), null, 2)
+        : argsText;
+
+    const resultText =
+      typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+    resultLanguage = isJSON(resultText) ? 'json' : 'plaintext';
+    formattedResult =
+      resultLanguage === 'json'
+        ? JSON.stringify(JSON.parse(resultText), null, 2)
+        : resultText;
+  }
 
   return (
     <div className="mb-4 flex w-full flex-col gap-3 rounded-lg border py-3">
