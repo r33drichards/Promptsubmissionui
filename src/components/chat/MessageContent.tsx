@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import Linkify from 'linkify-react';
 import { ToolCallDisplay } from './ToolCallDisplay';
 import { AssistantMessage } from '@/utils/conversationTransform';
 
@@ -54,6 +55,36 @@ export function MessageContent({ message }: MessageContentProps) {
                         >
                           {children}
                         </code>
+                      );
+                    },
+                    p({ children }) {
+                      return (
+                        <p>
+                          <Linkify
+                            options={{
+                              target: '_blank',
+                              rel: 'noopener noreferrer',
+                              className:
+                                'text-blue-600 hover:text-blue-800 underline',
+                            }}
+                          >
+                            {children}
+                          </Linkify>
+                        </p>
+                      );
+                    },
+                    text({ children }) {
+                      return (
+                        <Linkify
+                          options={{
+                            target: '_blank',
+                            rel: 'noopener noreferrer',
+                            className:
+                              'text-blue-600 hover:text-blue-800 underline',
+                          }}
+                        >
+                          {children}
+                        </Linkify>
                       );
                     },
                   }}
