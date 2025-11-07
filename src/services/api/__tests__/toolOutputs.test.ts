@@ -98,50 +98,40 @@ describe('BackendClient - Tool Outputs', () => {
 
     // Verify first message (tool_use) structure is preserved
     const toolUseMessage = result[0];
-    expect(toolUseMessage.id).toBe('842ce730-2b23-438e-8dbd-c7c5fc3be59f');
-    expect(toolUseMessage.promptId).toBe(
-      '75eeb2a5-09d5-4de8-9b5f-9da1f000685b'
-    );
-    expect(toolUseMessage.data).toBeDefined();
-    expect(toolUseMessage.data.type).toBe('assistant');
-    expect(toolUseMessage.data.uuid).toBe(
-      'c3959230-e8c6-4e40-a94d-7f36b97a359e'
-    );
+    // After unwrapping, we have direct access to BackendMessage fields
+    expect(toolUseMessage.type).toBe('assistant');
+    expect(toolUseMessage.uuid).toBe('c3959230-e8c6-4e40-a94d-7f36b97a359e');
 
     // CRITICAL: Verify tool_use content is preserved
-    expect(toolUseMessage.data.message.content).toHaveLength(1);
-    expect(toolUseMessage.data.message.content[0].type).toBe('tool_use');
-    expect(toolUseMessage.data.message.content[0].name).toBe('Task');
-    expect(toolUseMessage.data.message.content[0].id).toBe(
+    expect(toolUseMessage.message.content).toHaveLength(1);
+    expect(toolUseMessage.message.content[0].type).toBe('tool_use');
+    expect(toolUseMessage.message.content[0].name).toBe('Task');
+    expect(toolUseMessage.message.content[0].id).toBe(
       'toolu_01M5NyE9bsGD84tzHbgpCqNG'
     );
-    expect(toolUseMessage.data.message.content[0].input).toEqual({
+    expect(toolUseMessage.message.content[0].input).toEqual({
       description: 'Find details view component',
       prompt: 'Find the details view component...',
       subagentType: 'Explore', // Note: camelCase conversion
     });
 
     // Verify usage information is preserved
-    expect(toolUseMessage.data.message.usage).toEqual({
+    expect(toolUseMessage.message.usage).toEqual({
       cacheCreationInputTokens: 8465,
       cacheReadInputTokens: 6894,
       inputTokens: 2,
       outputTokens: 1,
     });
 
-    // Verify dates are converted to Date objects
-    expect(toolUseMessage.createdAt).toBeInstanceOf(Date);
-    expect(toolUseMessage.updatedAt).toBeInstanceOf(Date);
-
     // Verify second message (tool_result) structure is preserved
     const toolResultMessage = result[1];
-    expect(toolResultMessage.data.message.content).toHaveLength(1);
-    expect(toolResultMessage.data.message.content[0].type).toBe('tool_result');
-    expect(toolResultMessage.data.message.content[0].toolUseId).toBe(
+    expect(toolResultMessage.message.content).toHaveLength(1);
+    expect(toolResultMessage.message.content[0].type).toBe('tool_result');
+    expect(toolResultMessage.message.content[0].toolUseId).toBe(
       'toolu_01M5NyE9bsGD84tzHbgpCqNG'
     );
-    expect(toolResultMessage.data.message.content[0].content).toHaveLength(1);
-    expect(toolResultMessage.data.message.content[0].content[0].text).toBe(
+    expect(toolResultMessage.message.content[0].content).toHaveLength(1);
+    expect(toolResultMessage.message.content[0].content[0].text).toBe(
       'This is the tool result output'
     );
   });
@@ -176,6 +166,8 @@ describe('BackendClient - Tool Outputs', () => {
     const result = await client.messages.list('prompt-1');
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('test-1');
+    // After unwrapping, check BackendMessage fields
+    expect(result[0].uuid).toBe('uuid-1');
+    expect(result[0].type).toBe('assistant');
   });
 });

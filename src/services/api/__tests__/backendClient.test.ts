@@ -381,19 +381,14 @@ describe('BackendClient API Boundaries', () => {
         '/api/prompts/prompt-1/messages'
       );
       expect(messages).toHaveLength(2);
-      // BackendMessage structure preserved
+      // BackendMessage structure (unwrapped from data field)
       expect(messages[0]).toMatchObject({
-        id: 'msg-1',
-        promptId: 'prompt-1',
-        data: {
-          type: 'user',
-          uuid: 'uuid-1',
-          message: {
-            role: 'user',
-            content: [{ type: 'text', text: 'Hello' }],
-          },
+        type: 'user',
+        uuid: 'uuid-1',
+        message: {
+          role: 'user',
+          content: [{ type: 'text', text: 'Hello' }],
         },
-        createdAt: expect.any(Date),
       });
     });
   });

@@ -1,5 +1,5 @@
 import { HttpClient } from '../http/types';
-import { Session, Message, Prompt, BackendMessage } from '../../types/session';
+import { Session, Message } from '../../types/session';
 import {
   BackendClient,
   CreateSessionData,
@@ -230,15 +230,9 @@ export class BackendClientImpl implements BackendClient {
       // Convert snake_case to camelCase recursively, preserving the full structure
       const camelMsg = keysToCamel(msg);
 
-      // Parse dates if present
-      if (camelMsg.createdAt) {
-        camelMsg.createdAt = new Date(camelMsg.createdAt);
-      }
-      if (camelMsg.updatedAt) {
-        camelMsg.updatedAt = new Date(camelMsg.updatedAt);
-      }
-
-      return camelMsg;
+      // The API wraps BackendMessage in { id, prompt_id, data: BackendMessage, created_at, updated_at }
+      // We need to unwrap the 'data' field to match the BackendMessage type
+      return camelMsg.data || camelMsg;
     });
   }
 }
