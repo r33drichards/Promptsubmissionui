@@ -634,16 +634,19 @@ describe('User Flows Integration Tests', () => {
       const sessionItem = screen.getByText('Test Session 1');
       await user.click(sessionItem);
 
-      // Type a reply
-      const replyInput = screen.getByPlaceholderText(/reply/i);
+      // Type a reply using Thread component's input
+      const replyInput = screen.getByPlaceholderText(/write a message/i);
       await user.type(replyInput, 'Here is my reply');
 
       const sendButton = screen.getByRole('button', { name: /send/i });
       await user.click(sendButton);
 
-      // Should call update mutation to change status to in-progress
+      // Should call prompts.create to send the message
       await waitFor(() => {
-        expect(mockClient.sessions.update).toHaveBeenCalled();
+        expect(mockClient.prompts.create).toHaveBeenCalledWith(
+          'test-session-1',
+          'Here is my reply'
+        );
       });
     });
   });

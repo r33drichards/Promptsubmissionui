@@ -125,6 +125,20 @@ export function createMockBackendClient(
         });
       }),
     },
+    prompts: {
+      list: vi.fn().mockResolvedValue([]),
+      create: vi
+        .fn()
+        .mockImplementation((sessionId: string, content: string) => {
+          return Promise.resolve({
+            id: `prompt-${Date.now()}`,
+            sessionId,
+            content,
+            createdAt: new Date(),
+            status: 'pending' as const,
+          });
+        }),
+    },
     messages: {
       list: vi.fn().mockResolvedValue(mockMessages),
       create: vi
@@ -145,6 +159,10 @@ export function createMockBackendClient(
     sessions: {
       ...defaultClient.sessions,
       ...overrides?.sessions,
+    },
+    prompts: {
+      ...defaultClient.prompts,
+      ...overrides?.prompts,
     },
     messages: {
       ...defaultClient.messages,
@@ -170,6 +188,10 @@ export function createErrorMockBackendClient(): BackendClient {
       unarchive: vi
         .fn()
         .mockRejectedValue(new Error('Failed to unarchive session')),
+    },
+    prompts: {
+      list: vi.fn().mockRejectedValue(new Error('Failed to fetch prompts')),
+      create: vi.fn().mockRejectedValue(new Error('Failed to create prompt')),
     },
     messages: {
       list: vi.fn().mockRejectedValue(new Error('Failed to fetch messages')),
