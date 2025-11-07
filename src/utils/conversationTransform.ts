@@ -47,6 +47,15 @@ export function convertConversationToMessages(
 
       // Add all messages for this prompt
       for (const msg of item.messages) {
+        // Skip messages without content (like system/init messages)
+        if (
+          !msg.message ||
+          !msg.message.content ||
+          !Array.isArray(msg.message.content)
+        ) {
+          continue;
+        }
+
         const content = msg.message.content.map((c) => {
           if (c.type === 'text') {
             return { type: 'text' as const, text: c.text || '' };
