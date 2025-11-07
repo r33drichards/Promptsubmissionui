@@ -77,16 +77,38 @@ export class PromptBackendClient implements BackendClient {
       console.log('[PromptBackendClient] CreateWithPrompt response:', response);
 
       // Handle both camelCase (backend) and snake_case (SDK expected) naming
-      // The backend returns sessionId/promptId but the SDK expects session_id/prompt_id
+      // The backend may return in different formats:
+      // 1. sessionId/promptId (camelCase)
+      // 2. session_id/prompt_id (snake_case)
+      // 3. data.sessionId/data.promptId (nested in data object)
+      // 4. data.session_id/data.prompt_id (nested in data object with snake_case)
+      const responseData = (response as any).data || response;
       const sessionId =
-        response.sessionId || (response as any).session_id || null;
+        response.sessionId ||
+        (response as any).session_id ||
+        responseData.sessionId ||
+        responseData.session_id ||
+        null;
       const _promptId =
-        response.promptId || (response as any).prompt_id || null;
+        response.promptId ||
+        (response as any).prompt_id ||
+        responseData.promptId ||
+        responseData.prompt_id ||
+        null;
+
+      console.log('[PromptBackendClient] Extracted IDs:', {
+        sessionId,
+        promptId: _promptId,
+      });
 
       if (!response || !sessionId) {
         console.error(
           '[PromptBackendClient] Invalid response structure:',
           response
+        );
+        console.error(
+          '[PromptBackendClient] Available keys:',
+          Object.keys(response || {})
         );
         throw new Error(
           'Failed to create session with prompt: Invalid response from backend'
