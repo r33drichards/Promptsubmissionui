@@ -57,8 +57,8 @@ export function CreateTaskForm({
     }
   }, [defaultBranch, parentSession, targetBranch]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
 
     // Parse and validate form data using Zod (parse don't validate)
     const result = createTaskFormSchema.safeParse({
@@ -219,6 +219,7 @@ export function CreateTaskForm({
                   setErrors((prev) => ({ ...prev, prompt: undefined }));
                 }
               }}
+              onSubmit={() => handleSubmit()}
               placeholder="Describe what you want Claude Code to do..."
             />
             {errors.prompt && (
