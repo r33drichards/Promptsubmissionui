@@ -65,7 +65,10 @@ export class PromptBackendClient implements BackendClient {
       console.log(
         '[PromptBackendClient] Creating session with prompt using new endpoint'
       );
-      const response = await this.api.handlersSessionsCreateWithPrompt({
+      // Use Raw API to access response before SDK transformation
+      // The SDK incorrectly transforms snake_case to camelCase, but the backend
+      // actually returns camelCase already
+      const rawResponse = await this.api.handlersSessionsCreateWithPromptRaw({
         createSessionWithPromptInput: {
           repo: validatedData.repo,
           targetBranch: validatedData.targetBranch,
@@ -74,41 +77,27 @@ export class PromptBackendClient implements BackendClient {
         },
       });
 
-      console.log('[PromptBackendClient] CreateWithPrompt response:', response);
+      // Get the raw JSON before SDK transformation
+      const rawJson = await rawResponse.raw.json();
+      console.log('[PromptBackendClient] CreateWithPrompt raw JSON:', rawJson);
 
-      // Handle both camelCase (backend) and snake_case (SDK expected) naming
-      // The backend may return in different formats:
-      // 1. sessionId/promptId (camelCase)
-      // 2. session_id/prompt_id (snake_case)
-      // 3. data.sessionId/data.promptId (nested in data object)
-      // 4. data.session_id/data.prompt_id (nested in data object with snake_case)
-      const responseData = (response as any).data || response;
-      const sessionId =
-        response.sessionId ||
-        (response as any).session_id ||
-        responseData.sessionId ||
-        responseData.session_id ||
-        null;
-      const _promptId =
-        response.promptId ||
-        (response as any).prompt_id ||
-        responseData.promptId ||
-        responseData.prompt_id ||
-        null;
+      // Extract IDs from raw JSON (backend sends camelCase)
+      const sessionId = rawJson.sessionId || rawJson.session_id || null;
+      const _promptId = rawJson.promptId || rawJson.prompt_id || null;
 
       console.log('[PromptBackendClient] Extracted IDs:', {
         sessionId,
         promptId: _promptId,
       });
 
-      if (!response || !sessionId) {
+      if (!sessionId) {
         console.error(
           '[PromptBackendClient] Invalid response structure:',
-          response
+          rawJson
         );
         console.error(
           '[PromptBackendClient] Available keys:',
-          Object.keys(response || {})
+          Object.keys(rawJson || {})
         );
         throw new Error(
           'Failed to create session with prompt: Invalid response from backend'
