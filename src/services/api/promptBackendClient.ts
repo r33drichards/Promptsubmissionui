@@ -210,11 +210,7 @@ export class PromptBackendClient implements BackendClient {
       try {
         // Fetch all messages for the prompt
         const response = await this.api.handlersMessagesList({ promptId });
-        console.log('[DEBUG PromptBackendClient] Raw API response:', response);
-        console.log('[DEBUG PromptBackendClient] Messages array:', response.messages);
-        const deserialized = this.deserializeBackendMessages(response.messages || []);
-        console.log('[DEBUG PromptBackendClient] Deserialized messages:', deserialized);
-        return deserialized;
+        return this.deserializeBackendMessages(response.messages || []);
       } catch (error) {
         console.error('[PromptBackendClient] Failed to list messages:', error);
         return [];
@@ -351,26 +347,20 @@ export class PromptBackendClient implements BackendClient {
    */
   private deserializeBackendMessages(messages: any[]): BackendMessage[] {
     if (!Array.isArray(messages)) {
-      console.log('[DEBUG PromptBackendClient] Messages is not an array:', messages);
       return [];
     }
 
-    return messages.map((msg, index) => {
+    return messages.map((msg) => {
       // The actual API response wraps the data under a "data" field
       const data = msg.data || msg;
-      console.log(`[DEBUG PromptBackendClient] Processing message ${index}:`, msg);
-      console.log(`[DEBUG PromptBackendClient] Unwrapped data ${index}:`, data);
-      console.log(`[DEBUG PromptBackendClient] data.message ${index}:`, data.message);
 
-      const result = {
+      return {
         type: data.type || 'user',
         uuid: data.uuid || msg.id || '',
         message: data.message || {},
         session_id: data.session_id || data.sessionId || '',
         parent_tool_use_id: data.parent_tool_use_id || null,
       };
-      console.log(`[DEBUG PromptBackendClient] Result ${index}:`, result);
-      return result;
     });
   }
 

@@ -270,28 +270,16 @@ export function useSessionConversation(sessionId: string) {
 
   // Create conversation structure that groups messages by prompt
   const conversation = useMemo(() => {
-    console.log('[DEBUG useSessionConversation] Building conversation structure');
-    console.log('[DEBUG useSessionConversation] Prompts:', prompts);
-    console.log('[DEBUG useSessionConversation] Message queries:', messageQueries);
-
     const conversationItems: ConversationItem[] = [];
 
     // Create a map of promptId -> messages for quick lookup
     const messagesByPromptId = new Map<string, BackendMessage[]>();
     messageQueries.forEach((query, index) => {
       const prompt = prompts[index];
-      console.log(`[DEBUG useSessionConversation] Query ${index}:`, {
-        prompt,
-        hasData: !!query.data,
-        dataLength: query.data?.length || 0,
-        data: query.data,
-      });
       if (prompt && query.data) {
         messagesByPromptId.set(prompt.id, query.data);
       }
     });
-
-    console.log('[DEBUG useSessionConversation] Messages by prompt ID:', messagesByPromptId);
 
     // Build conversation by iterating through prompts in chronological order
     const sortedPrompts = [...prompts].sort(
@@ -301,7 +289,6 @@ export function useSessionConversation(sessionId: string) {
 
     sortedPrompts.forEach((prompt) => {
       const messages = messagesByPromptId.get(prompt.id) || [];
-      console.log(`[DEBUG useSessionConversation] Adding prompt ${prompt.id} with ${messages.length} messages`);
       conversationItems.push({
         type: 'prompt',
         data: prompt,
@@ -309,7 +296,6 @@ export function useSessionConversation(sessionId: string) {
       });
     });
 
-    console.log('[DEBUG useSessionConversation] Final conversation items:', conversationItems);
     return conversationItems;
   }, [prompts, messageQueries]);
 

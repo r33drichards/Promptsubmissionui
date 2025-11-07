@@ -11,20 +11,12 @@ interface SessionThreadProps {
 }
 
 export function SessionThread({ conversation, isLoading }: SessionThreadProps) {
-  console.log('[DEBUG SessionThread] Received conversation:', conversation);
-  console.log('[DEBUG SessionThread] isLoading:', isLoading);
-
-  const messages = useMemo(() => {
-    console.log('[DEBUG SessionThread] Converting conversation to messages');
-    const result = convertConversationToMessages(conversation);
-    console.log('[DEBUG SessionThread] Converted messages:', result);
-    return result;
-  }, [conversation]);
-
-  console.log('[DEBUG SessionThread] Final messages to render:', messages);
+  const messages = useMemo(
+    () => convertConversationToMessages(conversation),
+    [conversation]
+  );
 
   if (isLoading) {
-    console.log('[DEBUG SessionThread] Showing loading state');
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <p>Loading conversation...</p>
@@ -33,15 +25,12 @@ export function SessionThread({ conversation, isLoading }: SessionThreadProps) {
   }
 
   if (messages.length === 0) {
-    console.log('[DEBUG SessionThread] Showing empty state - no messages');
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <p>No conversation yet</p>
       </div>
     );
   }
-
-  console.log('[DEBUG SessionThread] Rendering messages');
 
   return (
     <ScrollArea className="h-full">
