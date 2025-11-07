@@ -3,7 +3,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCreatePrompt } from '../useMessages';
 import { ApiProvider } from '../../providers/ApiProvider';
-import { PromptBackendClient } from '../../services/api/promptBackendClient';
 import React from 'react';
 
 const mockClient = {
