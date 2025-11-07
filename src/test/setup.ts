@@ -81,55 +81,40 @@ HTMLElement.prototype.hasPointerCapture = vi.fn();
 HTMLElement.prototype.scrollIntoView = vi.fn();
 
 // Mock @assistant-ui/react components for tests
-// Store the runtime data so the Thread mock can access it
-let mockRuntimeMessages: any[] = [];
-let mockIsLoading = false;
+vi.mock('@assistant-ui/react', () => {
+  let currentRuntime: any = null;
 
-vi.mock('@assistant-ui/react', () => ({
-  AssistantRuntimeProvider: ({ children, runtime }: any) => {
-    // Store runtime data for Thread component
-    if (runtime && runtime.messages) {
-      mockRuntimeMessages = runtime.messages;
-    }
-    return children;
-  },
-  useAssistantRuntime: () => ({
-    messages: mockRuntimeMessages,
-    isLoading: mockIsLoading,
-  }),
-  useExternalStoreRuntime: (adapter: any) => {
-    mockRuntimeMessages = adapter.messages || [];
-    mockIsLoading = adapter.isLoading || false;
-    return {
-      messages: mockRuntimeMessages,
-      isLoading: mockIsLoading,
-    };
-  },
-  makeAssistantToolUI: vi.fn(),
-}));
+  return {
+    AssistantRuntimeProvider: ({ children, runtime }: any) => {
+      currentRuntime = runtime;
+      return children;
+    },
+    useAssistantRuntime: () => currentRuntime,
+    useExternalStoreRuntime: (adapter: any) => {
+      return {
+        messages: adapter.messages || [],
+        isLoading: adapter.isLoading || false,
+        onNew: adapter.onNew || (() => {}),
+      };
+    },
+    makeAssistantToolUI: vi.fn(),
+    useThreadContext: () => ({
+      useThread: () => ({
+        messages: currentRuntime?.messages || [],
+        isLoading: currentRuntime?.isLoading || false,
+      }),
+    }),
+  };
+});
 
 // Mock @assistant-ui/react-ui components for tests
+// Simple mock that just renders a placeholder div
 vi.mock('@assistant-ui/react-ui', () => ({
   Thread: ({ className }: any) => {
-    // Render messages from the mock runtime
-    const hasMessages = mockRuntimeMessages && mockRuntimeMessages.length > 0;
-
     return React.createElement(
       'div',
       { className, 'data-testid': 'assistant-thread' },
-      hasMessages
-        ? mockRuntimeMessages.map((msg: any, idx: number) =>
-            React.createElement(
-              'div',
-              { key: idx, 'data-role': msg.role },
-              msg.content.map((c: any, cidx: number) =>
-                c.type === 'text'
-                  ? React.createElement('div', { key: cidx }, c.text)
-                  : null
-              )
-            )
-          )
-        : React.createElement('div', null, 'No conversation yet')
+      React.createElement('div', null, 'Thread component placeholder')
     );
   },
 }));

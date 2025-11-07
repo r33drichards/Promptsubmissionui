@@ -117,8 +117,9 @@ describe('SessionDetail', () => {
     });
 
     it.skip('should render all messages', async () => {
-      // Skip: This test needs to be updated for @assistant-ui/react integration
-      // The Thread component renders messages differently now
+      // Skip: vi.mock() for @assistant-ui/react-ui isn't working properly in this context
+      // The real Thread component is being used instead of our mock
+      // TODO: Investigate alternative mocking strategies or component restructuring
       const mockClient = createMockClient();
       render(
         <SessionDetail
@@ -140,8 +141,9 @@ describe('SessionDetail', () => {
     });
 
     it.skip('should show "No conversation yet" when there are no prompts', async () => {
-      // Skip: This test needs to be updated for @assistant-ui/react integration
-      // The Thread component shows its own welcome message
+      // Skip: vi.mock() for @assistant-ui/react-ui isn't working properly in this context
+      // The real Thread component is being used instead of our mock
+      // TODO: Investigate alternative mocking strategies or component restructuring
       const mockClient: BackendClient = {
         sessions: {
           list: vi.fn().mockResolvedValue([]),
@@ -650,7 +652,9 @@ describe('SessionDetail', () => {
 
   describe('Message Display', () => {
     it.skip('should display user messages with correct styling', async () => {
-      // Skip: This test needs to be updated for @assistant-ui/react integration
+      // Skip: vi.mock() for @assistant-ui/react-ui isn't working properly in this context
+      // The real Thread component is being used instead of our mock
+      // TODO: Investigate alternative mocking strategies or component restructuring
       const mockClient = createMockClient();
       render(
         <SessionDetail
@@ -670,7 +674,9 @@ describe('SessionDetail', () => {
     });
 
     it.skip('should display assistant messages with correct styling', async () => {
-      // Skip: This test needs to be updated for @assistant-ui/react integration
+      // Skip: vi.mock() for @assistant-ui/react-ui isn't working properly in this context
+      // The real Thread component is being used instead of our mock
+      // TODO: Investigate alternative mocking strategies or component restructuring
       const mockClient = createMockClient();
       render(
         <SessionDetail
@@ -692,7 +698,9 @@ describe('SessionDetail', () => {
     });
 
     it.skip('should display message types', async () => {
-      // Skip: This test needs to be updated for @assistant-ui/react integration
+      // Skip: vi.mock() for @assistant-ui/react-ui isn't working properly in this context
+      // The real Thread component is being used instead of our mock
+      // TODO: Investigate alternative mocking strategies or component restructuring
       const mockClient = createMockClient();
       render(
         <SessionDetail
@@ -704,8 +712,6 @@ describe('SessionDetail', () => {
       );
 
       // Wait for messages to load
-      // Note: @assistant-ui/react may render messages differently,
-      // so we just check that messages are visible
       await waitFor(() => {
         expect(screen.getByText('Hello, please help me')).toBeInTheDocument();
         expect(
