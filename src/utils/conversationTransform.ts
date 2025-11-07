@@ -47,12 +47,14 @@ export function convertConversationToMessages(
 
       // Add all messages for this prompt
       for (const msg of item.messages) {
+        console.log('[DEBUG] Processing message:', msg);
         // Skip messages without content (like system/init messages)
         if (
           !msg.message ||
           !msg.message.content ||
           !Array.isArray(msg.message.content)
         ) {
+          console.log('[DEBUG] Skipping message - missing content:', msg);
           continue;
         }
 

@@ -148,7 +148,11 @@ export class BackendClientImpl implements BackendClient {
       );
       // Return BackendMessage[] structure - only convert snake_case to camelCase
       const messages = response.data.messages || response.data;
-      return this.deserializeBackendMessages(messages);
+      console.log('[DEBUG] Raw API response:', response.data);
+      console.log('[DEBUG] Messages to deserialize:', messages);
+      const deserialized = this.deserializeBackendMessages(messages);
+      console.log('[DEBUG] Deserialized messages:', deserialized);
+      return deserialized;
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
