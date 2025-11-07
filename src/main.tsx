@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { OidcProvider } from '@axa-fr/react-oidc';
 import App from './App.tsx';
 import './index.css';
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { ApiProvider } from './providers/ApiProvider.tsx';
 import { QueryProvider } from './providers/QueryProvider.tsx';
 import { AuthCallback } from './pages/AuthCallback';
