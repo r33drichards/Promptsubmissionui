@@ -22,6 +22,15 @@ function camelToSnake(str: string): string {
 }
 
 /**
+ * Truncate a branch name to a maximum length, adding ellipsis if needed
+ */
+export function truncateBranchName(branchName: string | undefined, maxLength: number = 16): string {
+  if (!branchName) return '';
+  if (branchName.length <= maxLength) return branchName;
+  return branchName.substring(0, maxLength) + '...';
+}
+
+/**
  * Recursively converts object keys from snake_case to camelCase
  */
 function keysToCamel(obj: any): any {

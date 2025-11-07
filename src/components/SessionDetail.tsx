@@ -8,6 +8,7 @@ import { Thread } from '@assistant-ui/react-ui';
 import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
+import { truncateBranchName } from '../services/api/backendClient';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -55,8 +56,9 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-600 hover:underline truncate"
+                    title={session.branch}
                   >
-                    {session.branch}
+                    {truncateBranchName(session.branch)}
                   </a>
                 </div>
                 <GitMerge className="w-3 h-3 flex-shrink-0" />
@@ -67,8 +69,9 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-600 hover:underline truncate"
+                    title={session.targetBranch}
                   >
-                    {session.targetBranch}
+                    {truncateBranchName(session.targetBranch)}
                   </a>
                 </div>
               </div>
