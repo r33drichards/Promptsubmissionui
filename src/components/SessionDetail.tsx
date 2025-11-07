@@ -1,9 +1,15 @@
 import { Session } from '../types/session';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
+import {
+  ExternalLink,
+  GitBranch,
+  Github,
+  GitMerge,
+  ArrowUp,
+} from 'lucide-react';
 import { Textarea } from './ui/textarea';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSessionConversation } from '../hooks/useMessages';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -22,12 +28,39 @@ export function SessionDetail({
   onReply,
 }: SessionDetailProps) {
   const [reply, setReply] = useState('');
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { conversation, isLoading } = useSessionConversation(session.id);
 
   const handleReply = () => {
     if (reply.trim()) {
       onReply(session.id, reply);
       setReply('');
+    }
+  };
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollContainerRef.current && conversation && !isLoading) {
+      scrollContainerRef.current.scrollTop =
+        scrollContainerRef.current.scrollHeight;
+    }
+  }, [conversation, isLoading]);
+
+  // Track scroll position to show/hide scroll to top button
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollTop } = scrollContainerRef.current;
+      setShowScrollToTop(scrollTop > 200);
+    }
+  };
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
     }
   };
 
@@ -93,7 +126,11 @@ export function SessionDetail({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-auto p-4 relative"
+      >
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             <p>Loading conversation...</p>
@@ -247,6 +284,19 @@ export function SessionDetail({
           <div className="flex items-center justify-center h-full text-gray-500">
             <p>No conversation yet</p>
           </div>
+        )}
+
+        {/* Scroll to top button */}
+        {showScrollToTop && (
+          <Button
+            onClick={scrollToTop}
+            className="fixed bottom-24 right-8 rounded-full w-12 h-12 p-0 shadow-lg"
+            variant="default"
+            size="icon"
+            title="Scroll to top"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </Button>
         )}
       </div>
 
