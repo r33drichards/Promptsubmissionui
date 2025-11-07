@@ -43,30 +43,53 @@ export function convertConversationToThreadMessages(
           continue;
         }
 
-        const content = msg.message.content.map((c) => {
-          console.log('[assistantUiAdapter] Processing content part:', c);
-          if (c.type === 'text') {
-            console.log('[assistantUiAdapter] Text part - text value:', c.text);
-            return { type: 'text' as const, text: c.text || '' };
-          }
+        // First pass: collect tool_use items in a map
+        const toolCallMap = new Map<string, any>();
+        for (const c of msg.message.content) {
           if (c.type === 'tool_use') {
-            return {
+            toolCallMap.set(c.id, {
               type: 'tool-call' as const,
               toolName: c.name || '',
               toolCallId: c.id || '',
               args: c.input,
-            };
+            });
           }
-          if (c.type === 'tool_result') {
-            return {
-              type: 'tool-call' as const,
-              toolName: 'result',
-              toolCallId: c.tool_use_id || '',
-              result: c.content,
-            };
+        }
+
+        // Second pass: merge tool_result into tool_use
+        for (const c of msg.message.content) {
+          if (c.type === 'tool_result' && c.tool_use_id) {
+            const toolCall = toolCallMap.get(c.tool_use_id);
+            if (toolCall) {
+              // Extract text from content blocks if it's an array
+              let resultText = c.content;
+              if (Array.isArray(c.content) && c.content.length > 0) {
+                const textBlock = c.content.find(
+                  (block: any) => block.type === 'text'
+                );
+                resultText = textBlock?.text || JSON.stringify(c.content);
+              }
+              toolCall.result = resultText;
+            }
           }
-          return { type: 'text' as const, text: '' };
-        });
+        }
+
+        // Third pass: build the final content array
+        const content = msg.message.content
+          .map((c) => {
+            if (c.type === 'text') {
+              return { type: 'text' as const, text: c.text || '' };
+            }
+            if (c.type === 'tool_use') {
+              return toolCallMap.get(c.id);
+            }
+            // Skip standalone tool_result (already merged into tool_use)
+            if (c.type === 'tool_result') {
+              return null;
+            }
+            return { type: 'text' as const, text: '' };
+          })
+          .filter((c) => c !== null);
 
         messages.push({
           id: msg.uuid,

@@ -7,6 +7,7 @@ import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
 import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
+import { ToolFallback } from './ToolFallback';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -94,7 +95,12 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
       <div className="flex-1 min-h-0 overflow-auto">
         <AssistantRuntimeProvider runtime={runtime}>
           <Thread
-            assistantMessage={{ components: { Text: MarkdownTextPrimitive } }}
+            assistantMessage={{
+              components: {
+                Text: MarkdownTextPrimitive,
+                tools: { Fallback: ToolFallback },
+              },
+            }}
           />
         </AssistantRuntimeProvider>
 
