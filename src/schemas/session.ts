@@ -7,7 +7,11 @@ export const InboxStatusSchema = z.enum([
   'completed',
   'failed',
 ]);
-export const SessionStatusSchema = z.enum(['Active', 'Archived']);
+export const SessionStatusSchema = z.enum([
+  'Active',
+  'Archived',
+  'ReturningIp',
+]);
 
 // Message schema - matching existing Message interface
 export const MessageSchema = z.object({
