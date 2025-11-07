@@ -35,12 +35,17 @@ export class FetchHttpClient implements HttpClient {
   ): Promise<HttpResponse<T>> {
     const fullUrl = this.buildUrl(url, config?.params);
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...config?.headers,
     };
 
-    const init: RequestInit = {
+    const init: {
+      method: string;
+      headers: Record<string, string>;
+      body?: string;
+      signal?: AbortSignal;
+    } = {
       method,
       headers,
       signal: config?.signal,
