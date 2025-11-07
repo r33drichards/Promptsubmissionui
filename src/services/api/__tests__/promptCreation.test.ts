@@ -21,11 +21,11 @@ describe('PromptBackendClient.prompts.create', () => {
       content: 'Hello world',
       created_at: '2025-11-06T00:00:00Z',
       inbox_status: 'pending',
-      data: [{ content: 'Hello world', type: 'text' }]
+      data: [{ content: 'Hello world', type: 'text' }],
     };
 
     mockApi.handlersPromptsCreate = vi.fn().mockResolvedValue({
-      prompt: mockPrompt
+      prompt: mockPrompt,
     });
 
     const result = await client.prompts.create('session-456', 'Hello world');
@@ -33,8 +33,8 @@ describe('PromptBackendClient.prompts.create', () => {
     expect(mockApi.handlersPromptsCreate).toHaveBeenCalledWith({
       createPromptInput: {
         sessionId: 'session-456',
-        data: [{ content: 'Hello world', type: 'text' }]
-      }
+        data: [{ content: 'Hello world', type: 'text' }],
+      },
     });
 
     expect(result).toEqual({
@@ -42,7 +42,7 @@ describe('PromptBackendClient.prompts.create', () => {
       sessionId: 'session-456',
       content: 'Hello world',
       createdAt: expect.any(Date),
-      status: 'pending'
+      status: 'pending',
     });
   });
 });

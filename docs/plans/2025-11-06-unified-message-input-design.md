@@ -69,8 +69,8 @@ prompts = {
       const response = await this.api.handlersPromptsCreate({
         createPromptInput: {
           sessionId,
-          data: [{ content, type: 'text' }] // Claude Code message format
-        }
+          data: [{ content, type: 'text' }], // Claude Code message format
+        },
       });
       return this.deserializePrompt(response.prompt);
     },
@@ -80,6 +80,7 @@ prompts = {
 ```
 
 **Key Details:**
+
 - Uses existing `handlersPromptsCreate` from SDK
 - Formats message in Claude Code format (array with content/type)
 - Wrapped with `withErrorHandler` for consistent error handling
@@ -122,6 +123,7 @@ export function useCreatePrompt(
 ```
 
 **Key Details:**
+
 - Follows same pattern as `useCreateMessage`
 - Invalidates prompts query cache on success
 - Shows toast notifications for user feedback
@@ -131,6 +133,7 @@ export function useCreatePrompt(
 
 **File:** `src/hooks/useAssistantRuntime.ts`
 **Changes:**
+
 - Add `sessionId` parameter
 - Import and use `useCreatePrompt` hook
 - Implement `onNew` handler to create prompts
@@ -154,7 +157,8 @@ export function useAssistantRuntime(
       messages,
       onNew: async (message) => {
         // Extract text content from message
-        const content = message.content.find(p => p.type === 'text')?.text || '';
+        const content =
+          message.content.find((p) => p.type === 'text')?.text || '';
         if (content) {
           await createPrompt.mutateAsync(content);
         }
@@ -168,6 +172,7 @@ export function useAssistantRuntime(
 ```
 
 **Key Details:**
+
 - `onNew` receives message object from Thread component
 - Extracts text content from message parts
 - Only sends if content exists
@@ -177,6 +182,7 @@ export function useAssistantRuntime(
 
 **File:** `src/components/SessionDetail.tsx`
 **Changes:**
+
 - Remove `onReply` prop from interface
 - Remove `reply` state and `handleReply` function
 - Update `useAssistantRuntime` call with `sessionId`
@@ -184,6 +190,7 @@ export function useAssistantRuntime(
 - Keep PR action buttons
 
 **Before:**
+
 ```typescript
 interface SessionDetailProps {
   session: Session;
@@ -196,6 +203,7 @@ const runtime = useAssistantRuntime(conversation || [], isLoading); // UPDATE
 ```
 
 **After:**
+
 ```typescript
 interface SessionDetailProps {
   session: Session;
@@ -207,6 +215,7 @@ const runtime = useAssistantRuntime(session.id, conversation || [], isLoading);
 ```
 
 **Remove entire textarea section:**
+
 ```typescript
 // DELETE lines 150-165
 <div className="flex gap-2">
@@ -216,6 +225,7 @@ const runtime = useAssistantRuntime(session.id, conversation || [], isLoading);
 ```
 
 **Keep action buttons section:**
+
 ```typescript
 <div className="border-t p-4">
   {/* PR buttons remain */}
@@ -226,6 +236,7 @@ const runtime = useAssistantRuntime(session.id, conversation || [], isLoading);
 
 **File:** `src/App.tsx`
 **Changes:**
+
 - Remove `handleReply` function (lines 190-200)
 - Remove `onReply` prop from SessionDetail (line 336)
 
@@ -233,6 +244,7 @@ const runtime = useAssistantRuntime(session.id, conversation || [], isLoading);
 
 **File:** `src/hooks/index.ts`
 **Changes:**
+
 - Ensure `useCreatePrompt` is exported (already exports from './useMessages')
 
 ## Data Flow
