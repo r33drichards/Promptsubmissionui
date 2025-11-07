@@ -1,9 +1,10 @@
-import Editor from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
 interface MonacoEditorProps {
   value: string;
   onChange: (value: string | undefined) => void;
+  onSubmit?: () => void;
   placeholder?: string;
   height?: string;
   language?: string;
@@ -12,6 +13,7 @@ interface MonacoEditorProps {
 export function MonacoEditor({
   value,
   onChange,
+  onSubmit,
   placeholder: _placeholder = 'Start typing...',
   language = 'markdown',
 }: MonacoEditorProps) {
@@ -21,6 +23,15 @@ export function MonacoEditor({
     onChange(value);
   };
 
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    // Register Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) keyboard shortcut
+    if (onSubmit) {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+        onSubmit();
+      });
+    }
+  };
+
   return (
     <div className="border rounded-md overflow-hidden">
       <Editor
@@ -28,6 +39,7 @@ export function MonacoEditor({
         defaultLanguage={language}
         value={value}
         onChange={handleEditorChange}
+        onMount={handleEditorDidMount}
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
         options={{}}
       />
