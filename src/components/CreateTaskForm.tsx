@@ -57,6 +57,21 @@ export function CreateTaskForm({
     }
   }, [defaultBranch, parentSession, targetBranch]);
 
+  // Handle Escape key to close the form
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [onCancel]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
