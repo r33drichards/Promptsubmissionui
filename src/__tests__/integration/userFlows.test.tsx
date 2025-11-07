@@ -637,7 +637,10 @@ describe('User Flows Integration Tests', () => {
       const replyInput = screen.getByPlaceholderText(/reply/i);
       await user.type(replyInput, 'Here is my reply');
 
-      const sendButton = screen.getByRole('button', { name: /send/i });
+      // Get all Send buttons and find the one that's not inside the assistant thread
+      const sendButtons = screen.getAllByRole('button', { name: /send/i });
+      // The Reply textarea's Send button should be the last one (or we can filter by checking parent)
+      const sendButton = sendButtons[sendButtons.length - 1];
       await user.click(sendButton);
 
       // Should call update mutation to change status to in-progress
