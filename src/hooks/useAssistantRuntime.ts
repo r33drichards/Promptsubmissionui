@@ -3,11 +3,15 @@ import { useExternalStoreRuntime } from '@assistant-ui/react';
 import type { ExternalStoreAdapter } from '@assistant-ui/react';
 import { ConversationItem } from './useMessages';
 import { convertConversationToThreadMessages } from '@/utils/assistantUiAdapter';
+import { useCreatePrompt } from './useMessages';
 
 export function useAssistantRuntime(
+  sessionId: string,
   conversation: ConversationItem[],
   isLoading: boolean
 ) {
+  const createPrompt = useCreatePrompt(sessionId);
+
   const messages = useMemo(
     () => convertConversationToThreadMessages(conversation),
     [conversation]
@@ -17,21 +21,16 @@ export function useAssistantRuntime(
     () => ({
       isLoading,
       messages,
-      onNew: async () => {
-        // This is a read-only view, so we don't handle new messages here
-        // The actual message sending is handled by the SessionDetail component
-      },
-      adapters: {
-        feedback: {
-          submit: (feedback) => {
-            // This is a read-only view, so we just log feedback
-            // In a real implementation, you would send this to your backend
-            console.log('Feedback submitted:', feedback);
-          },
-        },
+      onNew: async (message) => {
+        // Extract text content from message
+        const content =
+          message.content.find((p) => p.type === 'text')?.text || '';
+        if (content.trim()) {
+          await createPrompt.mutateAsync(content);
+        }
       },
     }),
-    [messages, isLoading]
+    [messages, isLoading, createPrompt]
   );
 
   return useExternalStoreRuntime(adapter);

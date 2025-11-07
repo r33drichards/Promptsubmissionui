@@ -23,7 +23,11 @@ export function SessionDetail({
 }: SessionDetailProps) {
   const [reply, setReply] = useState('');
   const { conversation, isLoading } = useSessionConversation(session.id);
-  const runtime = useAssistantRuntime(conversation || [], isLoading);
+  const runtime = useAssistantRuntime(
+    session.id,
+    conversation || [],
+    isLoading
+  );
 
   const handleReply = () => {
     if (reply.trim()) {
