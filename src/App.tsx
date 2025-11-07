@@ -187,18 +187,6 @@ function AppLayout() {
     }
   };
 
-  const handleReply = (sessionId: string, _message: string) => {
-    // Update the session status to in-progress
-    updateSessionMutation.mutate({
-      id: sessionId,
-      data: { inboxStatus: 'in-progress' },
-    });
-
-    // Note: In a real implementation, you would also create the message
-    // using useCreateMessage hook, but for now we're just updating the status
-    toast.success('Message sent');
-  };
-
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
     console.log('[App] archiveSessionMutation:', archiveSessionMutation);
@@ -333,7 +321,6 @@ function AppLayout() {
           <SessionDetail
             session={selectedSession}
             onCreatePR={handleCreatePR}
-            onReply={handleReply}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
