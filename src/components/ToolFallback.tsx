@@ -149,7 +149,7 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
     try {
       // Parse the input to extract file operation details
       const inputData = JSON.parse(argsText);
-      
+
       // Show input as formatted JSON
       inputLanguage = 'json';
       formattedInput = JSON.stringify(inputData, null, 2);
@@ -163,11 +163,11 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
       if (result) {
         const resultData =
           typeof result === 'string' ? JSON.parse(result) : result;
-        
+
         // If it's a read operation and has content, show the content in an editor
         if (inputData.action === 'read' && resultData.content) {
           formattedResult = resultData.content;
-          
+
           // Infer language from file extension
           if (filePath) {
             const ext = filePath.split('.').pop()?.toLowerCase();
