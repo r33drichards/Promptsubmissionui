@@ -1,5 +1,5 @@
 import { HttpClient } from '../http/types';
-import { Session, Message } from '../../types/session';
+import { Session, Message, Prompt, BackendMessage } from '../../types/session';
 import {
   BackendClient,
   CreateSessionData,
@@ -124,12 +124,31 @@ export class BackendClientImpl implements BackendClient {
     },
   };
 
-  messages = {
-    list: async (sessionId: string): Promise<Message[]> => {
+  prompts = {
+    list: async (sessionId: string) => {
       const response = await this.httpClient.get<any[]>(
-        `/api/sessions/${sessionId}/messages`
+        `/api/sessions/${sessionId}/prompts`
       );
-      return this.deserializeMessages(response.data);
+      return this.deserializePrompts(response.data);
+    },
+
+    create: async (sessionId: string, content: string) => {
+      const response = await this.httpClient.post<any>(
+        `/api/sessions/${sessionId}/prompts`,
+        { content }
+      );
+      return this.deserializePrompt(response.data);
+    },
+  };
+
+  messages = {
+    list: async (promptId: string) => {
+      const response = await this.httpClient.get<any>(
+        `/api/prompts/${promptId}/messages`
+      );
+      // Return BackendMessage[] structure - only convert snake_case to camelCase
+      const messages = response.data.messages || response.data;
+      return this.deserializeBackendMessages(messages);
     },
 
     create: async (sessionId: string, content: string): Promise<Message> => {
@@ -183,5 +202,43 @@ export class BackendClientImpl implements BackendClient {
    */
   private deserializeMessages(messages: any[]): Message[] {
     return messages.map((message) => this.deserializeMessage(message));
+  }
+
+  /**
+   * Deserializes a single prompt
+   */
+  private deserializePrompt(prompt: any) {
+    const camelPrompt = keysToCamel(prompt);
+    return {
+      ...camelPrompt,
+      createdAt: new Date(camelPrompt.createdAt),
+    };
+  }
+
+  /**
+   * Deserializes an array of prompts
+   */
+  private deserializePrompts(prompts: any[]) {
+    return prompts.map((prompt) => this.deserializePrompt(prompt));
+  }
+
+  /**
+   * Deserializes BackendMessage[] - preserves the nested structure with tool calls
+   */
+  private deserializeBackendMessages(messages: any[]) {
+    return messages.map((msg) => {
+      // Convert snake_case to camelCase recursively, preserving the full structure
+      const camelMsg = keysToCamel(msg);
+
+      // Parse dates if present
+      if (camelMsg.createdAt) {
+        camelMsg.createdAt = new Date(camelMsg.createdAt);
+      }
+      if (camelMsg.updatedAt) {
+        camelMsg.updatedAt = new Date(camelMsg.updatedAt);
+      }
+
+      return camelMsg;
+    });
   }
 }

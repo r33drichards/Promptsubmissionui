@@ -333,23 +333,40 @@ describe('BackendClient API Boundaries', () => {
 
   describe('messages.list', () => {
     it('should fetch and deserialize messages', async () => {
+      // BackendMessage structure (not the old simple Message structure)
       const mockResponse: HttpResponse<any> = {
-        data: [
-          {
-            id: 'msg-1',
-            session_id: 'session-1',
-            role: 'user',
-            content: 'Hello',
-            created_at: '2025-01-01T10:05:00Z',
-          },
-          {
-            id: 'msg-2',
-            session_id: 'session-1',
-            role: 'assistant',
-            content: 'Hi there!',
-            created_at: '2025-01-01T10:06:00Z',
-          },
-        ],
+        data: {
+          messages: [
+            {
+              id: 'msg-1',
+              prompt_id: 'prompt-1',
+              data: {
+                message: {
+                  role: 'user',
+                  content: [{ type: 'text', text: 'Hello' }],
+                },
+                type: 'user',
+                uuid: 'uuid-1',
+              },
+              created_at: '2025-01-01T10:05:00Z',
+              updated_at: '2025-01-01T10:05:00Z',
+            },
+            {
+              id: 'msg-2',
+              prompt_id: 'prompt-1',
+              data: {
+                message: {
+                  role: 'assistant',
+                  content: [{ type: 'text', text: 'Hi there!' }],
+                },
+                type: 'assistant',
+                uuid: 'uuid-2',
+              },
+              created_at: '2025-01-01T10:06:00Z',
+              updated_at: '2025-01-01T10:06:00Z',
+            },
+          ],
+        },
         status: 200,
         statusText: 'OK',
         headers: {},
@@ -357,16 +374,25 @@ describe('BackendClient API Boundaries', () => {
 
       vi.mocked(mockHttpClient.get).mockResolvedValue(mockResponse);
 
-      const messages = await backendClient.messages.list('session-1');
+      const messages = await backendClient.messages.list('prompt-1');
 
+      // Fixed: should use /api/prompts/{promptId}/messages endpoint
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/api/sessions/session-1/messages'
+        '/api/prompts/prompt-1/messages'
       );
       expect(messages).toHaveLength(2);
+      // BackendMessage structure preserved
       expect(messages[0]).toMatchObject({
         id: 'msg-1',
-        role: 'user',
-        content: 'Hello',
+        promptId: 'prompt-1',
+        data: {
+          type: 'user',
+          uuid: 'uuid-1',
+          message: {
+            role: 'user',
+            content: [{ type: 'text', text: 'Hello' }],
+          },
+        },
         createdAt: expect.any(Date),
       });
     });
