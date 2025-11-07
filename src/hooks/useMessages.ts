@@ -143,6 +143,49 @@ export function useCreateMessage(
 }
 
 /**
+ * Hook to create a new prompt in a session.
+ *
+ * Features:
+ * - Automatically invalidates prompt cache
+ * - Shows success/error toasts
+ *
+ * @example
+ * ```tsx
+ * const createPrompt = useCreatePrompt('session-123');
+ *
+ * const handleSend = () => {
+ *   createPrompt.mutate('Hello, world!');
+ * };
+ * ```
+ */
+export function useCreatePrompt(
+  sessionId: string,
+  options?: Omit<UseMutationOptions<Prompt, Error, string>, 'mutationFn'>
+) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (content: string) => api.prompts.create(sessionId, content),
+    onSuccess: (newPrompt, content, context) => {
+      // Invalidate prompts query to trigger refetch
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.prompts.list(sessionId),
+      });
+
+      toast.success('Message sent');
+      options?.onSuccess?.(newPrompt, content, context);
+    },
+    onError: (error, content, context) => {
+      console.error('Failed to send message:', error);
+      toast.error('Failed to send message');
+      options?.onError?.(error, content, context);
+    },
+    ...options,
+  });
+}
+
+/**
  * Hook to fetch prompts for a specific session.
  *
  * @param sessionId - The session ID to fetch prompts for
