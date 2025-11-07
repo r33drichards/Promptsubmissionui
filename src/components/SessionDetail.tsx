@@ -40,36 +40,36 @@ export function SessionDetail({
             <h2 className="mb-2">{session.title}</h2>
             <div className="space-y-1.5">
               <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Github className="w-4 h-4" />
+                <Github className="w-4 h-4 flex-shrink-0" />
                 <a
                   href={`https://github.com/${session.repo}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-600 hover:underline"
+                  className="hover:text-blue-600 hover:underline truncate"
                 >
                   {session.repo}
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <GitBranch className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
+                <div className="flex items-center gap-1 min-w-0 flex-shrink">
+                  <GitBranch className="w-4 h-4 flex-shrink-0" />
                   <a
                     href={`https://github.com/${session.repo}/tree/${session.branch}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
+                    className="hover:text-blue-600 hover:underline truncate"
                   >
                     {session.branch}
                   </a>
                 </div>
-                <GitMerge className="w-3 h-3" />
-                <div className="flex items-center gap-1">
-                  <GitBranch className="w-4 h-4" />
+                <GitMerge className="w-3 h-3 flex-shrink-0" />
+                <div className="flex items-center gap-1 min-w-0 flex-shrink">
+                  <GitBranch className="w-4 h-4 flex-shrink-0" />
                   <a
                     href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
+                    className="hover:text-blue-600 hover:underline truncate"
                   >
                     {session.targetBranch}
                   </a>
@@ -124,7 +124,7 @@ export function SessionDetail({
                       {item.data.status}
                     </Badge>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap text-gray-800">
+                  <p className="text-sm whitespace-pre-wrap text-gray-800 break-words">
                     {item.data.content}
                   </p>
                 </div>
@@ -154,7 +154,7 @@ export function SessionDetail({
                           key={content.id || `${message.uuid}-content-${idx}`}
                         >
                           {content.type === 'text' && content.text && (
-                            <div className="markdown-content">
+                            <div className="markdown-content prose prose-sm max-w-none break-words">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={{
@@ -172,6 +172,11 @@ export function SessionDetail({
                                         style={oneDark}
                                         language={match[1]}
                                         PreTag="div"
+                                        customStyle={{
+                                          maxWidth: '100%',
+                                          overflowX: 'auto',
+                                          wordBreak: 'break-word',
+                                        }}
                                         {...props}
                                       >
                                         {String(children).replace(/\n$/, '')}
@@ -196,7 +201,7 @@ export function SessionDetail({
                               <p className="text-xs text-gray-600 mb-1">
                                 Tool: {content.name}
                               </p>
-                              <pre className="text-xs overflow-x-auto">
+                              <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
                                 {JSON.stringify(content.input, null, 2)}
                               </pre>
                             </div>
@@ -206,7 +211,7 @@ export function SessionDetail({
                               <p className="text-xs text-gray-600 mb-1">
                                 Tool Result
                               </p>
-                              <pre className="text-xs overflow-x-auto">
+                              <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
                                 {typeof content.content === 'string'
                                   ? content.content
                                   : JSON.stringify(content.content, null, 2)}
