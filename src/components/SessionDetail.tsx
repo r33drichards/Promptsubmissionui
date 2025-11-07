@@ -7,6 +7,7 @@ import {
   Github,
   GitMerge,
   ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { useState, useRef, useEffect } from 'react';
@@ -29,6 +30,7 @@ export function SessionDetail({
 }: SessionDetailProps) {
   const [reply, setReply] = useState('');
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { conversation, isLoading } = useSessionConversation(session.id);
 
@@ -47,11 +49,18 @@ export function SessionDetail({
     }
   }, [conversation, isLoading]);
 
-  // Track scroll position to show/hide scroll to top button
+  // Track scroll position to show/hide scroll buttons
   const handleScroll = () => {
     if (scrollContainerRef.current) {
-      const { scrollTop } = scrollContainerRef.current;
+      const { scrollTop, scrollHeight, clientHeight } =
+        scrollContainerRef.current;
+
+      // Show scroll to top button when scrolled down more than 200px
       setShowScrollToTop(scrollTop > 200);
+
+      // Show scroll to bottom button when not at the bottom (with 50px threshold)
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      setShowScrollToBottom(!isAtBottom && scrollHeight > clientHeight);
     }
   };
 
@@ -59,6 +68,15 @@ export function SessionDetail({
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
         top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
@@ -296,6 +314,19 @@ export function SessionDetail({
             title="Scroll to top"
           >
             <ArrowUp className="w-5 h-5" />
+          </Button>
+        )}
+
+        {/* Scroll to bottom button */}
+        {showScrollToBottom && (
+          <Button
+            onClick={scrollToBottom}
+            className="fixed bottom-24 right-24 rounded-full w-12 h-12 p-0 shadow-lg"
+            variant="default"
+            size="icon"
+            title="Scroll to bottom"
+          >
+            <ArrowDown className="w-5 h-5" />
           </Button>
         )}
       </div>
