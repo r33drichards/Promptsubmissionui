@@ -9,6 +9,9 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
   result,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+
+  console.log('[ToolFallback] Rendering tool:', toolName, 'result:', result);
+
   return (
     <div className="mb-4 flex w-full flex-col gap-3 rounded-lg border py-3">
       <div className="flex items-center gap-2 px-4">

@@ -107,8 +107,8 @@ export function convertConversationToThreadMessages(
         const toolCalls = content.filter((c: any) => c.type === 'tool-call');
         if (toolCalls.length > 0) {
           console.log(
-            `[assistantUiAdapter] Message ${msg.uuid} has ${toolCalls.length} tool calls:`,
-            toolCalls
+            `[assistantUiAdapter] Message ${msg.uuid} (role: ${msg.message.role || msg.type}) has ${toolCalls.length} tool calls:`,
+            JSON.stringify(toolCalls, null, 2)
           );
         }
 
