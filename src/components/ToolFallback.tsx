@@ -1,7 +1,7 @@
 import { ToolCallMessagePartComponent } from '@assistant-ui/react';
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useState } from 'react';
-import Editor from '@monaco-editor/react';
+import { DiffEditor } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 import { Button } from './ui/button';
 
@@ -94,46 +94,53 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
       {!isCollapsed && (
         <div className="flex flex-col gap-2 border-t pt-2">
           <div className="px-4">
-            <div className="border rounded-md overflow-hidden">
-              <Editor
-                height="200px"
-                language={inputLanguage}
-                value={formattedInput}
-                theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  lineNumbers: 'off',
-                  folding: false,
-                  renderLineHighlight: 'none',
-                }}
-              />
-            </div>
-          </div>
-          {result !== undefined && (
-            <div className="border-t border-dashed px-4 pt-2">
-              <p className="font-semibold text-sm mb-2">Result:</p>
+            {result !== undefined ? (
               <div className="border rounded-md overflow-hidden">
-                <Editor
-                  height="200px"
-                  language={resultLanguage}
-                  value={formattedResult}
+                <div className="flex justify-between items-center bg-muted px-3 py-1 text-xs border-b">
+                  <span>Input</span>
+                  <span>Result</span>
+                </div>
+                <DiffEditor
+                  height="400px"
+                  language={inputLanguage}
+                  original={formattedInput}
+                  modified={formattedResult}
                   theme={theme === 'dark' ? 'vs-dark' : 'light'}
                   options={{
                     readOnly: true,
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
                     wordWrap: 'on',
-                    lineNumbers: 'off',
+                    lineNumbers: 'on',
                     folding: false,
                     renderLineHighlight: 'none',
+                    renderSideBySide: true,
+                    enableSplitViewResizing: true,
                   }}
                 />
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="border rounded-md overflow-hidden">
+                <DiffEditor
+                  height="200px"
+                  language={inputLanguage}
+                  original=""
+                  modified={formattedInput}
+                  theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    lineNumbers: 'on',
+                    folding: false,
+                    renderLineHighlight: 'none',
+                    renderSideBySide: false,
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
