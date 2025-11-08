@@ -160,7 +160,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
           </div>
           <Badge
             variant="outline"
-            className='bg-gray-50 text-gray-700 border-gray-300'
+            className="bg-gray-50 text-gray-700 border-gray-300"
           >
             {session.uiStatus}
           </Badge>
