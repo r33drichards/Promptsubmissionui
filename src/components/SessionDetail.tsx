@@ -1,6 +1,6 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github, Check, X } from 'lucide-react';
+import { GitBranch, GitMerge, Github, Check, X, GitPullRequest } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -160,12 +160,27 @@ export function SessionDetail({ session }: SessionDetailProps) {
               </div>
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className='bg-gray-50 text-gray-700 border-gray-300'
-          >
-            {session.uiStatus}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                window.open(
+                  `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
+                  '_blank'
+                )
+              }
+            >
+              <GitPullRequest className="w-4 h-4 mr-2" />
+              View Diff on Github
+            </Button>
+            <Badge
+              variant="outline"
+              className='bg-gray-50 text-gray-700 border-gray-300'
+            >
+              {session.uiStatus}
+            </Badge>
+          </div>
         </div>
       </div>
 
