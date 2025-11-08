@@ -162,17 +162,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
           </div>
           <Badge
             variant="outline"
-            className={
-              session.inboxStatus === 'completed'
-                ? 'bg-green-50 text-green-700 border-green-300'
-                : session.inboxStatus === 'in-progress'
-                  ? 'bg-blue-50 text-blue-700 border-blue-300'
-                  : session.inboxStatus === 'failed'
-                    ? 'bg-red-50 text-red-700 border-red-300'
-                    : 'bg-gray-50 text-gray-700 border-gray-300'
-            }
+            className='bg-gray-50 text-gray-700 border-gray-300'
           >
-            {session.inboxStatus}
+            {session.uiStatus}
           </Badge>
         </div>
       </div>
