@@ -4,6 +4,8 @@ import { render } from '@/test/utils';
 import { SessionDetail } from '../SessionDetail';
 import { Session, BackendMessage } from '@/types/session';
 import { BackendClient } from '@/services/api/types';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 describe('SessionDetail', () => {
   // Mock backend messages in the new format
@@ -269,49 +271,33 @@ describe('SessionDetail', () => {
   describe('Message Display', () => {
     it('should handle two prompts with messages without error', async () => {
       // Create two separate prompts
-      const mockPrompt1 = {
-        id: 'prompt-1',
-        sessionId: 'test-session-1',
-        content: 'First prompt',
-        createdAt: new Date('2025-01-01T09:00:00Z'),
-        status: 'completed' as const,
-      };
 
-      const mockPrompt2 = {
-        id: 'prompt-2',
-        sessionId: 'test-session-1',
-        content: 'Second prompt',
-        createdAt: new Date('2025-01-01T10:00:00Z'),
-        status: 'completed' as const,
-      };
+      const testDataDir = join(__dirname, 'testdata');
 
-      // Messages for first prompt
-      const messagesForPrompt1: BackendMessage[] = [
-        {
-          type: 'assistant',
-          uuid: 'msg-1-1',
-          message: {
-            role: 'assistant',
-            content: [{ type: 'text', text: 'Response to first prompt' }],
-          },
-          session_id: 'test-session-1',
-          parent_tool_use_id: null,
-        },
-      ];
+      // read data from testdata/prompt.json
+      const promptData = await readFile(join(testDataDir, 'prompt.json'), 'utf8');
+      const promptsData = JSON.parse(promptData);
+      const backendPrompts = promptsData.prompts || promptsData;
 
-      // Messages for second prompt
-      const messagesForPrompt2: BackendMessage[] = [
-        {
-          type: 'assistant',
-          uuid: 'msg-2-1',
-          message: {
-            role: 'assistant',
-            content: [{ type: 'text', text: 'Response to second prompt' }],
-          },
-          session_id: 'test-session-1',
-          parent_tool_use_id: null,
-        },
-      ];
+      // Transform backend prompt format to frontend Prompt format
+      const prompts = backendPrompts.map((p: any) => ({
+        id: p.id,
+        sessionId: p.session_id,
+        content: Array.isArray(p.data) ? p.data[0]?.content || '' : p.data?.content || '',
+        createdAt: new Date(p.created_at),
+        status: p.inbox_status?.toLowerCase() || 'completed',
+      }));
+
+      // read messages from testdata/message-1.json
+      const messageData = await readFile(join(testDataDir, 'message-1.json'), 'utf8');
+      const messagesData = JSON.parse(messageData);
+      const messages = messagesData.messages || messagesData;
+
+      // read messages from testdata/message-2.json
+      const messageData2 = await readFile(join(testDataDir, 'message-2.json'), 'utf8');
+      const messagesData2 = JSON.parse(messageData2);
+      const messages2 = messagesData2.messages || messagesData2;
+
 
       const mockClient: BackendClient = {
         sessions: {
@@ -324,14 +310,14 @@ describe('SessionDetail', () => {
           unarchive: vi.fn().mockResolvedValue(baseSession),
         },
         prompts: {
-          list: vi.fn().mockResolvedValue([mockPrompt1, mockPrompt2]),
+          list: vi.fn().mockResolvedValue(prompts),
         },
         messages: {
           list: vi.fn().mockImplementation((promptId: string) => {
             if (promptId === 'prompt-1')
-              return Promise.resolve(messagesForPrompt1);
+              return Promise.resolve(messages);
             if (promptId === 'prompt-2')
-              return Promise.resolve(messagesForPrompt2);
+              return Promise.resolve(messages2);
             return Promise.resolve([]);
           }),
           create: vi.fn().mockResolvedValue({
@@ -347,12 +333,10 @@ describe('SessionDetail', () => {
 
       // Wait for both prompts to load
       await waitFor(() => {
-        expect(screen.getByText('First prompt')).toBeInTheDocument();
+        expect(screen.getByText(/refacor this to use monaco editor/i)).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Second prompt')).toBeInTheDocument();
-      expect(screen.getByText('Response to first prompt')).toBeInTheDocument();
-      expect(screen.getByText('Response to second prompt')).toBeInTheDocument();
+      expect(screen.getByText(/when my cursor is over a monaco editor/i)).toBeInTheDocument();
     });
 
     it('should display user messages with correct styling', async () => {

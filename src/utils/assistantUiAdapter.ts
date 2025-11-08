@@ -20,7 +20,7 @@ export function convertConversationToThreadMessages(
       messages.push({
         id: item.data.id,
         role: 'user',
-        content: [{ type: 'text', text: item.data.content }],
+        content: [{ type: 'text', text: item.data.content ?? '' }],
         createdAt: new Date(item.data.createdAt),
         status: { type: 'complete', reason: 'stop' },
         metadata: {
@@ -47,7 +47,7 @@ export function convertConversationToThreadMessages(
               toolName: c.name || '',
               toolCallId: c.id || '',
               args: c.input,
-              argsText: JSON.stringify(c.input, null, 2),
+              argsText: c.input != null ? JSON.stringify(c.input, null, 2) : '{}',
             });
           }
         }
@@ -70,7 +70,8 @@ export function convertConversationToThreadMessages(
                 );
                 resultText = textBlock?.text || JSON.stringify(c.content);
               }
-              toolCall.result = resultText;
+              // Ensure result is always a string, never undefined or null
+              toolCall.result = resultText != null ? String(resultText) : '';
             }
           }
         }
@@ -90,16 +91,22 @@ export function convertConversationToThreadMessages(
         const content = msg.message.content
           .map((c) => {
             if (c.type === 'text') {
-              return { type: 'text' as const, text: c.text || '' };
+              // Ensure text is never null or undefined - always use a string
+              const textValue = c.text ?? '';
+              // Skip empty text blocks to avoid rendering issues
+              if (textValue === '') {
+                return null;
+              }
+              return { type: 'text' as const, text: textValue };
             }
             if (c.type === 'tool_use') {
-              return toolCallMap.get(c.id);
+              return toolCallMap.get(c.id) ?? null;
             }
             // Skip standalone tool_result (already merged into tool_use)
             if (c.type === 'tool_result') {
               return null;
             }
-            return { type: 'text' as const, text: '' };
+            return null;
           })
           .filter((c) => c !== null && c !== undefined);
 
@@ -117,10 +124,27 @@ export function convertConversationToThreadMessages(
           );
         }
 
+        // Validate that all content has proper text values
+        const validatedContent = content.map((c: any) => {
+          if (c.type === 'text') {
+            return { ...c, text: c.text ?? '' };
+          }
+          if (c.type === 'tool-call') {
+            return {
+              ...c,
+              toolName: c.toolName ?? '',
+              toolCallId: c.toolCallId ?? '',
+              argsText: c.argsText ?? '{}',
+              result: c.result ?? undefined,  // result can be undefined if tool hasn't returned yet
+            };
+          }
+          return c;
+        });
+
         messages.push({
           id: msg.uuid,
           role: msg.message.role || (msg.type as 'user' | 'assistant'),
-          content,
+          content: validatedContent,
           createdAt: new Date(),
           status: { type: 'complete', reason: 'stop' },
           metadata: {
