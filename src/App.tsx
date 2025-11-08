@@ -8,7 +8,14 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
-import { Plus, Search, Loader2, LogOut } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Loader2,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useSessions,
@@ -53,6 +60,18 @@ function AppLayout() {
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
     null
   );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = window.localStorage.getItem('sidebarCollapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Persist sidebar collapsed state
+  useEffect(() => {
+    window.localStorage.setItem(
+      'sidebarCollapsed',
+      JSON.stringify(sidebarCollapsed)
+    );
+  }, [sidebarCollapsed]);
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
@@ -203,39 +222,139 @@ function AppLayout() {
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
-      <div className="w-96 border-r flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Find a task..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+      <div
+        className={`border-r flex flex-col transition-all duration-300 ${
+          sidebarCollapsed ? 'w-16' : 'w-96'
+        }`}
+      >
+        {!sidebarCollapsed ? (
+          <>
+            {/* Header */}
+            <div className="p-4 border-b">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Find a task..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setParentForNewTask(null);
+                    navigate('/');
+                    setIsCreatingTask(true);
+                  }}
+                  disabled={createSessionMutation.isPending}
+                >
+                  {createSessionMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4 mr-1" />
+                  )}
+                  New Task
+                </Button>
+                {isAuthenticated && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => logout()}
+                    title="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
+
+            {/* Sessions List */}
+            <div className="flex-1 overflow-auto">
+              <div className="p-2">
+                <div className="flex items-center justify-between px-2 py-1 mb-2">
+                  <span className="text-xs text-gray-500">Sessions</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setFilter('active')}
+                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                        filter === 'active'
+                          ? 'bg-gray-200 text-gray-900'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Active
+                    </button>
+                    <button
+                      onClick={() => setFilter('archived')}
+                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                        filter === 'archived'
+                          ? 'bg-gray-200 text-gray-900'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Archived
+                    </button>
+                    <button
+                      onClick={() => setFilter('all')}
+                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                        filter === 'all'
+                          ? 'bg-gray-200 text-gray-900'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      All
+                    </button>
+                  </div>
+                </div>
+
+                {isLoadingSessions ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  </div>
+                ) : filteredSessions.length > 0 ? (
+                  filteredSessions.map((session) => (
+                    <SessionListItem
+                      key={session.id}
+                      session={session}
+                      isActive={selectedSession?.id === session.id}
+                      onSelect={(session) => navigate(`/session/${session.id}`)}
+                      onCreateSubtask={handleCreateSubtask}
+                      onArchive={handleArchive}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    {searchQuery ? 'No tasks found' : 'No tasks yet'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center pt-4 gap-3">
             <Button
               size="sm"
+              variant="ghost"
               onClick={() => {
                 setParentForNewTask(null);
                 navigate('/');
                 setIsCreatingTask(true);
               }}
               disabled={createSessionMutation.isPending}
+              title="New Task"
             >
               {createSessionMutation.isPending ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4" />
               )}
-              New Task
             </Button>
             {isAuthenticated && (
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 onClick={() => logout()}
                 title="Logout"
               >
@@ -243,68 +362,26 @@ function AppLayout() {
               </Button>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Sessions List */}
-        <div className="flex-1 overflow-auto">
-          <div className="p-2">
-            <div className="flex items-center justify-between px-2 py-1 mb-2">
-              <span className="text-xs text-gray-500">Sessions</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setFilter('active')}
-                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'active'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Active
-                </button>
-                <button
-                  onClick={() => setFilter('archived')}
-                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'archived'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Archived
-                </button>
-                <button
-                  onClick={() => setFilter('all')}
-                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                    filter === 'all'
-                      ? 'bg-gray-200 text-gray-900'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  All
-                </button>
-              </div>
-            </div>
-
-            {isLoadingSessions ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              </div>
-            ) : filteredSessions.length > 0 ? (
-              filteredSessions.map((session) => (
-                <SessionListItem
-                  key={session.id}
-                  session={session}
-                  isActive={selectedSession?.id === session.id}
-                  onSelect={(session) => navigate(`/session/${session.id}`)}
-                  onCreateSubtask={handleCreateSubtask}
-                  onArchive={handleArchive}
-                />
-              ))
+        {/* Collapse Toggle Button */}
+        <div className="p-2 border-t">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="w-full"
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight className="w-4 h-4" />
             ) : (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                {searchQuery ? 'No tasks found' : 'No tasks yet'}
-              </div>
+              <>
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Collapse
+              </>
             )}
-          </div>
+          </Button>
         </div>
       </div>
 
