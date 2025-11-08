@@ -16,6 +16,13 @@ import {
   SelectValue,
 } from './components/ui/select';
 import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+  MenubarContent,
+  MenubarItem,
+} from './components/ui/menubar';
+import {
   Plus,
   Search,
   Loader2,
@@ -207,12 +214,6 @@ function AppLayout() {
     // Don't navigate - stay on current URL
   };
 
-  const _handleOpenInCLI = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      toast.info(`Opening ${session.repo} in CLI...`);
-    }
-  };
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
@@ -241,6 +242,19 @@ function AppLayout() {
             <div className="p-4 border-b">
               <div className="flex gap-2">
                 <div className="relative flex-1">
+
+                <Menubar>
+                  <MenubarMenu>
+                    <MenubarTrigger className="h-6 text-xs">Account</MenubarTrigger>
+                    <MenubarContent align="start">
+                      <MenubarItem onClick={() => logout()}>
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </MenubarItem>
+                    </MenubarContent>
+                  </MenubarMenu>
+                </Menubar>
+                
                 <Select
                     value={filter}
                     onValueChange={(value) => setFilter(value as FilterType)}
@@ -273,16 +287,6 @@ function AppLayout() {
                     <Plus className="w-4 h-4 mr-1" />
                   )}
                 </Button>
-                {isAuthenticated && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => logout()}
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
-                )}
               </div>
             </div>
 
