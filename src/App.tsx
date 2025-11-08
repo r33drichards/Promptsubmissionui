@@ -7,6 +7,7 @@ import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
+import { ArchiveSessionDialog } from './components/ArchiveSessionDialog';
 import { Button } from './components/ui/button';
 
 import {
@@ -92,6 +93,10 @@ function AppLayout() {
     const saved = window.localStorage.getItem('sidebarCollapsed');
     return saved ? JSON.parse(saved) : false;
   });
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [sessionToArchive, setSessionToArchive] = useState<Session | null>(
+    null
+  );
 
   // Persist sidebar collapsed state
   useEffect(() => {
@@ -207,15 +212,80 @@ function AppLayout() {
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
-    console.log('[App] archiveSessionMutation:', archiveSessionMutation);
-    archiveSessionMutation.mutate(sessionId, {
-      onSuccess: () => {
-        console.log('[App] Archive mutation succeeded');
-        if (selectedSession?.id === sessionId) {
-          navigate('/');
-        }
-      },
-    });
+    
+    // Find the session to check if it has children
+    const session = sessions.find((s) => s.id === sessionId);
+    if (!session) {
+      console.error('[App] Session not found:', sessionId);
+      return;
+    }
+
+    // Check if session has children
+    const hasChildren = session.children && session.children.length > 0;
+    
+    if (hasChildren) {
+      // Show modal to ask about archiving children
+      setSessionToArchive(session);
+      setArchiveDialogOpen(true);
+    } else {
+      // No children, archive directly
+      performArchive(sessionId, false);
+    }
+  };
+
+  const performArchive = (sessionId: string, archiveChildren: boolean) => {
+    if (archiveChildren) {
+      // Archive parent and all children
+      const session = sessions.find((s) => s.id === sessionId);
+      const childIds = session?.children?.map((c) => c.id) || [];
+      
+      // Archive all children first
+      const archivePromises = childIds.map((childId) =>
+        archiveSessionMutation.mutateAsync(childId)
+      );
+      
+      Promise.all(archivePromises)
+        .then(() => {
+          // Then archive the parent
+          archiveSessionMutation.mutate(sessionId, {
+            onSuccess: () => {
+              console.log('[App] Archive mutation succeeded (with children)');
+              if (selectedSession?.id === sessionId) {
+                navigate('/');
+              }
+              setArchiveDialogOpen(false);
+              setSessionToArchive(null);
+            },
+          });
+        })
+        .catch((error) => {
+          console.error('[App] Failed to archive children:', error);
+          toast.error('Failed to archive some subtasks');
+        });
+    } else {
+      // Archive only the parent
+      archiveSessionMutation.mutate(sessionId, {
+        onSuccess: () => {
+          console.log('[App] Archive mutation succeeded (parent only)');
+          if (selectedSession?.id === sessionId) {
+            navigate('/');
+          }
+          setArchiveDialogOpen(false);
+          setSessionToArchive(null);
+        },
+      });
+    }
+  };
+
+  const handleArchiveConfirm = (archiveChildren: boolean) => {
+    if (sessionToArchive) {
+      performArchive(sessionToArchive.id, archiveChildren);
+    }
+  };
+
+  const handleArchiveCancel = () => {
+    setArchiveDialogOpen(false);
+    setSessionToArchive(null);
   };
 
   return (
@@ -415,6 +485,14 @@ function AppLayout() {
           </div>
         )}
       </div>
+
+      {/* Archive Session Dialog */}
+      <ArchiveSessionDialog
+        open={archiveDialogOpen}
+        session={sessionToArchive}
+        onConfirm={handleArchiveConfirm}
+        onCancel={handleArchiveCancel}
+      />
     </div>
   );
 }
