@@ -78,6 +78,26 @@ export function SessionDetail({ session }: SessionDetailProps) {
     }
   };
 
+  // Helper function to get badge color classes based on status
+  const getStatusBadgeClasses = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-gray-50 text-gray-700 border-gray-300';
+      case 'in-progress':
+        return 'bg-blue-50 text-blue-700 border-blue-300';
+      case 'completed':
+        return 'bg-green-50 text-green-700 border-green-300';
+      case 'failed':
+        return 'bg-red-50 text-red-700 border-red-300';
+      case 'needs-review':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-300';
+      case 'needs-review-ip-returned':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-300';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-300';
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Session Header */}
@@ -183,7 +203,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </Button>
             <Badge
               variant="outline"
-              className="bg-gray-50 text-gray-700 border-gray-300"
+              className={getStatusBadgeClasses(session.uiStatus)}
             >
               {session.uiStatus}
             </Badge>

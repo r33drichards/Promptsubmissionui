@@ -51,6 +51,7 @@ describe('SessionDetail', () => {
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: 'in-progress',
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-01-01T09:00:00Z'),
@@ -181,6 +182,7 @@ describe('SessionDetail', () => {
       const pendingSession: Session = {
         ...baseSession,
         inboxStatus: 'pending',
+        uiStatus: 'pending',
       };
       render(<SessionDetail session={pendingSession} />, {
         client: mockClient,
@@ -196,6 +198,7 @@ describe('SessionDetail', () => {
       const inProgressSession: Session = {
         ...baseSession,
         inboxStatus: 'in-progress',
+        uiStatus: 'in-progress',
       };
       render(<SessionDetail session={inProgressSession} />, {
         client: mockClient,
@@ -211,6 +214,7 @@ describe('SessionDetail', () => {
       const completedSession: Session = {
         ...baseSession,
         inboxStatus: 'completed',
+        uiStatus: 'completed',
       };
       render(<SessionDetail session={completedSession} />, {
         client: mockClient,
@@ -223,7 +227,11 @@ describe('SessionDetail', () => {
 
     it('should display failed status', () => {
       const mockClient = createMockClient();
-      const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
+      const failedSession: Session = { 
+        ...baseSession, 
+        inboxStatus: 'failed',
+        uiStatus: 'failed',
+      };
       render(<SessionDetail session={failedSession} />, { client: mockClient });
 
       const badge = screen.getByText('failed');
@@ -238,6 +246,7 @@ describe('SessionDetail', () => {
       const completedSession: Session = {
         ...baseSession,
         inboxStatus: 'completed',
+        uiStatus: 'completed',
         diffStats: { additions: 50, deletions: 20 },
       };
 
@@ -257,6 +266,7 @@ describe('SessionDetail', () => {
       const inProgressSession: Session = {
         ...baseSession,
         inboxStatus: 'in-progress',
+        uiStatus: 'in-progress',
         diffStats: { additions: 50, deletions: 20 },
       };
 
