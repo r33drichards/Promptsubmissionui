@@ -190,20 +190,12 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <Badge
-              variant="outline"
-              className={
-                session.inboxStatus === 'completed'
-                  ? 'bg-green-50 text-green-700 border-green-300'
-                  : session.inboxStatus === 'in-progress'
-                    ? 'bg-blue-50 text-blue-700 border-blue-300'
-                    : session.inboxStatus === 'failed'
-                      ? 'bg-red-50 text-red-700 border-red-300'
-                      : 'bg-gray-50 text-gray-700 border-gray-300'
-              }
-            >
-              {session.inboxStatus}
-            </Badge>
+          <Badge
+            variant="outline"
+            className='bg-gray-50 text-gray-700 border-gray-300'
+          >
+            {session.uiStatus}
+          </Badge>
             {/* Pull Request Creation Button */}
             {session.prUrl ? (
               <a
