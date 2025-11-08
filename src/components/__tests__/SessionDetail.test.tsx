@@ -227,12 +227,14 @@ describe('SessionDetail', () => {
 
     it('should display archived status', () => {
       const mockClient = createMockClient();
-      const archivedSession: Session = { 
-        ...baseSession, 
+      const archivedSession: Session = {
+        ...baseSession,
         inboxStatus: 'completed',
         uiStatus: 'Archived',
       };
-      render(<SessionDetail session={archivedSession} />, { client: mockClient });
+      render(<SessionDetail session={archivedSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('Archived');
       expect(badge).toBeInTheDocument();

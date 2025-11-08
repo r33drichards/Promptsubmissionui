@@ -190,12 +190,12 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">
-          <Badge
-            variant="outline"
-            className='bg-gray-50 text-gray-700 border-gray-300'
-          >
-            {session.uiStatus}
-          </Badge>
+            <Badge
+              variant="outline"
+              className="bg-gray-50 text-gray-700 border-gray-300"
+            >
+              {session.uiStatus}
+            </Badge>
             {/* Pull Request Creation Button */}
             {session.prUrl ? (
               <a
