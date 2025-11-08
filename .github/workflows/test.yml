@@ -38,29 +38,8 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
-        run: npm test -- --run
-
-      - name: Run tests with coverage
-        run: npm run test:coverage -- --run
-        continue-on-error: true
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
-        continue-on-error: true
+        run: npm test
 
       - name: Build project
         run: npm run build
 
-      - name: Archive test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-node-22
-          path: |
-            coverage/
-            test-results/
-          retention-days: 30
