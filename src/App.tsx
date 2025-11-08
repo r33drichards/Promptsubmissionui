@@ -8,6 +8,7 @@ import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
+import { Input } from './components/ui/input';
 
 import {
   Select,
@@ -276,6 +277,20 @@ function AppLayout() {
                     <Plus className="w-4 h-4 " />
                   )}
                 </Button>
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-4 border-b">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Find a task"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm"
+                />
               </div>
             </div>
 

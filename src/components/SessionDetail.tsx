@@ -1,6 +1,7 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github } from 'lucide-react';
+import { Button } from './ui/button';
+import { GitBranch, GitMerge, Github, GitPullRequest } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -75,20 +76,35 @@ export function SessionDetail({ session }: SessionDetailProps) {
               </div>
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className={
-              session.inboxStatus === 'completed'
-                ? 'bg-green-50 text-green-700 border-green-300'
-                : session.inboxStatus === 'in-progress'
-                  ? 'bg-blue-50 text-blue-700 border-blue-300'
-                  : session.inboxStatus === 'failed'
-                    ? 'bg-red-50 text-red-700 border-red-300'
-                    : 'bg-gray-50 text-gray-700 border-gray-300'
-            }
-          >
-            {session.inboxStatus}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                window.open(
+                  `https://github.com/${session.repo}/pull/new/${session.branch}`,
+                  '_blank'
+                )
+              }
+            >
+              <GitPullRequest className="w-4 h-4" />
+              Create PR
+            </Button>
+            <Badge
+              variant="outline"
+              className={
+                session.inboxStatus === 'completed'
+                  ? 'bg-green-50 text-green-700 border-green-300'
+                  : session.inboxStatus === 'in-progress'
+                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                    : session.inboxStatus === 'failed'
+                      ? 'bg-red-50 text-red-700 border-red-300'
+                      : 'bg-gray-50 text-gray-700 border-gray-300'
+              }
+            >
+              {session.inboxStatus}
+            </Badge>
+          </div>
         </div>
       </div>
 
