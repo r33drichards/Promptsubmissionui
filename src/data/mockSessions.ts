@@ -2,9 +2,7 @@ import { Session } from '../types/session';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 
 // Helper function to map inboxStatus to uiStatus
-const mapInboxStatusToUiStatus = (
-  inboxStatus: string
-): UiStatus => {
+const mapInboxStatusToUiStatus = (inboxStatus: string): UiStatus => {
   const statusMap: Record<string, UiStatus> = {
     pending: 'Pending',
     'in-progress': 'InProgress',
