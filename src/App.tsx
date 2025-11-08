@@ -17,11 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  useSessions,
-  useCreateSession,
-  useArchiveSession,
-} from './hooks';
+import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
 type FilterType = 'active' | 'archived' | 'all';
 

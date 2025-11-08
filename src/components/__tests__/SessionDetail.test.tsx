@@ -107,10 +107,7 @@ describe('SessionDetail', () => {
 
     it('should render all messages', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Wait for messages to load
       await waitFor(() => {
@@ -148,10 +145,7 @@ describe('SessionDetail', () => {
         },
       };
 
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Verify Thread component is rendered with its input
       await waitFor(() => {
@@ -164,10 +158,7 @@ describe('SessionDetail', () => {
     it('should render prompt content when messages array is empty', async () => {
       const mockClient = createMockClient([]);
 
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Should show the prompt content in the Thread component
       await waitFor(() => {
@@ -188,10 +179,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'pending',
       };
-      render(
-        <SessionDetail session={pendingSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={pendingSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('pending');
       expect(badge).toBeInTheDocument();
@@ -204,12 +194,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'in-progress',
       };
-      render(
-        <SessionDetail
-          session={inProgressSession}
-                 />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={inProgressSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('in-progress');
       expect(badge).toBeInTheDocument();
@@ -222,12 +209,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'completed',
       };
-      render(
-        <SessionDetail
-          session={completedSession}
-                 />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={completedSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('completed');
       expect(badge).toBeInTheDocument();
@@ -237,10 +221,7 @@ describe('SessionDetail', () => {
     it('should display failed status', () => {
       const mockClient = createMockClient();
       const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
-      render(
-        <SessionDetail session={failedSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={failedSession} />, { client: mockClient });
 
       const badge = screen.getByText('failed');
       expect(badge).toBeInTheDocument();
@@ -257,12 +238,9 @@ describe('SessionDetail', () => {
         diffStats: { additions: 50, deletions: 20 },
       };
 
-      render(
-        <SessionDetail
-          session={completedSession}
-                 />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={completedSession} />, {
+        client: mockClient,
+      });
 
       // Wait for the component to finish loading
       await waitFor(() => {
@@ -279,12 +257,9 @@ describe('SessionDetail', () => {
         diffStats: { additions: 50, deletions: 20 },
       };
 
-      render(
-        <SessionDetail
-          session={inProgressSession}
-                 />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={inProgressSession} />, {
+        client: mockClient,
+      });
 
       expect(screen.queryByText('+50 additions')).not.toBeInTheDocument();
       expect(screen.queryByText('-20 deletions')).not.toBeInTheDocument();
@@ -294,10 +269,7 @@ describe('SessionDetail', () => {
   describe('Message Display', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       await waitFor(() => {
         expect(screen.getByText('Hello, please help me')).toBeInTheDocument();
@@ -309,10 +281,7 @@ describe('SessionDetail', () => {
 
     it('should display assistant messages with correct styling', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       await waitFor(() => {
         expect(
@@ -326,10 +295,7 @@ describe('SessionDetail', () => {
 
     it('should display message types', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Wait for messages to load
       // Note: @assistant-ui/react may render messages differently,

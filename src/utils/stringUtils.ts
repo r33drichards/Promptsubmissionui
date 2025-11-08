@@ -6,7 +6,7 @@
  */
 export function truncateBranchName(
   branchName: string,
-  maxLength: number = 45,
+  maxLength: number = 45
 ): string {
   if (branchName.length <= maxLength) {
     return branchName;
