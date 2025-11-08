@@ -1,14 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { render } from '@/test/utils';
 import { SessionDetail } from '../SessionDetail';
 import { Session, BackendMessage } from '@/types/session';
 import { BackendClient } from '@/services/api/types';
 
 describe('SessionDetail', () => {
-  const mockOnCreatePR = vi.fn();
-
   // Mock backend messages in the new format
   const mockBackendMessages: BackendMessage[] = [
     {
@@ -100,10 +97,7 @@ describe('SessionDetail', () => {
   describe('Rendering', () => {
     it('should render session title and metadata', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       expect(screen.getByText('Test Session')).toBeInTheDocument();
       expect(screen.getByText('test/repo')).toBeInTheDocument();
@@ -114,7 +108,7 @@ describe('SessionDetail', () => {
     it('should render all messages', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 
@@ -155,7 +149,7 @@ describe('SessionDetail', () => {
       };
 
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 
@@ -171,7 +165,7 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient([]);
 
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 
@@ -195,7 +189,7 @@ describe('SessionDetail', () => {
         inboxStatus: 'pending',
       };
       render(
-        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={pendingSession} />,
         { client: mockClient }
       );
 
@@ -213,8 +207,7 @@ describe('SessionDetail', () => {
       render(
         <SessionDetail
           session={inProgressSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+                 />,
         { client: mockClient }
       );
 
@@ -232,8 +225,7 @@ describe('SessionDetail', () => {
       render(
         <SessionDetail
           session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+                 />,
         { client: mockClient }
       );
 
@@ -246,7 +238,7 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
       render(
-        <SessionDetail session={failedSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={failedSession} />,
         { client: mockClient }
       );
 
@@ -268,8 +260,7 @@ describe('SessionDetail', () => {
       render(
         <SessionDetail
           session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+                 />,
         { client: mockClient }
       );
 
@@ -291,8 +282,7 @@ describe('SessionDetail', () => {
       render(
         <SessionDetail
           session={inProgressSession}
-          onCreatePR={mockOnCreatePR}
-        />,
+                 />,
         { client: mockClient }
       );
 
@@ -301,124 +291,11 @@ describe('SessionDetail', () => {
     });
   });
 
-  describe('PR Actions', () => {
-    it('should show "Create PR" button for completed sessions without PR', () => {
-      const mockClient = createMockClient();
-      const completedSession: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: undefined,
-      };
-
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.getByRole('button', { name: /create pr/i })
-      ).toBeInTheDocument();
-    });
-
-    it('should call onCreatePR when Create PR button is clicked', async () => {
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      const completedSession: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: undefined,
-      };
-
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
-
-      const createPRButton = screen.getByRole('button', { name: /create pr/i });
-      await user.click(createPRButton);
-
-      expect(mockOnCreatePR).toHaveBeenCalledWith('test-session-1');
-      expect(mockOnCreatePR).toHaveBeenCalledTimes(1);
-    });
-
-    it('should show "View PR" button when PR URL exists', () => {
-      const mockClient = createMockClient();
-      const sessionWithPR: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: 'https://github.com/test/repo/pull/123',
-      };
-
-      render(
-        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.getByRole('button', { name: /view pr/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole('button', { name: /create pr/i })
-      ).not.toBeInTheDocument();
-    });
-
-    it('should open PR URL in new tab when View PR is clicked', async () => {
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      const windowOpenSpy = vi
-        .spyOn(window, 'open')
-        .mockImplementation(() => null);
-
-      const sessionWithPR: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: 'https://github.com/test/repo/pull/123',
-      };
-
-      render(
-        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      const viewPRButton = screen.getByRole('button', { name: /view pr/i });
-      await user.click(viewPRButton);
-
-      expect(windowOpenSpy).toHaveBeenCalledWith(
-        'https://github.com/test/repo/pull/123',
-        '_blank'
-      );
-      windowOpenSpy.mockRestore();
-    });
-
-    it('should not show Create PR button for non-completed sessions', () => {
-      const mockClient = createMockClient();
-      const pendingSession: Session = {
-        ...baseSession,
-        inboxStatus: 'pending',
-      };
-
-      render(
-        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.queryByRole('button', { name: /create pr/i })
-      ).not.toBeInTheDocument();
-    });
-  });
-
   describe('Message Display', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 
@@ -433,7 +310,7 @@ describe('SessionDetail', () => {
     it('should display assistant messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 
@@ -450,7 +327,7 @@ describe('SessionDetail', () => {
     it('should display message types', async () => {
       const mockClient = createMockClient();
       render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
+        <SessionDetail session={baseSession} />,
         { client: mockClient }
       );
 

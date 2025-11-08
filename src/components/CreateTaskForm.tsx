@@ -192,7 +192,7 @@ export function CreateTaskForm({
 
             <div className="flex-1 space-y-2">
               <Label htmlFor="targetBranch" className="text-sm">
-                Target Branch (for PR)
+                Target Branch
                 {parentSession && (
                   <span className="text-muted-foreground text-xs ml-2">
                     (inherited from parent)

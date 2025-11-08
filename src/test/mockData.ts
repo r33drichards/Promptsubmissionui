@@ -32,14 +32,6 @@ export const mockCompletedSession: Session = {
     additions: 150,
     deletions: 45,
   },
-  prUrl: undefined,
-};
-
-export const mockSessionWithPR: Session = {
-  ...mockCompletedSession,
-  id: 'session-789',
-  title: 'Update dependencies',
-  prUrl: 'https://github.com/test-org/test-repo/pull/42',
 };
 
 // Mock Prompt Data

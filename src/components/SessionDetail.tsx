@@ -1,7 +1,6 @@
 import { Session } from '../types/session';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ExternalLink, GitBranch, Github, GitMerge } from 'lucide-react';
+import { GitBranch, GitMerge, Github } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -13,10 +12,9 @@ import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
   session: Session;
-  onCreatePR: (sessionId: string) => void;
 }
 
-export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
+export function SessionDetail({ session }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
     session.id,
@@ -122,31 +120,6 @@ export function SessionDetail({ session, onCreatePR }: SessionDetailProps) {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="border-t p-4">
-        {session.prUrl ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open(session.prUrl, '_blank')}
-            className="w-full"
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View PR
-          </Button>
-        ) : session.inboxStatus === 'completed' ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onCreatePR(session.id)}
-            className="w-full"
-          >
-            <Github className="w-4 h-4 mr-2" />
-            Create PR
-          </Button>
-        ) : null}
       </div>
     </div>
   );
