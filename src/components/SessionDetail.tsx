@@ -1,6 +1,6 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github } from 'lucide-react';
+import { GitBranch, GitMerge, Github, Pencil, Check, X } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -8,6 +8,10 @@ import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
 import { truncateBranchName } from '@/utils/stringUtils';
+import { useUpdateSession } from '../hooks/useSessionMutations';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { useState, useRef, useEffect } from 'react';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -22,13 +26,99 @@ export function SessionDetail({ session }: SessionDetailProps) {
     isLoading
   );
 
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(session.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const updateSession = useUpdateSession();
+
+  // Reset title value when session changes
+  useEffect(() => {
+    setTitleValue(session.title);
+  }, [session.title]);
+
+  // Focus input when entering edit mode
+  useEffect(() => {
+    if (isEditingTitle && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditingTitle]);
+
+  const handleSaveTitle = () => {
+    const trimmedTitle = titleValue.trim();
+    if (trimmedTitle && trimmedTitle !== session.title) {
+      updateSession.mutate({
+        id: session.id,
+        data: { title: trimmedTitle },
+      });
+    } else {
+      // Reset to original title if empty or unchanged
+      setTitleValue(session.title);
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTitleValue(session.title);
+    setIsEditingTitle(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Session Header */}
       <div className="border-b p-4 flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h2 className="mb-2">{session.title}</h2>
+            <div className="mb-2 flex items-center gap-2 group">
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    ref={inputRef}
+                    value={titleValue}
+                    onChange={(e) => setTitleValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleSaveTitle}
+                    className="text-xl font-semibold h-auto py-1"
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 flex-shrink-0"
+                    onClick={handleSaveTitle}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 flex-shrink-0"
+                    onClick={handleCancelEdit}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <h2 className="flex-1">{session.title}</h2>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setIsEditingTitle(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
             {session.statusMessage && (
               <p className="text-sm text-gray-600 mb-2 italic">
                 {session.statusMessage}
