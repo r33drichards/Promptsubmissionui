@@ -723,10 +723,19 @@ const handleFetch = (event) => {
             ? void 0
             : _b.access_token
         ) {
+          // Wait for tokens to become valid with a timeout
+          const maxWaitTime = 10000; // 10 seconds
+          const startTime = Date.now();
           while (
             currentDatabaseForRequestAccessToken.tokens &&
             !isTokensValid(currentDatabaseForRequestAccessToken.tokens)
           ) {
+            if (Date.now() - startTime > maxWaitTime) {
+              console.warn(
+                '[OidcServiceWorker] Token validation timeout - proceeding without token'
+              );
+              return fetch(originalRequest);
+            }
             await sleep(200);
           }
           let requestMode = originalRequest.mode;
@@ -786,10 +795,27 @@ const handleFetch = (event) => {
             };
           }
           const newRequest = new Request(originalRequest, init);
-          return fetch(newRequest);
+          try {
+            return await fetch(newRequest);
+          } catch (fetchError) {
+            console.error(
+              '[OidcServiceWorker] Fetch failed with modified request:',
+              fetchError
+            );
+            console.log('[OidcServiceWorker] Falling back to original request');
+            return fetch(originalRequest);
+          }
         }
         if (event.request.method !== 'POST') {
-          return fetch(originalRequest);
+          try {
+            return await fetch(originalRequest);
+          } catch (fetchError) {
+            console.error(
+              '[OidcServiceWorker] Non-POST fetch failed:',
+              fetchError
+            );
+            return new Response('Network error', { status: 503 });
+          }
         }
         const currentDatabases = getMatchingOidcConfigurations(database, url);
         const numberDatabase = currentDatabases.length;
@@ -941,7 +967,15 @@ const handleFetch = (event) => {
           });
           return responsePromise;
         }
-        return fetch(originalRequest);
+        try {
+          return await fetch(originalRequest);
+        } catch (fetchError) {
+          console.error(
+            '[OidcServiceWorker] Final fallback fetch failed:',
+            fetchError
+          );
+          return new Response('Network error', { status: 503 });
+        }
       } catch (err) {
         console.error('[OidcServiceWorker] handleFetch error:', err);
         return new Response('Service Worker Error', { status: 500 });
