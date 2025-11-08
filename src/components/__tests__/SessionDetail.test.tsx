@@ -227,8 +227,8 @@ describe('SessionDetail', () => {
 
     it('should display failed status', () => {
       const mockClient = createMockClient();
-      const failedSession: Session = { 
-        ...baseSession, 
+      const failedSession: Session = {
+        ...baseSession,
         inboxStatus: 'failed',
         uiStatus: 'failed',
       };
