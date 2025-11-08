@@ -38,6 +38,45 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
   let resultDiffModified = '';
   let resultDiffLanguage = 'plaintext';
   let filePath = '';
+  let hasImages = false;
+  let images: Array<{ data: string; mediaType: string }> = [];
+
+  // Helper function to detect and extract images from result
+  const extractImages = (data: unknown) => {
+    try {
+      const resultData = typeof data === 'string' ? JSON.parse(data) : data;
+      if (Array.isArray(resultData)) {
+        const imageItems = resultData.filter(
+          (item) =>
+            item &&
+            typeof item === 'object' &&
+            item.type === 'image' &&
+            item.source &&
+            item.source.type === 'base64' &&
+            item.source.data &&
+            item.source.media_type
+        );
+        if (imageItems.length > 0) {
+          return imageItems.map((item) => ({
+            data: item.source.data,
+            mediaType: item.source.media_type,
+          }));
+        }
+      }
+    } catch {
+      // Not valid JSON or not an image structure
+    }
+    return null;
+  };
+
+  // Check if result contains images
+  if (result) {
+    const extractedImages = extractImages(result);
+    if (extractedImages) {
+      hasImages = true;
+      images = extractedImages;
+    }
+  }
 
   if (toolName === 'mcp__sandbox__str_replace_editor') {
     try {
@@ -305,51 +344,68 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
           {result !== undefined && (
             <div className="border-t border-dashed px-4 pt-2">
               <p className="font-semibold text-sm mb-2">Result:</p>
-              <div className="border rounded-md overflow-hidden">
-                {useDiffEditor && resultDiffOriginal && resultDiffModified ? (
-                  <DiffEditor
-                    height="300px"
-                    language={resultDiffLanguage}
-                    original={resultDiffOriginal}
-                    modified={resultDiffModified}
-                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                    options={{
-                      readOnly: true,
-                      minimap: { enabled: false },
-                      scrollBeyondLastLine: false,
-                      wordWrap: 'on',
-                      renderSideBySide: true,
-                      renderLineHighlight: 'none',
-                      enableSplitViewResizing: false,
-                    }}
-                  />
-                ) : (
-                  <Editor
-                    height={
-                      toolName === 'mcp__sandbox__file_operations' &&
-                      resultLanguage !== 'json'
-                        ? '400px'
-                        : '200px'
-                    }
-                    language={resultLanguage}
-                    value={formattedResult}
-                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                    options={{
-                      readOnly: true,
-                      minimap: { enabled: false },
-                      scrollBeyondLastLine: false,
-                      wordWrap: 'on',
-                      lineNumbers:
+              {hasImages ? (
+                <div className="flex flex-col gap-4">
+                  {images.map((image, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-md overflow-hidden"
+                    >
+                      <img
+                        src={`data:${image.mediaType};base64,${image.data}`}
+                        alt={`Screenshot ${index + 1}`}
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border rounded-md overflow-hidden">
+                  {useDiffEditor && resultDiffOriginal && resultDiffModified ? (
+                    <DiffEditor
+                      height="300px"
+                      language={resultDiffLanguage}
+                      original={resultDiffOriginal}
+                      modified={resultDiffModified}
+                      theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                      options={{
+                        readOnly: true,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        wordWrap: 'on',
+                        renderSideBySide: true,
+                        renderLineHighlight: 'none',
+                        enableSplitViewResizing: false,
+                      }}
+                    />
+                  ) : (
+                    <Editor
+                      height={
                         toolName === 'mcp__sandbox__file_operations' &&
                         resultLanguage !== 'json'
-                          ? 'on'
-                          : 'off',
-                      folding: false,
-                      renderLineHighlight: 'none',
-                    }}
-                  />
-                )}
-              </div>
+                          ? '400px'
+                          : '200px'
+                      }
+                      language={resultLanguage}
+                      value={formattedResult}
+                      theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                      options={{
+                        readOnly: true,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        wordWrap: 'on',
+                        lineNumbers:
+                          toolName === 'mcp__sandbox__file_operations' &&
+                          resultLanguage !== 'json'
+                            ? 'on'
+                            : 'off',
+                        folding: false,
+                        renderLineHighlight: 'none',
+                      }}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
