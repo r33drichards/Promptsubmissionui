@@ -40,6 +40,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "*",
     "cmdk": "^1.1.1",
+    "core-js": "^3.46.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "linkify-react": "^4.3.2",
@@ -95,5 +96,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+  },
+  "overrides": {
+    "core-js": "^3.46.0"
   }
 }
