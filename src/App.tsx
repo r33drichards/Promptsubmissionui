@@ -241,13 +241,22 @@ function AppLayout() {
             <div className="p-4 border-b">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Find a task..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
+                <Select
+                    value={filter}
+                    onValueChange={(value) => setFilter(value as FilterType)}
+                  >
+                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="needs-review">Needs Review</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button
                   size="sm"
@@ -281,25 +290,6 @@ function AppLayout() {
             {/* Sessions List */}
             <div className="flex-1 overflow-auto">
               <div className="p-2">
-                <div className="flex items-center justify-between px-2 py-1 mb-2 gap-2">
-                  <span className="text-xs text-gray-500">Sessions</span>
-                  <Select
-                    value={filter}
-                    onValueChange={(value) => setFilter(value as FilterType)}
-                  >
-                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="needs-review">Needs Review</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                      <SelectItem value="all">All</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 {isLoadingSessions ? (
                   <div className="flex items-center justify-center py-8">
