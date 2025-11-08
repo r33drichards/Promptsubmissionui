@@ -7,7 +7,7 @@ import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
+
 import {
   Select,
   SelectContent,
@@ -16,10 +16,19 @@ import {
   SelectValue,
 } from './components/ui/select';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './components/ui/dropdown-menu';
+import {
   Plus,
   Search,
   Loader2,
   LogOut,
+  CircleUser,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -240,50 +249,32 @@ function AppLayout() {
             {/* Header */}
             <div className="p-4 border-b">
               <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Find a task..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setParentForNewTask(null);
-                    navigate('/');
-                    setIsCreatingTask(true);
-                  }}
-                  disabled={createSessionMutation.isPending}
-                >
-                  {createSessionMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4 mr-1" />
-                  )}
-                  New Task
-                </Button>
                 {isAuthenticated && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => logout()}
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0"
+                        title="Account"
+                      >
+                        <CircleUser className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-48">
+                      <DropdownMenuLabel>Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => logout()}
+                      >
+                        Log out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
-              </div>
-            </div>
-
-            {/* Sessions List */}
-            <div className="flex-1 overflow-auto">
-              <div className="p-2">
-                <div className="flex items-center justify-between px-2 py-1 mb-2 gap-2">
-                  <span className="text-xs text-gray-500">Sessions</span>
-                  <Select
+                <div className="relative flex-1">
+                <Select
                     value={filter}
                     onValueChange={(value) => setFilter(value as FilterType)}
                   >
@@ -300,6 +291,27 @@ function AppLayout() {
                     </SelectContent>
                   </Select>
                 </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setParentForNewTask(null);
+                    navigate('/');
+                    setIsCreatingTask(true);
+                  }}
+                  disabled={createSessionMutation.isPending}
+                >
+                  {createSessionMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4 " />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Sessions List */}
+            <div className="flex-1 overflow-auto">
+              <div className="p-2">
 
                 {isLoadingSessions ? (
                   <div className="flex items-center justify-center py-8">
