@@ -189,7 +189,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-row items-center gap-2">
           <Badge
             variant="outline"
             className='bg-gray-50 text-gray-700 border-gray-300'
