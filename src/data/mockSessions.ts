@@ -31,7 +31,6 @@ export const mockSessions: Session[] = [
     ],
     inboxStatus: 'completed',
     uiStatus: mapInboxStatusToUiStatus('completed'),
-    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 4613, deletions: 39 },
