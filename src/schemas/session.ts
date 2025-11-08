@@ -73,6 +73,7 @@ export const CreateSessionDataSchema = z.object({
 export const UpdateSessionDataSchema = z.object({
   title: z.string().optional(),
   inboxStatus: InboxStatusSchema.optional(),
+  uiStatus: UiStatusSchema.optional(),
   prUrl: z.string().optional(),
   diffStats: z
     .object({

@@ -209,6 +209,7 @@ export function useArchiveSession(
         queryClient.setQueryData<Session>(queryKeys.sessions.detail(id), {
           ...previousSession,
           sessionStatus: 'Archived',
+          uiStatus: 'Archived',
         });
       }
 
