@@ -51,7 +51,10 @@ function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('needs-review');
+  const [filter, setFilter] = useState<FilterType>(() => {
+    const saved = window.localStorage.getItem('sessionFilter');
+    return (saved as FilterType) || 'needs-review';
+  });
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -91,6 +94,11 @@ function AppLayout() {
       JSON.stringify(sidebarCollapsed)
     );
   }, [sidebarCollapsed]);
+
+  // Persist session filter state
+  useEffect(() => {
+    window.localStorage.setItem('sessionFilter', filter);
+  }, [filter]);
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
