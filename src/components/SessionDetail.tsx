@@ -119,8 +119,8 @@ export function SessionDetail({ session }: SessionDetailProps) {
                 {session.statusMessage}
               </p>
             )}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1 text-sm text-gray-600">
+            <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
+              <div className="flex items-center gap-1">
                 <Github className="w-4 h-4 flex-shrink-0" />
                 <a
                   href={`https://github.com/${session.repo}`}
@@ -131,32 +131,30 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   {session.repo}
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                <div className="flex items-center gap-1 min-w-0 flex-shrink">
-                  <GitBranch className="w-4 h-4 flex-shrink-0" />
-                  <a
-                    href={`https://github.com/${session.repo}/tree/${session.branch}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
-                    title={session.branch}
-                  >
-                    {truncateBranchName(session.branch)}
-                  </a>
-                </div>
-                <GitMerge className="w-3 h-3 flex-shrink-0" />
-                <div className="flex items-center gap-1 min-w-0 flex-shrink">
-                  <GitBranch className="w-4 h-4 flex-shrink-0" />
-                  <a
-                    href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
-                    title={session.targetBranch}
-                  >
-                    {truncateBranchName(session.targetBranch)}
-                  </a>
-                </div>
+              <div className="flex items-center gap-1">
+                <GitBranch className="w-4 h-4 flex-shrink-0" />
+                <a
+                  href={`https://github.com/${session.repo}/tree/${session.branch}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 hover:underline"
+                  title={session.branch}
+                >
+                  {truncateBranchName(session.branch)}
+                </a>
+              </div>
+              <GitMerge className="w-3 h-3 flex-shrink-0" />
+              <div className="flex items-center gap-1">
+                <GitBranch className="w-4 h-4 flex-shrink-0" />
+                <a
+                  href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 hover:underline"
+                  title={session.targetBranch}
+                >
+                  {truncateBranchName(session.targetBranch)}
+                </a>
               </div>
             </div>
           </div>
