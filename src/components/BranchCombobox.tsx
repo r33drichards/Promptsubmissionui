@@ -11,6 +11,7 @@ import {
   CommandList,
 } from './ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { truncateBranchName } from '@/utils/stringUtils';
 
 interface BranchComboboxProps {
   value: string;
@@ -39,8 +40,9 @@ export function BranchCombobox({
           aria-expanded={open}
           className="w-full justify-between"
           disabled={disabled}
+          title={value || 'Select branch...'}
         >
-          {value || 'Select branch...'}
+          {value ? truncateBranchName(value) : 'Select branch...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -60,6 +62,7 @@ export function BranchCombobox({
                     onChange(currentValue);
                     setOpen(false);
                   }}
+                  title={branch}
                 >
                   <Check
                     className={cn(
@@ -67,7 +70,7 @@ export function BranchCombobox({
                       value === branch ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  {branch}
+                  {truncateBranchName(branch)}
                 </CommandItem>
               ))}
             </CommandGroup>
