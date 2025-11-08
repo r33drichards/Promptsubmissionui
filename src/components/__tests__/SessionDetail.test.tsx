@@ -5,7 +5,8 @@ import { SessionDetail } from '../SessionDetail';
 import { Session, BackendMessage } from '@/types/session';
 import { BackendClient } from '@/services/api/types';
 import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 describe('SessionDetail', () => {
   // Mock backend messages in the new format
@@ -272,6 +273,8 @@ describe('SessionDetail', () => {
     it('should handle two prompts with messages without error', async () => {
       // Create two separate prompts
 
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
       const testDataDir = join(__dirname, 'testdata');
 
       // read data from testdata/prompt.json
