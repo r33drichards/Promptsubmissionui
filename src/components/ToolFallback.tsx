@@ -110,12 +110,16 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
     } catch {
       // Fallback to default JSON formatting if parsing fails
       useDiffEditor = false;
-      inputLanguage = 'json';
-      formattedInput = JSON.stringify(JSON.parse(argsText), null, 2);
+      inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
+      formattedInput = isJSON(argsText)
+        ? JSON.stringify(JSON.parse(argsText), null, 2)
+        : argsText;
       const resultText =
         typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-      resultLanguage = 'json';
-      formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
+      resultLanguage = isJSON(resultText) ? 'json' : 'plaintext';
+      formattedResult = isJSON(resultText)
+        ? JSON.stringify(JSON.parse(resultText), null, 2)
+        : resultText;
     }
   } else if (toolName === 'mcp__sandbox__execute_code') {
     try {
@@ -138,12 +142,16 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
       }
     } catch {
       // Fallback to default JSON formatting if parsing fails
-      inputLanguage = 'json';
-      formattedInput = JSON.stringify(JSON.parse(argsText), null, 2);
+      inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
+      formattedInput = isJSON(argsText)
+        ? JSON.stringify(JSON.parse(argsText), null, 2)
+        : argsText;
       const resultText =
         typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-      resultLanguage = 'json';
-      formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
+      resultLanguage = isJSON(resultText) ? 'json' : 'plaintext';
+      formattedResult = isJSON(resultText)
+        ? JSON.stringify(JSON.parse(resultText), null, 2)
+        : resultText;
     }
   } else if (toolName === 'mcp__sandbox__file_operations') {
     try {
@@ -206,12 +214,16 @@ export const ToolFallback: ToolCallMessagePartComponent = ({
       }
     } catch {
       // Fallback to default JSON formatting if parsing fails
-      inputLanguage = 'json';
-      formattedInput = JSON.stringify(JSON.parse(argsText), null, 2);
+      inputLanguage = isJSON(argsText) ? 'json' : 'plaintext';
+      formattedInput = isJSON(argsText)
+        ? JSON.stringify(JSON.parse(argsText), null, 2)
+        : argsText;
       const resultText =
         typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-      resultLanguage = 'json';
-      formattedResult = JSON.stringify(JSON.parse(resultText), null, 2);
+      resultLanguage = isJSON(resultText) ? 'json' : 'plaintext';
+      formattedResult = isJSON(resultText)
+        ? JSON.stringify(JSON.parse(resultText), null, 2)
+        : resultText;
     }
   } else {
     // Default formatting for other tools
