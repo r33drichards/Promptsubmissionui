@@ -253,40 +253,42 @@ function AppLayout() {
                       </MenubarItem>
                     </MenubarContent>
                   </MenubarMenu>
-                </Menubar>
-                
-                <Select
-                    value={filter}
-                    onValueChange={(value) => setFilter(value as FilterType)}
+                  <div className="ml-2">
+                    <Select
+                      value={filter}
+                      onValueChange={(value) => setFilter(value as FilterType)}
+                    >
+                      <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="needs-review">Needs Review</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                        <SelectItem value="all">All</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="ml-auto"
+                    onClick={() => {
+                      setParentForNewTask(null);
+                      navigate('/');
+                      setIsCreatingTask(true);
+                    }}
+                    disabled={createSessionMutation.isPending}
                   >
-                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="needs-review">Needs Review</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                      <SelectItem value="all">All</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {createSessionMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                  </Button>
+                </Menubar>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setParentForNewTask(null);
-                    navigate('/');
-                    setIsCreatingTask(true);
-                  }}
-                  disabled={createSessionMutation.isPending}
-                >
-                  {createSessionMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                </Button>
               </div>
             </div>
 
