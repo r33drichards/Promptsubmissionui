@@ -7,7 +7,7 @@ import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
+
 import {
   Select,
   SelectContent,
@@ -272,7 +272,6 @@ function AppLayout() {
                   ) : (
                     <Plus className="w-4 h-4 mr-1" />
                   )}
-                  New Task
                 </Button>
                 {isAuthenticated && (
                   <Button
