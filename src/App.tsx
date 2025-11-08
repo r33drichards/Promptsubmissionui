@@ -75,7 +75,6 @@ function AppLayout() {
     }
   }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
-  const [searchQuery, _setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
     null
@@ -149,7 +148,7 @@ function AppLayout() {
   }, [sessions, filter]);
 
   // Sort sessions by created date (newest first)
-  const sortedSessions = useMemo(() => {
+  const filteredSessions = useMemo(() => {
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -161,26 +160,6 @@ function AppLayout() {
 
     return sortByDate([...hierarchicalSessions]);
   }, [hierarchicalSessions]);
-
-  // Filter sessions based on search
-  const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return sortedSessions;
-
-    const filterRecursive = (sessions: Session[]): Session[] => {
-      return sessions
-        .filter(
-          (session) =>
-            session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            session.repo.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map((session) => ({
-          ...session,
-          children: session.children ? filterRecursive(session.children) : [],
-        }));
-    };
-
-    return filterRecursive(sortedSessions);
-  }, [sortedSessions, searchQuery]);
 
   const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(task, {
@@ -298,18 +277,6 @@ function AppLayout() {
                   )}
                 </Button>
               </div>
-              <div className="mt-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Find a task"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
             </div>
 
             {/* Sessions List */}
@@ -332,7 +299,7 @@ function AppLayout() {
                   ))
                 ) : (
                   <div className="text-center py-8 text-gray-500 text-sm">
-                    {searchQuery ? 'No tasks found' : 'No tasks yet'}
+                    No tasks yet
                   </div>
                 )}
               </div>

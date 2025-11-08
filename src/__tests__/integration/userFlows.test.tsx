@@ -627,7 +627,9 @@ describe('User Flows Integration Tests', () => {
 
       // Wait for dropdown options to appear and select "Pending"
       await waitFor(async () => {
-        const pendingOption = screen.getByRole('option', { name: /^pending$/i });
+        const pendingOption = screen.getByRole('option', {
+          name: /^pending$/i,
+        });
         expect(pendingOption).toBeInTheDocument();
         await user.click(pendingOption);
       });
