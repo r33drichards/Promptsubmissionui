@@ -301,21 +301,11 @@ function AppLayout() {
                   disabled={createSessionMutation.isPending}
                 >
                   {createSessionMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Plus className="w-4 h-4 mr-1" />
+                    <Plus className="w-4 h-4 " />
                   )}
                 </Button>
-                {isAuthenticated && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => logout()}
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
-                )}
               </div>
             </div>
 
