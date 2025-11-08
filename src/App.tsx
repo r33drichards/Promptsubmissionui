@@ -261,7 +261,11 @@ function AppLayout() {
                         <CircleUser className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-48">
+                    <DropdownMenuContent
+                      align="start"
+                      sideOffset={8}
+                      className="w-48"
+                    >
                       <DropdownMenuLabel>Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -274,7 +278,7 @@ function AppLayout() {
                   </DropdownMenu>
                 )}
                 <div className="relative flex-1">
-                <Select
+                  <Select
                     value={filter}
                     onValueChange={(value) => setFilter(value as FilterType)}
                   >
@@ -307,12 +311,23 @@ function AppLayout() {
                   )}
                 </Button>
               </div>
+              <div className="mt-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Find a task"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Sessions List */}
             <div className="flex-1 overflow-auto">
               <div className="p-2">
-
                 {isLoadingSessions ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
