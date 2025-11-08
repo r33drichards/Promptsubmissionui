@@ -1,14 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { render } from '@/test/utils';
 import { SessionDetail } from '../SessionDetail';
 import { Session, BackendMessage } from '@/types/session';
 import { BackendClient } from '@/services/api/types';
 
 describe('SessionDetail', () => {
-  const mockOnCreatePR = vi.fn();
-
   // Mock backend messages in the new format
   const mockBackendMessages: BackendMessage[] = [
     {
@@ -100,10 +97,7 @@ describe('SessionDetail', () => {
   describe('Rendering', () => {
     it('should render session title and metadata', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       expect(screen.getByText('Test Session')).toBeInTheDocument();
       expect(screen.getByText('test/repo')).toBeInTheDocument();
@@ -113,10 +107,7 @@ describe('SessionDetail', () => {
 
     it('should render all messages', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Wait for messages to load
       await waitFor(() => {
@@ -154,10 +145,7 @@ describe('SessionDetail', () => {
         },
       };
 
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Verify Thread component is rendered with its input
       await waitFor(() => {
@@ -170,10 +158,7 @@ describe('SessionDetail', () => {
     it('should render prompt content when messages array is empty', async () => {
       const mockClient = createMockClient([]);
 
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Should show the prompt content in the Thread component
       await waitFor(() => {
@@ -194,10 +179,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'pending',
       };
-      render(
-        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={pendingSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('pending');
       expect(badge).toBeInTheDocument();
@@ -210,13 +194,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'in-progress',
       };
-      render(
-        <SessionDetail
-          session={inProgressSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={inProgressSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('in-progress');
       expect(badge).toBeInTheDocument();
@@ -229,13 +209,9 @@ describe('SessionDetail', () => {
         ...baseSession,
         inboxStatus: 'completed',
       };
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={completedSession} />, {
+        client: mockClient,
+      });
 
       const badge = screen.getByText('completed');
       expect(badge).toBeInTheDocument();
@@ -245,10 +221,7 @@ describe('SessionDetail', () => {
     it('should display failed status', () => {
       const mockClient = createMockClient();
       const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
-      render(
-        <SessionDetail session={failedSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={failedSession} />, { client: mockClient });
 
       const badge = screen.getByText('failed');
       expect(badge).toBeInTheDocument();
@@ -265,13 +238,9 @@ describe('SessionDetail', () => {
         diffStats: { additions: 50, deletions: 20 },
       };
 
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={completedSession} />, {
+        client: mockClient,
+      });
 
       // Wait for the component to finish loading
       await waitFor(() => {
@@ -288,139 +257,19 @@ describe('SessionDetail', () => {
         diffStats: { additions: 50, deletions: 20 },
       };
 
-      render(
-        <SessionDetail
-          session={inProgressSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={inProgressSession} />, {
+        client: mockClient,
+      });
 
       expect(screen.queryByText('+50 additions')).not.toBeInTheDocument();
       expect(screen.queryByText('-20 deletions')).not.toBeInTheDocument();
     });
   });
 
-  describe('PR Actions', () => {
-    it('should show "Create PR" button for completed sessions without PR', () => {
-      const mockClient = createMockClient();
-      const completedSession: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: undefined,
-      };
-
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.getByRole('button', { name: /create pr/i })
-      ).toBeInTheDocument();
-    });
-
-    it('should call onCreatePR when Create PR button is clicked', async () => {
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      const completedSession: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: undefined,
-      };
-
-      render(
-        <SessionDetail
-          session={completedSession}
-          onCreatePR={mockOnCreatePR}
-        />,
-        { client: mockClient }
-      );
-
-      const createPRButton = screen.getByRole('button', { name: /create pr/i });
-      await user.click(createPRButton);
-
-      expect(mockOnCreatePR).toHaveBeenCalledWith('test-session-1');
-      expect(mockOnCreatePR).toHaveBeenCalledTimes(1);
-    });
-
-    it('should show "View PR" button when PR URL exists', () => {
-      const mockClient = createMockClient();
-      const sessionWithPR: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: 'https://github.com/test/repo/pull/123',
-      };
-
-      render(
-        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.getByRole('button', { name: /view pr/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole('button', { name: /create pr/i })
-      ).not.toBeInTheDocument();
-    });
-
-    it('should open PR URL in new tab when View PR is clicked', async () => {
-      const mockClient = createMockClient();
-      const user = userEvent.setup();
-      const windowOpenSpy = vi
-        .spyOn(window, 'open')
-        .mockImplementation(() => null);
-
-      const sessionWithPR: Session = {
-        ...baseSession,
-        inboxStatus: 'completed',
-        prUrl: 'https://github.com/test/repo/pull/123',
-      };
-
-      render(
-        <SessionDetail session={sessionWithPR} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      const viewPRButton = screen.getByRole('button', { name: /view pr/i });
-      await user.click(viewPRButton);
-
-      expect(windowOpenSpy).toHaveBeenCalledWith(
-        'https://github.com/test/repo/pull/123',
-        '_blank'
-      );
-      windowOpenSpy.mockRestore();
-    });
-
-    it('should not show Create PR button for non-completed sessions', () => {
-      const mockClient = createMockClient();
-      const pendingSession: Session = {
-        ...baseSession,
-        inboxStatus: 'pending',
-      };
-
-      render(
-        <SessionDetail session={pendingSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
-
-      expect(
-        screen.queryByRole('button', { name: /create pr/i })
-      ).not.toBeInTheDocument();
-    });
-  });
-
   describe('Message Display', () => {
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       await waitFor(() => {
         expect(screen.getByText('Hello, please help me')).toBeInTheDocument();
@@ -432,10 +281,7 @@ describe('SessionDetail', () => {
 
     it('should display assistant messages with correct styling', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       await waitFor(() => {
         expect(
@@ -449,10 +295,7 @@ describe('SessionDetail', () => {
 
     it('should display message types', async () => {
       const mockClient = createMockClient();
-      render(
-        <SessionDetail session={baseSession} onCreatePR={mockOnCreatePR} />,
-        { client: mockClient }
-      );
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
 
       // Wait for messages to load
       // Note: @assistant-ui/react may render messages differently,
