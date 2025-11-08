@@ -31,6 +31,7 @@ import {
   CircleUser,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSessions, useCreateSession, useArchiveSession } from './hooks';
@@ -57,7 +58,12 @@ function AppLayout() {
   });
 
   // Fetch sessions using TanStack Query
-  const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
+  const {
+    data: sessions = [],
+    isLoading: isLoadingSessions,
+    refetch: refetchSessions,
+    isFetching: isFetchingSessions,
+  } = useSessions();
 
   // Mutations
   const createSessionMutation = useCreateSession();
@@ -269,6 +275,18 @@ function AppLayout() {
                     </SelectContent>
                   </Select>
                 </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0"
+                  onClick={() => refetchSessions()}
+                  disabled={isFetchingSessions}
+                  title="Refresh sessions"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${isFetchingSessions ? 'animate-spin' : ''}`}
+                  />
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => {
