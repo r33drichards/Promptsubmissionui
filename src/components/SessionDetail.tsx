@@ -21,20 +21,20 @@ interface SessionDetailProps {
 // Helper function to generate GitHub PR creation URL with query parameters
 function generatePRUrl(session: Session): string {
   const { repo, targetBranch, branch, title } = session;
-  
+
   // Base URL for PR comparison
   const baseUrl = `https://github.com/${repo}/compare/${targetBranch}...${branch}`;
-  
+
   // Build query parameters
   const params = new URLSearchParams({
     quick_pull: '1',
     title: title || 'Update from Claude',
   });
-  
+
   // Add body with session information
   const body = `This pull request was created from a Claude Code session.\n\nSession ID: ${session.id}`;
   params.append('body', body);
-  
+
   return `${baseUrl}?${params.toString()}`;
 }
 
@@ -45,7 +45,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
     conversation || [],
     isLoading
   );
-  
+
   const prCreationUrl = generatePRUrl(session);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -180,7 +180,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   </a>
                 </div>
               </div>
-              
+
               {/* Pull Request Creation Button */}
               {session.prUrl ? (
                 <a
@@ -189,11 +189,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   rel="noopener noreferrer"
                   className="inline-flex"
                 >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
+                  <Button variant="outline" size="sm" className="gap-2">
                     <GitPullRequest className="w-4 h-4" />
                     View Pull Request
                   </Button>
@@ -205,11 +201,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   rel="noopener noreferrer"
                   className="inline-flex"
                 >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
+                  <Button variant="outline" size="sm" className="gap-2">
                     <GitPullRequest className="w-4 h-4" />
                     Create Pull Request
                   </Button>
