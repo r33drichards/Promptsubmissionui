@@ -212,7 +212,7 @@ function AppLayout() {
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
-    
+
     // Find the session to check if it has children
     const session = sessions.find((s) => s.id === sessionId);
     if (!session) {
@@ -222,7 +222,7 @@ function AppLayout() {
 
     // Check if session has children
     const hasChildren = session.children && session.children.length > 0;
-    
+
     if (hasChildren) {
       // Show modal to ask about archiving children
       setSessionToArchive(session);
@@ -238,12 +238,12 @@ function AppLayout() {
       // Archive parent and all children
       const session = sessions.find((s) => s.id === sessionId);
       const childIds = session?.children?.map((c) => c.id) || [];
-      
+
       // Archive all children first
       const archivePromises = childIds.map((childId) =>
         archiveSessionMutation.mutateAsync(childId)
       );
-      
+
       Promise.all(archivePromises)
         .then(() => {
           // Then archive the parent
