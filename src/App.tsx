@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
-import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
-
+import { Session } from '@wholelottahoopla/prompt-backend-client/models/session';
 import {
   Select,
   SelectContent,
@@ -25,7 +24,6 @@ import {
 } from './components/ui/dropdown-menu';
 import {
   Plus,
-  Search,
   Loader2,
   LogOut,
   CircleUser,
@@ -39,15 +37,21 @@ type FilterType =
   | 'pending'
   | 'in-progress'
   | 'needs-review'
-  | 'archived'
-  | 'active'
-  | 'all';
+  | 'archived';
+
+
+const filterMap = {
+  "pending": ['Pending'],
+  'in-progress': ['InProgress'],
+  'needs-review': ['NeedsReviewIpReturned', 'NeedsReview'],
+  "archived": ['Archived'],
+};
 
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('active');
+  const [filter, setFilter] = useState<FilterType>('needs-review');
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -71,7 +75,6 @@ function AppLayout() {
     }
   }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
     null
@@ -117,24 +120,9 @@ function AppLayout() {
 
     // Filter sessions based on filter type
     let filteredSessions = sessions;
-    if (filter === 'pending') {
-      filteredSessions = sessions.filter((s) => s.inboxStatus === 'pending');
-    } else if (filter === 'in-progress') {
-      filteredSessions = sessions.filter(
-        (s) => s.inboxStatus === 'in-progress'
-      );
-    } else if (filter === 'needs-review') {
-      filteredSessions = sessions.filter(
-        (s) =>
-          s.inboxStatus === 'needs-review' ||
-          s.inboxStatus === 'needs-review-ip-returned'
-      );
-    } else if (filter === 'archived') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
-    } else if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
+    if (filter in filterMap) {
+      filteredSessions = filteredSessions.filter((s) => filterMap[filter].includes(s.uiStatus));
     }
-    // 'all' shows everything
 
     // First pass: create a map of all sessions
     filteredSessions.forEach((session) => {
@@ -159,39 +147,7 @@ function AppLayout() {
     return rootSessions;
   }, [sessions, filter]);
 
-  // Sort sessions by created date (newest first)
-  const sortedSessions = useMemo(() => {
-    const sortByDate = (sessions: Session[]): Session[] => {
-      return sessions
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .map((session) => ({
-          ...session,
-          children: session.children ? sortByDate(session.children) : [],
-        }));
-    };
 
-    return sortByDate([...hierarchicalSessions]);
-  }, [hierarchicalSessions]);
-
-  // Filter sessions based on search
-  const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return sortedSessions;
-
-    const filterRecursive = (sessions: Session[]): Session[] => {
-      return sessions
-        .filter(
-          (session) =>
-            session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            session.repo.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map((session) => ({
-          ...session,
-          children: session.children ? filterRecursive(session.children) : [],
-        }));
-    };
-
-    return filterRecursive(sortedSessions);
-  }, [sortedSessions, searchQuery]);
 
   const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(task, {
@@ -317,8 +273,8 @@ function AppLayout() {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                   </div>
-                ) : filteredSessions.length > 0 ? (
-                  filteredSessions.map((session) => (
+                ) : hierarchicalSessions.length > 0 ? (
+                  hierarchicalSessions.map((session) => (
                     <SessionListItem
                       key={session.id}
                       session={session}
@@ -330,7 +286,7 @@ function AppLayout() {
                   ))
                 ) : (
                   <div className="text-center py-8 text-gray-500 text-sm">
-                    {searchQuery ? 'No tasks found' : 'No tasks yet'}
+                    No tasks found
                   </div>
                 )}
               </div>

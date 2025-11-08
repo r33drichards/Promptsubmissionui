@@ -1,32 +1,3 @@
-export type InboxStatus =
-  | 'pending'
-  | 'in-progress'
-  | 'completed'
-  | 'failed'
-  | 'needs-review'
-  | 'needs-review-ip-returned';
-export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
-
-export interface Session {
-  id: string;
-  title: string;
-  repo: string;
-  branch: string;
-  targetBranch: string;
-  messages: Message[] | null;
-  inboxStatus: InboxStatus;
-  statusMessage?: string;
-  sbxConfig: Record<string, any> | null;
-  parentId: string | null;
-  diffStats?: {
-    additions: number;
-    deletions: number;
-  };
-  prUrl?: string;
-  createdAt: Date;
-  children?: Session[];
-  sessionStatus: SessionStatus;
-}
 
 export interface Message {
   id: string;
