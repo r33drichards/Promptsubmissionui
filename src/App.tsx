@@ -16,10 +16,19 @@ import {
   SelectValue,
 } from './components/ui/select';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './components/ui/dropdown-menu';
+import {
   Plus,
   Search,
   Loader2,
   LogOut,
+  CircleUser,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -240,6 +249,30 @@ function AppLayout() {
             {/* Header */}
             <div className="p-4 border-b">
               <div className="flex gap-2">
+                {isAuthenticated && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0"
+                        title="Account"
+                      >
+                        <CircleUser className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" sideOffset={8} className="w-48">
+                      <DropdownMenuLabel>Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => logout()}
+                      >
+                        Log out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 <div className="relative flex-1">
                 <Select
                     value={filter}
