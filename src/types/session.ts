@@ -1,4 +1,10 @@
-export type InboxStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
+export type InboxStatus =
+  | 'pending'
+  | 'in-progress'
+  | 'completed'
+  | 'failed'
+  | 'needs-review'
+  | 'needs-review-ip-returned';
 export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
 
 export interface Session {

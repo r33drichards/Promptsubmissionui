@@ -6,6 +6,8 @@ export const InboxStatusSchema = z.enum([
   'in-progress',
   'completed',
   'failed',
+  'needs-review',
+  'needs-review-ip-returned',
 ]);
 export const SessionStatusSchema = z.enum([
   'Active',

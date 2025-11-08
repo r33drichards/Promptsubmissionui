@@ -26,7 +26,13 @@ import {
 import { toast } from 'sonner';
 import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
-type FilterType = 'active' | 'archived' | 'all';
+type FilterType =
+  | 'pending'
+  | 'in-progress'
+  | 'needs-review'
+  | 'archived'
+  | 'active'
+  | 'all';
 
 function AppLayout() {
   const { id } = useParams();
@@ -102,10 +108,22 @@ function AppLayout() {
 
     // Filter sessions based on filter type
     let filteredSessions = sessions;
-    if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
+    if (filter === 'pending') {
+      filteredSessions = sessions.filter((s) => s.inboxStatus === 'pending');
+    } else if (filter === 'in-progress') {
+      filteredSessions = sessions.filter(
+        (s) => s.inboxStatus === 'in-progress'
+      );
+    } else if (filter === 'needs-review') {
+      filteredSessions = sessions.filter(
+        (s) =>
+          s.inboxStatus === 'needs-review' ||
+          s.inboxStatus === 'needs-review-ip-returned'
+      );
     } else if (filter === 'archived') {
       filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
+    } else if (filter === 'active') {
+      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
     }
     // 'all' shows everything
 
@@ -274,6 +292,9 @@ function AppLayout() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="needs-review">Needs Review</SelectItem>
                       <SelectItem value="archived">Archived</SelectItem>
                       <SelectItem value="all">All</SelectItem>
                     </SelectContent>
