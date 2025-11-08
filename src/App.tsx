@@ -9,6 +9,13 @@ import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './components/ui/select';
+import {
   Plus,
   Search,
   Loader2,
@@ -273,40 +280,21 @@ function AppLayout() {
             {/* Sessions List */}
             <div className="flex-1 overflow-auto">
               <div className="p-2">
-                <div className="flex items-center justify-between px-2 py-1 mb-2">
+                <div className="flex items-center justify-between px-2 py-1 mb-2 gap-2">
                   <span className="text-xs text-gray-500">Sessions</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setFilter('active')}
-                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                        filter === 'active'
-                          ? 'bg-gray-200 text-gray-900'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Active
-                    </button>
-                    <button
-                      onClick={() => setFilter('archived')}
-                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                        filter === 'archived'
-                          ? 'bg-gray-200 text-gray-900'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Archived
-                    </button>
-                    <button
-                      onClick={() => setFilter('all')}
-                      className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                        filter === 'all'
-                          ? 'bg-gray-200 text-gray-900'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      All
-                    </button>
-                  </div>
+                  <Select
+                    value={filter}
+                    onValueChange={(value) => setFilter(value as FilterType)}
+                  >
+                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {isLoadingSessions ? (

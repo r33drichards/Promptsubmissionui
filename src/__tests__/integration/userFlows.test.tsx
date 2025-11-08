@@ -652,23 +652,17 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Session Count Display', () => {
-    it('should display filter buttons', async () => {
+    it('should display filter dropdown', async () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /^active$/i })
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: /^archived$/i })
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: /^all$/i })
-        ).toBeInTheDocument();
+        // Check for the filter dropdown (Select component)
+        const filterDropdown = screen.getByRole('combobox');
+        expect(filterDropdown).toBeInTheDocument();
       });
     });
 
-    it('should filter sessions when clicking filter buttons', async () => {
+    it('should filter sessions when using filter dropdown', async () => {
       const user = userEvent.setup();
       render(<App />, { client: mockClient });
 
@@ -684,9 +678,16 @@ describe('User Flows Integration Tests', () => {
         screen.getByText('Test Session 3 (Completed)')
       ).toBeInTheDocument();
 
-      // Click "All" filter
-      const allButton = screen.getByRole('button', { name: /^all$/i });
-      await user.click(allButton);
+      // Open the filter dropdown
+      const filterDropdown = screen.getByRole('combobox');
+      await user.click(filterDropdown);
+
+      // Wait for dropdown options to appear and select "All"
+      await waitFor(async () => {
+        const allOption = screen.getByRole('option', { name: /^all$/i });
+        expect(allOption).toBeInTheDocument();
+        await user.click(allOption);
+      });
 
       // All sessions should still be visible
       await waitFor(() => {
