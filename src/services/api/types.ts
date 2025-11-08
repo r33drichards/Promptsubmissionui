@@ -6,6 +6,7 @@ import {
   BackendMessage,
   Prompt,
 } from '../../types/session';
+import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 
 /**
  * Backend API client interface.
@@ -56,6 +57,7 @@ export interface CreateSessionData {
 export interface UpdateSessionData {
   title?: string;
   inboxStatus?: InboxStatus;
+  uiStatus?: UiStatus;
   prUrl?: string;
   diffStats?: {
     additions: number;

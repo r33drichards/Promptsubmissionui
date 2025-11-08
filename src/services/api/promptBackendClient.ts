@@ -137,6 +137,8 @@ export class PromptBackendClient implements BackendClient {
         if (data.title !== undefined) updateInput.title = data.title;
         if (data.sessionStatus !== undefined)
           updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
+        if (data.uiStatus !== undefined)
+          updateInput.uiStatus = data.uiStatus as UiStatus;
         if (data.repo !== undefined) updateInput.repo = data.repo;
         if (data.branch !== undefined) updateInput.branch = data.branch;
         if (data.targetBranch !== undefined)
@@ -164,6 +166,7 @@ export class PromptBackendClient implements BackendClient {
       console.log('[PromptBackendClient] Archiving session:', id);
       const result = await this.sessions.update(id, {
         sessionStatus: 'Archived',
+        uiStatus: 'Archived',
       });
       console.log('[PromptBackendClient] Archive successful:', result);
       return result;
