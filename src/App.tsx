@@ -1,20 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
-import { Session } from './types/session';
+import { Session, UiStatus } from './types/session';
 import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { Button } from './components/ui/button';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +19,6 @@ import {
 } from './components/ui/dropdown-menu';
 import {
   Plus,
-  Search,
   Loader2,
   LogOut,
   CircleUser,
@@ -35,19 +28,27 @@ import {
 import { toast } from 'sonner';
 import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
-type FilterType =
-  | 'pending'
-  | 'in-progress'
-  | 'needs-review'
-  | 'archived'
-  | 'active'
-  | 'all';
+// Helper function to get user-friendly tab labels
+function getTabLabel(status: UiStatus): string {
+  switch (status) {
+    case 'Pending':
+      return 'Pending';
+    case 'InProgress':
+      return 'In Progress';
+    case 'NeedsReview':
+      return 'Needs Review';
+    case 'NeedsReviewIpReturned':
+      return 'Reviewed';
+    case 'Archived':
+      return 'Archived';
+  }
+}
 
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('active');
+  const [activeTab, setActiveTab] = useState<UiStatus>('InProgress');
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -71,7 +72,7 @@ function AppLayout() {
     }
   }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
     null
@@ -115,26 +116,8 @@ function AppLayout() {
     const sessionMap = new Map<string, Session>();
     const rootSessions: Session[] = [];
 
-    // Filter sessions based on filter type
-    let filteredSessions = sessions;
-    if (filter === 'pending') {
-      filteredSessions = sessions.filter((s) => s.inboxStatus === 'pending');
-    } else if (filter === 'in-progress') {
-      filteredSessions = sessions.filter(
-        (s) => s.inboxStatus === 'in-progress'
-      );
-    } else if (filter === 'needs-review') {
-      filteredSessions = sessions.filter(
-        (s) =>
-          s.inboxStatus === 'needs-review' ||
-          s.inboxStatus === 'needs-review-ip-returned'
-      );
-    } else if (filter === 'archived') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
-    } else if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
-    }
-    // 'all' shows everything
+    // Filter sessions based on active tab (uiStatus)
+    const filteredSessions = sessions.filter((s) => s.uiStatus === activeTab);
 
     // First pass: create a map of all sessions
     filteredSessions.forEach((session) => {
@@ -157,7 +140,7 @@ function AppLayout() {
     });
 
     return rootSessions;
-  }, [sessions, filter]);
+  }, [sessions, activeTab]);
 
   // Sort sessions by created date (newest first)
   const sortedSessions = useMemo(() => {
@@ -248,7 +231,7 @@ function AppLayout() {
           <>
             {/* Header */}
             <div className="p-4 border-b">
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 {isAuthenticated && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -261,7 +244,11 @@ function AppLayout() {
                         <CircleUser className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-48">
+                    <DropdownMenuContent
+                      align="start"
+                      sideOffset={8}
+                      className="w-48"
+                    >
                       <DropdownMenuLabel>Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -273,24 +260,6 @@ function AppLayout() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                <div className="relative flex-1">
-                <Select
-                    value={filter}
-                    onValueChange={(value) => setFilter(value as FilterType)}
-                  >
-                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="needs-review">Needs Review</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                      <SelectItem value="all">All</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -299,6 +268,7 @@ function AppLayout() {
                     setIsCreatingTask(true);
                   }}
                   disabled={createSessionMutation.isPending}
+                  className="ml-auto"
                 >
                   {createSessionMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -309,32 +279,80 @@ function AppLayout() {
               </div>
             </div>
 
-            {/* Sessions List */}
-            <div className="flex-1 overflow-auto">
-              <div className="p-2">
-
-                {isLoadingSessions ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                  </div>
-                ) : filteredSessions.length > 0 ? (
-                  filteredSessions.map((session) => (
-                    <SessionListItem
-                      key={session.id}
-                      session={session}
-                      isActive={selectedSession?.id === session.id}
-                      onSelect={(session) => navigate(`/session/${session.id}`)}
-                      onCreateSubtask={handleCreateSubtask}
-                      onArchive={handleArchive}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    {searchQuery ? 'No tasks found' : 'No tasks yet'}
-                  </div>
-                )}
+            {/* Tabs for filtering by UI Status */}
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) => setActiveTab(value as UiStatus)}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              <div className="px-4 pt-2">
+                <TabsList className="w-full grid grid-cols-3 h-auto p-1">
+                  <TabsTrigger value="Pending" className="text-xs px-1 py-1">
+                    {getTabLabel('Pending')}
+                  </TabsTrigger>
+                  <TabsTrigger value="InProgress" className="text-xs px-1 py-1">
+                    {getTabLabel('InProgress')}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="NeedsReview"
+                    className="text-xs px-1 py-1"
+                  >
+                    {getTabLabel('NeedsReview')}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="NeedsReviewIpReturned"
+                    className="text-xs px-1 py-1"
+                  >
+                    {getTabLabel('NeedsReviewIpReturned')}
+                  </TabsTrigger>
+                  <TabsTrigger value="Archived" className="text-xs px-1 py-1">
+                    {getTabLabel('Archived')}
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            </div>
+
+              {/* Tab Content - Sessions List */}
+              {(
+                [
+                  'Pending',
+                  'InProgress',
+                  'NeedsReview',
+                  'NeedsReviewIpReturned',
+                  'Archived',
+                ] as UiStatus[]
+              ).map((status) => (
+                <TabsContent
+                  key={status}
+                  value={status}
+                  className="flex-1 overflow-auto m-0"
+                >
+                  <div className="p-2">
+                    {isLoadingSessions ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                      </div>
+                    ) : filteredSessions.length > 0 ? (
+                      filteredSessions.map((session) => (
+                        <SessionListItem
+                          key={session.id}
+                          session={session}
+                          isActive={selectedSession?.id === session.id}
+                          onSelect={(session) =>
+                            navigate(`/session/${session.id}`)
+                          }
+                          onCreateSubtask={handleCreateSubtask}
+                          onArchive={handleArchive}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 text-sm">
+                        {searchQuery ? 'No tasks found' : 'No tasks yet'}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center pt-4 gap-3">

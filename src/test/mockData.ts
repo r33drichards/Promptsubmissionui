@@ -14,6 +14,7 @@ export const mockSession: Session = {
   targetBranch: 'main',
   messages: null,
   inboxStatus: 'in-progress',
+  uiStatus: 'InProgress',
   sbxConfig: {
     env: 'production',
     region: 'us-west-2',
@@ -28,6 +29,7 @@ export const mockCompletedSession: Session = {
   id: 'session-456',
   title: 'Fix login bug',
   inboxStatus: 'completed',
+  uiStatus: 'Archived',
   diffStats: {
     additions: 150,
     deletions: 45,

@@ -6,6 +6,12 @@ export type InboxStatus =
   | 'needs-review'
   | 'needs-review-ip-returned';
 export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
+export type UiStatus =
+  | 'Pending'
+  | 'InProgress'
+  | 'NeedsReview'
+  | 'NeedsReviewIpReturned'
+  | 'Archived';
 
 export interface Session {
   id: string;
@@ -15,6 +21,7 @@ export interface Session {
   targetBranch: string;
   messages: Message[] | null;
   inboxStatus: InboxStatus;
+  uiStatus: UiStatus;
   statusMessage?: string;
   sbxConfig: Record<string, any> | null;
   parentId: string | null;
