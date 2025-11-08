@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
+import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
 import { SessionListItem } from './components/SessionListItem';
@@ -25,7 +26,6 @@ import {
 } from './components/ui/dropdown-menu';
 import {
   Plus,
-  Search,
   Loader2,
   LogOut,
   CircleUser,
@@ -35,19 +35,23 @@ import {
 import { toast } from 'sonner';
 import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
-type FilterType =
-  | 'pending'
-  | 'in-progress'
-  | 'needs-review'
-  | 'archived'
-  | 'active'
-  | 'all';
+type FilterType = 'pending' | 'in-progress' | 'needs-review' | 'archived';
+
+const filterMap: Record<FilterType, UiStatus[]> = {
+  pending: ['Pending' as UiStatus],
+  'in-progress': ['InProgress' as UiStatus],
+  'needs-review': [
+    'NeedsReviewIpReturned' as UiStatus,
+    'NeedsReview' as UiStatus,
+  ],
+  archived: ['Archived' as UiStatus],
+};
 
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('active');
+  const [filter, setFilter] = useState<FilterType>('in-progress');
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
@@ -71,7 +75,7 @@ function AppLayout() {
     }
   }, [id, sessions, selectedSession, navigate, isLoadingSessions]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, _setSearchQuery] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [parentForNewTask, setParentForNewTask] = useState<Session | null>(
     null
@@ -115,26 +119,11 @@ function AppLayout() {
     const sessionMap = new Map<string, Session>();
     const rootSessions: Session[] = [];
 
-    // Filter sessions based on filter type
-    let filteredSessions = sessions;
-    if (filter === 'pending') {
-      filteredSessions = sessions.filter((s) => s.inboxStatus === 'pending');
-    } else if (filter === 'in-progress') {
-      filteredSessions = sessions.filter(
-        (s) => s.inboxStatus === 'in-progress'
-      );
-    } else if (filter === 'needs-review') {
-      filteredSessions = sessions.filter(
-        (s) =>
-          s.inboxStatus === 'needs-review' ||
-          s.inboxStatus === 'needs-review-ip-returned'
-      );
-    } else if (filter === 'archived') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Archived');
-    } else if (filter === 'active') {
-      filteredSessions = sessions.filter((s) => s.sessionStatus === 'Active');
-    }
-    // 'all' shows everything
+    // Filter sessions based on filter type using filterMap
+    const allowedStatuses = filterMap[filter];
+    const filteredSessions = sessions.filter((s) =>
+      allowedStatuses.includes(s.uiStatus)
+    );
 
     // First pass: create a map of all sessions
     filteredSessions.forEach((session) => {
@@ -286,12 +275,10 @@ function AppLayout() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="in-progress">In Progress</SelectItem>
                       <SelectItem value="needs-review">Needs Review</SelectItem>
                       <SelectItem value="archived">Archived</SelectItem>
-                      <SelectItem value="all">All</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

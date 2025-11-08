@@ -2,6 +2,7 @@ import {
   DefaultApi,
   Configuration,
   SessionStatus as SDKSessionStatus,
+  UiStatus,
   CreateSessionWithPromptInput as _CreateSessionWithPromptInput,
   CreateSessionWithPromptOutput as _CreateSessionWithPromptOutput,
 } from '@wholelottahoopla/prompt-backend-client';
@@ -274,6 +275,11 @@ export class PromptBackendClient implements BackendClient {
       session.sessionStatus || session.session_status || 'Active'
     );
 
+    // Extract uiStatus from API (handle both camelCase and snake_case)
+    const uiStatus = (session.uiStatus ||
+      session.ui_status ||
+      'Pending') as UiStatus;
+
     // Prepare session data for validation
     // Handle both camelCase and snake_case from API
     const sessionData = {
@@ -284,6 +290,7 @@ export class PromptBackendClient implements BackendClient {
       targetBranch,
       messages: null, // Messages are now separate entities in the new API
       inboxStatus,
+      uiStatus,
       sessionStatus:
         session.sessionStatus || session.session_status || 'Active',
       parentId: session.parent || null,

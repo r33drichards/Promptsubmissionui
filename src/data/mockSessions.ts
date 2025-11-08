@@ -1,4 +1,18 @@
 import { Session } from '../types/session';
+import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
+
+// Helper function to map inboxStatus to uiStatus
+const mapInboxStatusToUiStatus = (
+  inboxStatus: string
+): UiStatus => {
+  const statusMap: Record<string, UiStatus> = {
+    pending: 'Pending',
+    'in-progress': 'InProgress',
+    completed: 'InProgress',
+    failed: 'Pending',
+  };
+  return statusMap[inboxStatus] || 'Pending';
+};
 
 export const mockSessions: Session[] = [
   {
@@ -16,6 +30,7 @@ export const mockSessions: Session[] = [
       },
     ],
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 4613, deletions: 39 },
@@ -38,6 +53,7 @@ export const mockSessions: Session[] = [
       },
     ],
     inboxStatus: 'in-progress',
+    uiStatus: mapInboxStatusToUiStatus('in-progress'),
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T11:00:00'),
@@ -58,6 +74,7 @@ export const mockSessions: Session[] = [
       },
     ],
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 202, deletions: 0 },
@@ -73,6 +90,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'pending',
+    uiStatus: mapInboxStatusToUiStatus('pending'),
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T13:00:00'),
@@ -86,6 +104,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'production',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 202, deletions: 0 },
@@ -101,6 +120,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'production',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 202, deletions: 0 },
@@ -116,6 +136,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'develop',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: mapInboxStatusToUiStatus('in-progress'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 2484, deletions: 1 },
@@ -130,6 +151,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: mapInboxStatusToUiStatus('in-progress'),
     sbxConfig: null,
     parentId: '7',
     createdAt: new Date('2025-11-01T16:30:00'),
@@ -143,6 +165,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'pending',
+    uiStatus: mapInboxStatusToUiStatus('pending'),
     sbxConfig: null,
     parentId: '7',
     createdAt: new Date('2025-11-01T16:45:00'),
@@ -156,6 +179,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'production',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 177, deletions: 0 },
@@ -171,6 +195,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'develop',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: mapInboxStatusToUiStatus('in-progress'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 523, deletions: 87 },
@@ -185,6 +210,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 45, deletions: 23 },
@@ -200,6 +226,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'pending',
+    uiStatus: mapInboxStatusToUiStatus('pending'),
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T20:00:00'),
@@ -213,6 +240,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 1250, deletions: 980 },
@@ -228,6 +256,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'develop',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: mapInboxStatusToUiStatus('in-progress'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 789, deletions: 12 },
@@ -242,6 +271,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'develop',
     messages: null,
     inboxStatus: 'pending',
+    uiStatus: mapInboxStatusToUiStatus('pending'),
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-11-01T23:00:00'),
@@ -255,6 +285,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 234, deletions: 156 },
@@ -270,6 +301,7 @@ export const mockSessions: Session[] = [
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'completed',
+    uiStatus: mapInboxStatusToUiStatus('completed'),
     sbxConfig: null,
     parentId: null,
     diffStats: { additions: 345, deletions: 0 },
