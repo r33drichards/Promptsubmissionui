@@ -14,6 +14,13 @@ export const SessionStatusSchema = z.enum([
   'Archived',
   'ReturningIp',
 ]);
+export const UiStatusSchema = z.enum([
+  'Pending',
+  'InProgress',
+  'NeedsReview',
+  'NeedsReviewIpReturned',
+  'Archived',
+]);
 
 // Message schema - matching existing Message interface
 export const MessageSchema = z.object({
@@ -31,6 +38,7 @@ export const SessionSchema = z.object({
   branch: z.string().min(1, 'Branch is required'),
   targetBranch: z.string().min(1, 'Target branch is required'),
   inboxStatus: InboxStatusSchema,
+  uiStatus: UiStatusSchema,
   sessionStatus: SessionStatusSchema,
   createdAt: z.coerce.date(), // Coerce strings to Date objects
   prUrl: z.string().optional(),

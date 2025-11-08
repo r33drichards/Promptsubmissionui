@@ -1,3 +1,5 @@
+import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
+
 export type InboxStatus =
   | 'pending'
   | 'in-progress'
@@ -15,6 +17,7 @@ export interface Session {
   targetBranch: string;
   messages: Message[] | null;
   inboxStatus: InboxStatus;
+  uiStatus: UiStatus;
   statusMessage?: string;
   sbxConfig: Record<string, any> | null;
   parentId: string | null;
