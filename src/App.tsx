@@ -207,12 +207,6 @@ function AppLayout() {
     // Don't navigate - stay on current URL
   };
 
-  const _handleOpenInCLI = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      toast.info(`Opening ${session.repo} in CLI...`);
-    }
-  };
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
@@ -241,6 +235,9 @@ function AppLayout() {
             <div className="p-4 border-b">
               <div className="flex gap-2">
                 <div className="relative flex-1">
+
+                <MainMenu />
+
                 <Select
                     value={filter}
                     onValueChange={(value) => setFilter(value as FilterType)}
@@ -268,9 +265,9 @@ function AppLayout() {
                   disabled={createSessionMutation.isPending}
                 >
                   {createSessionMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Plus className="w-4 h-4 mr-1" />
+                    <Plus className="w-4 h-4" />
                   )}
                 </Button>
                 {isAuthenticated && (
