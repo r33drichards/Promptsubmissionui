@@ -1,6 +1,6 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github, Check, X } from 'lucide-react';
+import { GitBranch, GitMerge, Github, Check, X, GitPullRequest } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -18,6 +18,26 @@ interface SessionDetailProps {
   session: Session;
 }
 
+// Helper function to generate GitHub PR creation URL with query parameters
+function generatePRUrl(session: Session): string {
+  const { repo, targetBranch, branch, title } = session;
+  
+  // Base URL for PR comparison
+  const baseUrl = `https://github.com/${repo}/compare/${targetBranch}...${branch}`;
+  
+  // Build query parameters
+  const params = new URLSearchParams({
+    quick_pull: '1',
+    title: title || 'Update from Claude',
+  });
+  
+  // Add body with session information
+  const body = `This pull request was created from a Claude Code session.\n\nSession ID: ${session.id}`;
+  params.append('body', body);
+  
+  return `${baseUrl}?${params.toString()}`;
+}
+
 export function SessionDetail({ session }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
@@ -25,6 +45,8 @@ export function SessionDetail({ session }: SessionDetailProps) {
     conversation || [],
     isLoading
   );
+  
+  const prCreationUrl = generatePRUrl(session);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(session.title);
@@ -158,6 +180,41 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   </a>
                 </div>
               </div>
+              
+              {/* Pull Request Creation Button */}
+              {session.prUrl ? (
+                <a
+                  href={session.prUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <GitPullRequest className="w-4 h-4" />
+                    View Pull Request
+                  </Button>
+                </a>
+              ) : (
+                <a
+                  href={prCreationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <GitPullRequest className="w-4 h-4" />
+                    Create Pull Request
+                  </Button>
+                </a>
+              )}
             </div>
           </div>
           <Badge
