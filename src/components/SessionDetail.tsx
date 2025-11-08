@@ -187,49 +187,50 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   </a>
                 </div>
               </div>
-
-              {/* Pull Request Creation Button */}
-              {session.prUrl ? (
-                <a
-                  href={session.prUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex"
-                >
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <GitPullRequest className="w-4 h-4" />
-                    View Pull Request
-                  </Button>
-                </a>
-              ) : (
-                <a
-                  href={prCreationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex"
-                >
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <GitPullRequest className="w-4 h-4" />
-                    Create Pull Request
-                  </Button>
-                </a>
-              )}
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className={
-              session.inboxStatus === 'completed'
-                ? 'bg-green-50 text-green-700 border-green-300'
-                : session.inboxStatus === 'in-progress'
-                  ? 'bg-blue-50 text-blue-700 border-blue-300'
-                  : session.inboxStatus === 'failed'
-                    ? 'bg-red-50 text-red-700 border-red-300'
-                    : 'bg-gray-50 text-gray-700 border-gray-300'
-            }
-          >
-            {session.inboxStatus}
-          </Badge>
+          <div className="flex flex-col items-end gap-2">
+            <Badge
+              variant="outline"
+              className={
+                session.inboxStatus === 'completed'
+                  ? 'bg-green-50 text-green-700 border-green-300'
+                  : session.inboxStatus === 'in-progress'
+                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                    : session.inboxStatus === 'failed'
+                      ? 'bg-red-50 text-red-700 border-red-300'
+                      : 'bg-gray-50 text-gray-700 border-gray-300'
+              }
+            >
+              {session.inboxStatus}
+            </Badge>
+            {/* Pull Request Creation Button */}
+            {session.prUrl ? (
+              <a
+                href={session.prUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex"
+              >
+                <Button variant="outline" size="sm" className="gap-2">
+                  <GitPullRequest className="w-4 h-4" />
+                  View Pull Request
+                </Button>
+              </a>
+            ) : (
+              <a
+                href={prCreationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex"
+              >
+                <Button variant="outline" size="sm" className="gap-2">
+                  <GitPullRequest className="w-4 h-4" />
+                  Create Pull Request
+                </Button>
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
