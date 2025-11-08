@@ -107,7 +107,6 @@ export function SessionDetail({ session }: SessionDetailProps) {
                 </div>
               ) : (
                 <>
-                  <h2 className="flex-1">{session.title}</h2>
                   <Button
                     size="icon"
                     variant="ghost"
@@ -116,6 +115,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
+                  <h2 className="flex-1">{session.title}</h2>
                 </>
               )}
             </div>
