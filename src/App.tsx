@@ -51,7 +51,7 @@ function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useOidc();
-  const [filter, setFilter] = useState<FilterType>('in-progress');
+  const [filter, setFilter] = useState<FilterType>('needs-review');
 
   // Fetch sessions using TanStack Query
   const { data: sessions = [], isLoading: isLoadingSessions } = useSessions();
