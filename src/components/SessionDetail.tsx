@@ -1,6 +1,13 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github, Check, X, GitPullRequest } from 'lucide-react';
+import {
+  GitBranch,
+  GitMerge,
+  Github,
+  Check,
+  X,
+  GitPullRequest,
+} from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
