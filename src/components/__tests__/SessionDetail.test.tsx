@@ -51,6 +51,7 @@ describe('SessionDetail', () => {
     targetBranch: 'main',
     messages: null,
     inboxStatus: 'in-progress',
+    uiStatus: 'InProgress',
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-01-01T09:00:00Z'),
@@ -181,12 +182,13 @@ describe('SessionDetail', () => {
       const pendingSession: Session = {
         ...baseSession,
         inboxStatus: 'pending',
+        uiStatus: 'Pending',
       };
       render(<SessionDetail session={pendingSession} />, {
         client: mockClient,
       });
 
-      const badge = screen.getByText('pending');
+      const badge = screen.getByText('Pending');
       expect(badge).toBeInTheDocument();
       expect(badge.className).toContain('gray');
     });
@@ -196,39 +198,45 @@ describe('SessionDetail', () => {
       const inProgressSession: Session = {
         ...baseSession,
         inboxStatus: 'in-progress',
+        uiStatus: 'InProgress',
       };
       render(<SessionDetail session={inProgressSession} />, {
         client: mockClient,
       });
 
-      const badge = screen.getByText('in-progress');
+      const badge = screen.getByText('InProgress');
       expect(badge).toBeInTheDocument();
-      expect(badge.className).toContain('blue');
+      expect(badge.className).toContain('gray');
     });
 
-    it('should display completed status', () => {
+    it('should display needs review status', () => {
       const mockClient = createMockClient();
-      const completedSession: Session = {
+      const needsReviewSession: Session = {
         ...baseSession,
-        inboxStatus: 'completed',
+        inboxStatus: 'needs-review',
+        uiStatus: 'NeedsReview',
       };
-      render(<SessionDetail session={completedSession} />, {
+      render(<SessionDetail session={needsReviewSession} />, {
         client: mockClient,
       });
 
-      const badge = screen.getByText('completed');
+      const badge = screen.getByText('NeedsReview');
       expect(badge).toBeInTheDocument();
-      expect(badge.className).toContain('green');
+      expect(badge.className).toContain('gray');
     });
 
-    it('should display failed status', () => {
+    it('should display archived status', () => {
       const mockClient = createMockClient();
-      const failedSession: Session = { ...baseSession, inboxStatus: 'failed' };
-      render(<SessionDetail session={failedSession} />, { client: mockClient });
+      const archivedSession: Session = { 
+        ...baseSession, 
+        inboxStatus: 'completed',
+        uiStatus: 'Archived',
+      };
+      render(<SessionDetail session={archivedSession} />, { client: mockClient });
 
-      const badge = screen.getByText('failed');
+      const badge = screen.getByText('Archived');
       expect(badge).toBeInTheDocument();
-      expect(badge.className).toContain('red');
+      expect(badge.className).toContain('gray');
     });
   });
 
