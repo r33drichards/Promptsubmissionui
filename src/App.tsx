@@ -261,7 +261,11 @@ function AppLayout() {
                         <CircleUser className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" sideOffset={8} className="w-48">
+                    <DropdownMenuContent
+                      align="start"
+                      sideOffset={8}
+                      className="w-48"
+                    >
                       <DropdownMenuLabel>Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -274,7 +278,7 @@ function AppLayout() {
                   </DropdownMenu>
                 )}
                 <div className="relative flex-1">
-                <Select
+                  <Select
                     value={filter}
                     onValueChange={(value) => setFilter(value as FilterType)}
                   >
@@ -324,7 +328,6 @@ function AppLayout() {
             {/* Sessions List */}
             <div className="flex-1 overflow-auto">
               <div className="p-2">
-
                 {isLoadingSessions ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />

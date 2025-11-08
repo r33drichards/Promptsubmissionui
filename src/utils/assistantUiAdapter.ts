@@ -47,7 +47,8 @@ export function convertConversationToThreadMessages(
               toolName: c.name || '',
               toolCallId: c.id || '',
               args: c.input,
-              argsText: c.input != null ? JSON.stringify(c.input, null, 2) : '{}',
+              argsText:
+                c.input != null ? JSON.stringify(c.input, null, 2) : '{}',
             });
           }
         }
@@ -135,7 +136,7 @@ export function convertConversationToThreadMessages(
               toolName: c.toolName ?? '',
               toolCallId: c.toolCallId ?? '',
               argsText: c.argsText ?? '{}',
-              result: c.result ?? undefined,  // result can be undefined if tool hasn't returned yet
+              result: c.result ?? undefined, // result can be undefined if tool hasn't returned yet
             };
           }
           return c;

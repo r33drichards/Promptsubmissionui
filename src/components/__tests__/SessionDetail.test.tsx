@@ -278,7 +278,10 @@ describe('SessionDetail', () => {
       const testDataDir = join(__dirname, 'testdata');
 
       // read data from testdata/prompt.json
-      const promptData = await readFile(join(testDataDir, 'prompt.json'), 'utf8');
+      const promptData = await readFile(
+        join(testDataDir, 'prompt.json'),
+        'utf8'
+      );
       const promptsData = JSON.parse(promptData);
       const backendPrompts = promptsData.prompts || promptsData;
 
@@ -286,21 +289,28 @@ describe('SessionDetail', () => {
       const prompts = backendPrompts.map((p: any) => ({
         id: p.id,
         sessionId: p.session_id,
-        content: Array.isArray(p.data) ? p.data[0]?.content || '' : p.data?.content || '',
+        content: Array.isArray(p.data)
+          ? p.data[0]?.content || ''
+          : p.data?.content || '',
         createdAt: new Date(p.created_at),
         status: p.inbox_status?.toLowerCase() || 'completed',
       }));
 
       // read messages from testdata/message-1.json
-      const messageData = await readFile(join(testDataDir, 'message-1.json'), 'utf8');
+      const messageData = await readFile(
+        join(testDataDir, 'message-1.json'),
+        'utf8'
+      );
       const messagesData = JSON.parse(messageData);
       const messages = messagesData.messages || messagesData;
 
       // read messages from testdata/message-2.json
-      const messageData2 = await readFile(join(testDataDir, 'message-2.json'), 'utf8');
+      const messageData2 = await readFile(
+        join(testDataDir, 'message-2.json'),
+        'utf8'
+      );
       const messagesData2 = JSON.parse(messageData2);
       const messages2 = messagesData2.messages || messagesData2;
-
 
       const mockClient: BackendClient = {
         sessions: {
@@ -317,10 +327,8 @@ describe('SessionDetail', () => {
         },
         messages: {
           list: vi.fn().mockImplementation((promptId: string) => {
-            if (promptId === 'prompt-1')
-              return Promise.resolve(messages);
-            if (promptId === 'prompt-2')
-              return Promise.resolve(messages2);
+            if (promptId === 'prompt-1') return Promise.resolve(messages);
+            if (promptId === 'prompt-2') return Promise.resolve(messages2);
             return Promise.resolve([]);
           }),
           create: vi.fn().mockResolvedValue({
@@ -336,10 +344,14 @@ describe('SessionDetail', () => {
 
       // Wait for both prompts to load
       await waitFor(() => {
-        expect(screen.getByText(/refacor this to use monaco editor/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/refacor this to use monaco editor/i)
+        ).toBeInTheDocument();
       });
 
-      expect(screen.getByText(/when my cursor is over a monaco editor/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/when my cursor is over a monaco editor/i)
+      ).toBeInTheDocument();
     });
 
     it('should display user messages with correct styling', async () => {
