@@ -267,6 +267,94 @@ describe('SessionDetail', () => {
   });
 
   describe('Message Display', () => {
+    it('should handle two prompts with messages without error', async () => {
+      // Create two separate prompts
+      const mockPrompt1 = {
+        id: 'prompt-1',
+        sessionId: 'test-session-1',
+        content: 'First prompt',
+        createdAt: new Date('2025-01-01T09:00:00Z'),
+        status: 'completed' as const,
+      };
+
+      const mockPrompt2 = {
+        id: 'prompt-2',
+        sessionId: 'test-session-1',
+        content: 'Second prompt',
+        createdAt: new Date('2025-01-01T10:00:00Z'),
+        status: 'completed' as const,
+      };
+
+      // Messages for first prompt
+      const messagesForPrompt1: BackendMessage[] = [
+        {
+          type: 'assistant',
+          uuid: 'msg-1-1',
+          message: {
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Response to first prompt' }],
+          },
+          session_id: 'test-session-1',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      // Messages for second prompt
+      const messagesForPrompt2: BackendMessage[] = [
+        {
+          type: 'assistant',
+          uuid: 'msg-2-1',
+          message: {
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Response to second prompt' }],
+          },
+          session_id: 'test-session-1',
+          parent_tool_use_id: null,
+        },
+      ];
+
+      const mockClient: BackendClient = {
+        sessions: {
+          list: vi.fn().mockResolvedValue([]),
+          get: vi.fn().mockResolvedValue(baseSession),
+          create: vi.fn().mockResolvedValue(baseSession),
+          update: vi.fn().mockResolvedValue(baseSession),
+          delete: vi.fn().mockResolvedValue(undefined),
+          archive: vi.fn().mockResolvedValue(baseSession),
+          unarchive: vi.fn().mockResolvedValue(baseSession),
+        },
+        prompts: {
+          list: vi.fn().mockResolvedValue([mockPrompt1, mockPrompt2]),
+        },
+        messages: {
+          list: vi.fn().mockImplementation((promptId: string) => {
+            if (promptId === 'prompt-1')
+              return Promise.resolve(messagesForPrompt1);
+            if (promptId === 'prompt-2')
+              return Promise.resolve(messagesForPrompt2);
+            return Promise.resolve([]);
+          }),
+          create: vi.fn().mockResolvedValue({
+            id: 'new-msg',
+            role: 'user',
+            content: 'test',
+            createdAt: new Date(),
+          }),
+        },
+      };
+
+      render(<SessionDetail session={baseSession} />, { client: mockClient });
+
+      // Wait for both prompts to load
+      await waitFor(() => {
+        expect(screen.getByText('First prompt')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Second prompt')).toBeInTheDocument();
+      expect(screen.getByText('Response to first prompt')).toBeInTheDocument();
+      expect(screen.getByText('Response to second prompt')).toBeInTheDocument();
+    });
+
     it('should display user messages with correct styling', async () => {
       const mockClient = createMockClient();
       render(<SessionDetail session={baseSession} />, { client: mockClient });

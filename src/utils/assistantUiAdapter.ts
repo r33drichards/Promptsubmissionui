@@ -101,7 +101,12 @@ export function convertConversationToThreadMessages(
             }
             return { type: 'text' as const, text: '' };
           })
-          .filter((c) => c !== null);
+          .filter((c) => c !== null && c !== undefined);
+
+        // Skip messages with empty content to prevent rendering errors
+        if (content.length === 0) {
+          continue;
+        }
 
         // Debug: log if we have tool calls
         const toolCalls = content.filter((c: any) => c.type === 'tool-call');
