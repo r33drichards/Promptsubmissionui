@@ -1,6 +1,6 @@
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
-import { GitBranch, GitMerge, Github, Pencil, Check, X } from 'lucide-react';
+import { GitBranch, GitMerge, Github, Check, X } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { Thread } from '@assistant-ui/react-ui';
@@ -77,7 +77,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
       <div className="border-b p-4 flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-2 flex items-center gap-2 group">
+            <div className="mb-2 flex items-center gap-2">
               {isEditingTitle ? (
                 <div className="flex items-center gap-2 flex-1">
                   <Input
@@ -106,17 +106,12 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   </Button>
                 </div>
               ) : (
-                <>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setIsEditingTitle(true)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <h2 className="flex-1">{session.title}</h2>
-                </>
+                <h2
+                  className="flex-1 cursor-pointer hover:text-gray-600 transition-colors"
+                  onClick={() => setIsEditingTitle(true)}
+                >
+                  {session.title}
+                </h2>
               )}
             </div>
             {session.statusMessage && (
