@@ -6,7 +6,13 @@ import {
   CollapsibleContent as _CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
-import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  Archive,
+  Loader2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 interface SessionListItemProps {
@@ -29,6 +35,9 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
+  // Check if session is in progress
+  const isInProgress = session.uiStatus === 'InProgress';
+
   // Disabled for now - status colors not currently displayed
   // const getStatusColor = (status: Session['inboxStatus']) => {
   //   switch (status) {
@@ -50,7 +59,7 @@ export function SessionListItem({
       <div
         className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
           isActive ? 'bg-gray-100' : ''
-        }`}
+        } ${isInProgress ? 'bg-blue-50/50 animate-pulse' : ''}`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
         {hasChildren && (
@@ -73,7 +82,12 @@ export function SessionListItem({
         <div className="flex-1 min-w-0" onClick={() => onSelect(session)}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm truncate">{session.title}</h3>
+              <div className="flex items-center gap-2">
+                {isInProgress && (
+                  <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin flex-shrink-0" />
+                )}
+                <h3 className="text-sm truncate">{session.title}</h3>
+              </div>
               <p className="text-xs truncate mt-0.5">
                 <a
                   href={`https://github.com/${session.repo}`}
