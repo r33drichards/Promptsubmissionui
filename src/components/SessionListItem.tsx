@@ -6,7 +6,15 @@ import {
   CollapsibleContent as _CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
-import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  Archive,
+  Clock,
+  Loader2,
+  CheckCircle2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 interface SessionListItemProps {
@@ -29,20 +37,32 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  // Disabled for now - status colors not currently displayed
-  //   switch (status) {
-  //     case 'completed':
-  //       return 'bg-green-500/10 text-green-600 border-green-500/20';
-  //     case 'in-progress':
-  //       return 'bg-blue-500/10 text-blue-600 border-green-500/20';
-  //     case 'pending':
-  //       return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-  //     case 'failed':
-  //       return 'bg-red-500/10 text-red-600 border-red-500/20';
-  //     default:
-  //       return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-  //   }
-  // };
+  // Render status indicator based on UI status
+  const renderStatusIndicator = () => {
+    switch (session.uiStatus) {
+      case 'Pending':
+        return (
+          <div className="flex items-center gap-1" title="Pending">
+            <Clock className="w-4 h-4 text-amber-500 animate-pulse" />
+          </div>
+        );
+      case 'InProgress':
+        return (
+          <div className="flex items-center gap-1" title="In Progress">
+            <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+          </div>
+        );
+      case 'NeedsReview':
+      case 'NeedsReviewIpReturned':
+        return (
+          <div className="flex items-center gap-1" title="Needs Review">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div>
@@ -72,7 +92,10 @@ export function SessionListItem({
         <div className="flex-1 min-w-0" onClick={() => onSelect(session)}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm truncate">{session.title}</h3>
+              <div className="flex items-center gap-2">
+                {renderStatusIndicator()}
+                <h3 className="text-sm truncate">{session.title}</h3>
+              </div>
               <p className="text-xs truncate mt-0.5">
                 <a
                   href={`https://github.com/${session.repo}`}
