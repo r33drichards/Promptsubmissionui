@@ -269,7 +269,7 @@ export function CreateTaskForm({
           </div>
         </div>
 
-        <div className="border-t p-4 flex gap-2 justify-end">
+        <div className="p-4 flex gap-2 justify-end">
           <Button
             type="button"
             variant="outline"
