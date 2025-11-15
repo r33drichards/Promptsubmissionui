@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ApiProvider backendUrl={import.meta.env.VITE_BACKEND_URL}>
         <QueryProvider>
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster position="bottom-right" richColors closeButton />
           <Routes>
             <Route path="/authentication/callback" element={<AuthCallback />} />
             <Route
