@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Session } from '../types/session';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 

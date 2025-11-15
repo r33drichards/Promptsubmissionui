@@ -236,12 +236,13 @@ function AppLayout() {
     // Don't navigate - stay on current URL
   };
 
-  const _handleOpenInCLI = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      toast.info(`Opening ${session.repo} in CLI...`);
-    }
-  };
+  // Disabled for now - will be re-enabled when CLI integration is ready
+  // const handleOpenInCLI = (sessionId: string) => {
+  //   const session = sessions.find((s) => s.id === sessionId);
+  //   if (session) {
+  //     toast.info(`Opening ${session.repo} in CLI...`);
+  //   }
+  // };
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
@@ -395,7 +396,9 @@ function AppLayout() {
                 <MultiSelect
                   options={filterOptions}
                   selected={filters}
-                  onChange={(newFilters) => setFilters(newFilters as FilterType[])}
+                  onChange={(newFilters) =>
+                    setFilters(newFilters as FilterType[])
+                  }
                   placeholder="Filter sessions..."
                   className="h-6 text-xs w-full"
                 />

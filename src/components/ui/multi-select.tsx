@@ -4,11 +4,7 @@ import * as React from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from './utils';
 import { Button } from './button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './popover';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import {
   Command,
   CommandEmpty,
@@ -83,11 +79,7 @@ export function MultiSelect({
               selectedLabels.map((label) => {
                 const value = options.find((opt) => opt.label === label)?.value;
                 return (
-                  <Badge
-                    key={value}
-                    variant="secondary"
-                    className="mr-1 mb-1"
-                  >
+                  <Badge key={value} variant="secondary" className="mr-1 mb-1">
                     {label}
                     <button
                       className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
