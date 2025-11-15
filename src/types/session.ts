@@ -27,7 +27,7 @@ export interface Session {
     deletions: number;
   };
   pr_url?: string;
-  created_at: Date;
+  created_at: string;
   children?: Session[];
   session_status: SessionStatus;
 }
@@ -36,14 +36,14 @@ export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  created_at: Date;
+  created_at: string;
 }
 
 export interface Prompt {
   id: string;
   session_id: string;
   content: string;
-  created_at: Date;
+  created_at: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
 }
 

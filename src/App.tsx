@@ -117,9 +117,10 @@ function AppLayout() {
 
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
+      const sessionDate = new Date(session.created_at);
       const existing = repoMap.get(session.repo);
-      if (!existing || session.created_at > existing) {
-        repoMap.set(session.repo, session.created_at);
+      if (!existing || sessionDate > existing) {
+        repoMap.set(session.repo, sessionDate);
       }
     });
 
@@ -170,7 +171,10 @@ function AppLayout() {
   const filteredSessions = useMemo(() => {
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
-        .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         .map((session) => ({
           ...session,
           children: session.children ? sortByDate(session.children) : [],
