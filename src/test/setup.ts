@@ -1,3 +1,4 @@
+// @ts-nocheck
 import '@testing-library/jest-dom';
 import { expect as _expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';

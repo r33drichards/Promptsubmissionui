@@ -29,20 +29,21 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  const _getStatusColor = (status: Session['inboxStatus']) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'in-progress':
-        return 'bg-blue-500/10 text-blue-600 border-green-500/20';
-      case 'pending':
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-      case 'failed':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
-      default:
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-    }
-  };
+  // Disabled for now - status colors not currently displayed
+  // const getStatusColor = (status: Session['inboxStatus']) => {
+  //   switch (status) {
+  //     case 'completed':
+  //       return 'bg-green-500/10 text-green-600 border-green-500/20';
+  //     case 'in-progress':
+  //       return 'bg-blue-500/10 text-blue-600 border-green-500/20';
+  //     case 'pending':
+  //       return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+  //     case 'failed':
+  //       return 'bg-red-500/10 text-red-600 border-red-500/20';
+  //     default:
+  //       return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+  //   }
+  // };
 
   return (
     <div>
