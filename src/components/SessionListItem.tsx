@@ -16,6 +16,7 @@ interface SessionListItemProps {
   onCreateSubtask: (parentId: string) => void;
   onArchive: (sessionId: string) => void;
   level?: number;
+  selectedSessionId?: string | null;
 }
 
 export function SessionListItem({
@@ -25,9 +26,15 @@ export function SessionListItem({
   onCreateSubtask,
   onArchive,
   level = 0,
+  selectedSessionId,
 }: SessionListItemProps) {
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
+  
+  // Determine if this specific session is active
+  const isThisSessionActive = selectedSessionId
+    ? session.id === selectedSessionId
+    : isActive;
 
   // Disabled for now - status colors not currently displayed
   // const getStatusColor = (status: Session['inboxStatus']) => {
@@ -48,10 +55,16 @@ export function SessionListItem({
   return (
     <div>
       <div
-        className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-          isActive ? 'bg-gray-100' : ''
+        className={`group relative flex items-start gap-2 p-3 cursor-pointer transition-colors ${
+          isThisSessionActive
+            ? 'bg-blue-50 border-l-4 border-blue-500 hover:bg-blue-100'
+            : 'hover:bg-gray-50'
         }`}
-        style={{ paddingLeft: `${12 + level * 24}px` }}
+        style={{
+          paddingLeft: isThisSessionActive
+            ? `${12 + level * 24 - 4}px`
+            : `${12 + level * 24}px`,
+        }}
       >
         {hasChildren && (
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -144,11 +157,12 @@ export function SessionListItem({
             <SessionListItem
               key={child.id}
               session={child}
-              isActive={isActive}
+              isActive={false}
               onSelect={onSelect}
               onCreateSubtask={onCreateSubtask}
               onArchive={onArchive}
               level={level + 1}
+              selectedSessionId={selectedSessionId}
             />
           ))}
         </div>
