@@ -116,7 +116,7 @@ describe('Data Wrapper Bug', () => {
                 content: 'create a in memory heap store for this',
               },
             ],
-            inbox_status: 'Active',
+            status: 'Active',
             created_at: '2025-11-06 22:41:20.037132 +00:00',
             updated_at: '2025-11-06 22:41:20.037132 +00:00',
           },

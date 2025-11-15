@@ -20,7 +20,7 @@ describe('PromptBackendClient.prompts.create', () => {
       sessionId: 'session-456',
       content: 'Hello world',
       created_at: '2025-11-06T00:00:00Z',
-      inbox_status: 'pending',
+      status: 'pending',
       data: [{ content: 'Hello world', type: 'text' }],
     };
 
