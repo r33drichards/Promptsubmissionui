@@ -48,10 +48,12 @@ export function SessionListItem({
   return (
     <div>
       <div
-        className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-          isActive ? 'bg-gray-100' : ''
+        className={`group relative flex items-start gap-2 p-3 cursor-pointer transition-colors ${
+          isActive
+            ? 'bg-blue-50 border-l-4 border-l-blue-500 hover:bg-blue-100'
+            : 'hover:bg-gray-50'
         }`}
-        style={{ paddingLeft: `${12 + level * 24}px` }}
+        style={{ paddingLeft: `${(isActive ? 8 : 12) + level * 24}px` }}
       >
         {hasChildren && (
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
