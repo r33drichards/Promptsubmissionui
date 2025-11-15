@@ -46,7 +46,7 @@ export function MonacoEditor({
   return (
     <div className="border rounded-md overflow-hidden">
       <Editor
-        height={'350px'}
+        height={'200px'}
         defaultLanguage={language}
         value={value}
         onChange={handleEditorChange}
