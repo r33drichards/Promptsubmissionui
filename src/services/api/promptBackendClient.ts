@@ -5,12 +5,7 @@ import {
   CreateSessionWithPromptInput as _CreateSessionWithPromptInput,
   CreateSessionWithPromptOutput as _CreateSessionWithPromptOutput,
 } from '@wholelottahoopla/prompt-backend-client';
-import {
-  Session,
-  Message,
-  BackendMessage,
-  Prompt,
-} from '../../types/session';
+import { Session, Message, BackendMessage, Prompt } from '../../types/session';
 import {
   BackendClient,
   CreateSessionData,
