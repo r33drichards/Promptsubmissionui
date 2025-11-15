@@ -420,16 +420,6 @@ function AppLayout() {
                 <Plus className="w-4 h-4" />
               )}
             </Button>
-            {isAuthenticated && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => logout()}
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
-            )}
           </div>
         )}
 
