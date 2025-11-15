@@ -24,6 +24,7 @@ interface CreateTaskFormProps {
   parentSession?: Session | null;
   repositories: string[];
   isSubmitting?: boolean;
+  onFormChange?: (hasChanges: boolean) => void;
 }
 
 // Infer the type from the schema
@@ -35,6 +36,7 @@ export function CreateTaskForm({
   parentSession,
   repositories,
   isSubmitting = false,
+  onFormChange,
 }: CreateTaskFormProps) {
   const [repo, setRepo] = useState(parentSession?.repo || '');
   const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
@@ -42,6 +44,12 @@ export function CreateTaskForm({
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateTaskFormData, string>>
   >({});
+
+  // Track if form has unsaved changes (only consider prompt as meaningful user input)
+  useEffect(() => {
+    const hasChanges = prompt.trim() !== '';
+    onFormChange?.(hasChanges);
+  }, [prompt, onFormChange]);
 
   // Fetch branches from GitHub API based on selected repository
   const {

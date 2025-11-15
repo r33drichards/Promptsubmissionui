@@ -9,6 +9,7 @@ import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { ArchiveSessionDialog } from './components/ArchiveSessionDialog';
+import { UnsavedChangesDialog } from './components/UnsavedChangesDialog';
 import { Button } from './components/ui/button';
 
 import {
@@ -97,6 +98,10 @@ function AppLayout() {
   const [sessionToArchive, setSessionToArchive] = useState<Session | null>(
     null
   );
+  const [formHasChanges, setFormHasChanges] = useState(false);
+  const [unsavedChangesDialogOpen, setUnsavedChangesDialogOpen] =
+    useState(false);
+  const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
 
   // Persist sidebar collapsed state
   useEffect(() => {
@@ -180,12 +185,42 @@ function AppLayout() {
     return sortByDate([...hierarchicalSessions]);
   }, [hierarchicalSessions]);
 
+  const handleSessionSelect = (session: Session) => {
+    if (isCreatingTask && formHasChanges) {
+      // Show confirmation dialog
+      setPendingSessionId(session.id);
+      setUnsavedChangesDialogOpen(true);
+    } else {
+      // Navigate normally
+      navigate(`/session/${session.id}`);
+    }
+  };
+
+  const handleUnsavedChangesConfirm = () => {
+    // User confirmed - discard changes and navigate
+    setIsCreatingTask(false);
+    setParentForNewTask(null);
+    setFormHasChanges(false);
+    setUnsavedChangesDialogOpen(false);
+    if (pendingSessionId) {
+      navigate(`/session/${pendingSessionId}`);
+      setPendingSessionId(null);
+    }
+  };
+
+  const handleUnsavedChangesCancel = () => {
+    // User cancelled - keep form open
+    setUnsavedChangesDialogOpen(false);
+    setPendingSessionId(null);
+  };
+
   const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(task, {
       onSuccess: (newSession) => {
         navigate(`/session/${newSession.id}`);
         setIsCreatingTask(false);
         setParentForNewTask(null);
+        setFormHasChanges(false);
       },
     });
   };
@@ -200,6 +235,7 @@ function AppLayout() {
   const handleCancelCreate = () => {
     setIsCreatingTask(false);
     setParentForNewTask(null);
+    setFormHasChanges(false);
     // Don't navigate - stay on current URL
   };
 
@@ -388,7 +424,7 @@ function AppLayout() {
                       key={session.id}
                       session={session}
                       isActive={selectedSession?.id === session.id}
-                      onSelect={(session) => navigate(`/session/${session.id}`)}
+                      onSelect={handleSessionSelect}
                       onCreateSubtask={handleCreateSubtask}
                       onArchive={handleArchive}
                     />
@@ -453,6 +489,7 @@ function AppLayout() {
             parentSession={parentForNewTask}
             repositories={sortedRepositories}
             isSubmitting={createSessionMutation.isPending}
+            onFormChange={setFormHasChanges}
           />
         ) : selectedSession ? (
           <SessionDetail session={selectedSession} />
@@ -482,6 +519,13 @@ function AppLayout() {
         session={sessionToArchive}
         onConfirm={handleArchiveConfirm}
         onCancel={handleArchiveCancel}
+      />
+
+      {/* Unsaved Changes Dialog */}
+      <UnsavedChangesDialog
+        open={unsavedChangesDialogOpen}
+        onConfirm={handleUnsavedChangesConfirm}
+        onCancel={handleUnsavedChangesCancel}
       />
     </div>
   );
