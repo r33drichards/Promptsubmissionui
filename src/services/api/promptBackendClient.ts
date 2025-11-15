@@ -175,6 +175,16 @@ export class PromptBackendClient implements BackendClient {
     unarchive: withErrorHandler(async (id: string): Promise<Session> => {
       return this.sessions.update(id, { sessionStatus: 'Active' });
     }, 'Unarchiving session'),
+
+    cancel: withErrorHandler(
+      async (id: string): Promise<{ success: boolean; message: string }> => {
+        console.log('[PromptBackendClient] Canceling session:', id);
+        const response = await this.api.handlersSessionsCancel({ id });
+        console.log('[PromptBackendClient] Cancel response:', response);
+        return response;
+      },
+      'Canceling session'
+    ),
   };
 
   prompts = {

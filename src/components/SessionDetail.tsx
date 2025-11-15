@@ -7,6 +7,7 @@ import {
   Check,
   X,
   GitPullRequest,
+  XCircle,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -15,7 +16,10 @@ import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
 import { truncateBranchName } from '@/utils/stringUtils';
-import { useUpdateSession } from '../hooks/useSessionMutations';
+import {
+  useUpdateSession,
+  useCancelSession,
+} from '../hooks/useSessionMutations';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
@@ -37,6 +41,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
   const [titleValue, setTitleValue] = useState(session.title);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
+  const cancelSession = useCancelSession();
 
   // Reset title value when session changes
   useEffect(() => {
@@ -188,6 +193,17 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {session.uiStatus === 'InProgress' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => cancelSession.mutate(session.id)}
+                disabled={cancelSession.isPending}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                {cancelSession.isPending ? 'Cancelling...' : 'Cancel'}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

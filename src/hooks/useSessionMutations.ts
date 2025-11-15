@@ -338,3 +338,52 @@ export function useDeleteSession(
     ...options,
   });
 }
+
+/**
+ * Hook to cancel a running session.
+ *
+ * @example
+ * ```tsx
+ * const cancelSession = useCancelSession();
+ *
+ * const handleCancel = () => {
+ *   cancelSession.mutate('session-123');
+ * };
+ * ```
+ */
+export function useCancelSession(
+  options?: Omit<
+    UseMutationOptions<{ success: boolean; message: string }, Error, string>,
+    'mutationFn'
+  >
+) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.sessions.cancel(id),
+    onSuccess: (data, id, context) => {
+      // Invalidate session detail to refetch updated status
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
+
+      // Invalidate session lists to reflect changes in the sidebar
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.lists(),
+        refetchType: 'active',
+      });
+
+      toast.success(data.message || 'Task cancelled successfully');
+
+      options?.onSuccess?.(data, id, context);
+    },
+    onError: (error, id, context) => {
+      console.error('Failed to cancel session:', error);
+      toast.error('Failed to cancel task');
+
+      options?.onError?.(error, id, context);
+    },
+    ...options,
+  });
+}
