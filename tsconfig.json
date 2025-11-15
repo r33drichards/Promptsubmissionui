@@ -17,7 +17,6 @@
     /* Sourcemap settings */
     "sourceMap": true,
     "inlineSourceMap": false,
-    "declarationMap": true,
 
     /* Linting */
     "strict": true,

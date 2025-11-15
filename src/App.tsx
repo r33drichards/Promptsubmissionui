@@ -10,14 +10,8 @@ import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { ArchiveSessionDialog } from './components/ArchiveSessionDialog';
 import { Button } from './components/ui/button';
+import { MultiSelect } from './components/ui/multi-select';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,13 +43,27 @@ const filterMap: Record<FilterType, UiStatus[]> = {
   archived: ['Archived' as UiStatus],
 };
 
+const filterOptions = [
+  { label: 'Pending', value: 'pending' },
+  { label: 'In Progress', value: 'in-progress' },
+  { label: 'Needs Review', value: 'needs-review' },
+  { label: 'Archived', value: 'archived' },
+];
+
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useAuth();
-  const [filter, setFilter] = useState<FilterType>(() => {
-    const saved = window.localStorage.getItem('sessionFilter');
-    return (saved as FilterType) || 'needs-review';
+  const [filters, setFilters] = useState<FilterType[]>(() => {
+    const saved = window.localStorage.getItem('sessionFilters');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return ['needs-review'];
+      }
+    }
+    return ['needs-review'];
   });
 
   // Fetch sessions using TanStack Query
@@ -106,10 +114,10 @@ function AppLayout() {
     );
   }, [sidebarCollapsed]);
 
-  // Persist session filter state
+  // Persist session filters state
   useEffect(() => {
-    window.localStorage.setItem('sessionFilter', filter);
-  }, [filter]);
+    window.localStorage.setItem('sessionFilters', JSON.stringify(filters));
+  }, [filters]);
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
@@ -137,8 +145,33 @@ function AppLayout() {
     const sessionMap = new Map<string, Session>();
     const rootSessions: Session[] = [];
 
-    // Filter sessions based on filter type using filterMap
-    const allowedStatuses = filterMap[filter];
+    // If no filters selected, show all sessions
+    if (filters.length === 0) {
+      // First pass: create a map of all sessions
+      sessions.forEach((session) => {
+        sessionMap.set(session.id, { ...session, children: [] });
+      });
+
+      // Second pass: build hierarchy
+      sessions.forEach((session) => {
+        const sessionWithChildren = sessionMap.get(session.id)!;
+        if (session.parentId) {
+          const parent = sessionMap.get(session.parentId);
+          if (parent) {
+            parent.children!.push(sessionWithChildren);
+          } else {
+            rootSessions.push(sessionWithChildren);
+          }
+        } else {
+          rootSessions.push(sessionWithChildren);
+        }
+      });
+
+      return rootSessions;
+    }
+
+    // Filter sessions based on selected filters using filterMap
+    const allowedStatuses = filters.flatMap((filter) => filterMap[filter]);
     const filteredSessions = sessions.filter((s) =>
       allowedStatuses.includes(s.uiStatus)
     );
@@ -164,7 +197,7 @@ function AppLayout() {
     });
 
     return rootSessions;
-  }, [sessions, filter]);
+  }, [sessions, filters]);
 
   // Sort sessions by created date (newest first)
   const filteredSessions = useMemo(() => {
@@ -203,12 +236,13 @@ function AppLayout() {
     // Don't navigate - stay on current URL
   };
 
-  const _handleOpenInCLI = (sessionId: string) => {
-    const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
-      toast.info(`Opening ${session.repo} in CLI...`);
-    }
-  };
+  // Disabled for now - will be re-enabled when CLI integration is ready
+  // const handleOpenInCLI = (sessionId: string) => {
+  //   const session = sessions.find((s) => s.id === sessionId);
+  //   if (session) {
+  //     toast.info(`Opening ${session.repo} in CLI...`);
+  //   }
+  // };
 
   const handleArchive = (sessionId: string) => {
     console.log('[App] handleArchive called for session:', sessionId);
@@ -299,7 +333,7 @@ function AppLayout() {
         {!sidebarCollapsed ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b">
+            <div className="p-4 border-b space-y-3">
               <div className="flex gap-2">
                 {isAuthenticated && (
                   <DropdownMenu>
@@ -329,22 +363,7 @@ function AppLayout() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                <div className="relative flex-1">
-                  <Select
-                    value={filter}
-                    onValueChange={(value) => setFilter(value as FilterType)}
-                  >
-                    <SelectTrigger size="sm" className="w-[110px] h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="needs-review">Needs Review</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="flex-1" />
                 <Button
                   size="sm"
                   variant="ghost"
@@ -372,6 +391,17 @@ function AppLayout() {
                     <Plus className="w-4 h-4 " />
                   )}
                 </Button>
+              </div>
+              <div className="w-full mt-2">
+                <MultiSelect
+                  options={filterOptions}
+                  selected={filters}
+                  onChange={(newFilters) =>
+                    setFilters(newFilters as FilterType[])
+                  }
+                  placeholder="Filter sessions..."
+                  className="h-6 text-xs w-full"
+                />
               </div>
             </div>
 
