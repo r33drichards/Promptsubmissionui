@@ -110,10 +110,14 @@ function AppLayout() {
     window.localStorage.setItem('sessionFilter', filter);
   }, [filter]);
 
-  // Add keyboard shortcut: Alt + c to toggle sidebar collapse
+  // Add keyboard shortcut: Option/Alt + c to toggle sidebar collapse
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'c' && event.altKey && !event.metaKey && !event.ctrlKey) {
+      // On macOS, Option+c produces 'ç', so check for both 'c' and 'ç'
+      // On Windows/Linux, Alt+c produces 'c'
+      const isToggleKey = (event.key === 'c' || event.key === 'ç') && event.altKey && !event.metaKey && !event.ctrlKey;
+      
+      if (isToggleKey) {
         event.preventDefault();
         setSidebarCollapsed((prev) => !prev);
       }
