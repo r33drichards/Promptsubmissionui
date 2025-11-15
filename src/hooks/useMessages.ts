@@ -12,6 +12,42 @@ import { queryKeys } from './queryKeys';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
 
+// Helper to deserialize backend messages
+function deserializeBackendMessages(messages: any[]): BackendMessage[] {
+  if (!Array.isArray(messages)) {
+    return [];
+  }
+
+  return messages.map((msg) => {
+    const data = msg.data || msg;
+    return {
+      type: data.type || 'user',
+      uuid: data.uuid || msg.id || '',
+      message: data.message || {},
+      session_id: data.session_id || '',
+      parent_tool_use_id: data.parent_tool_use_id || null,
+    };
+  });
+}
+
+// Helper to deserialize prompts
+function deserializePrompt(prompt: any): Prompt {
+  const content =
+    prompt.data && Array.isArray(prompt.data) && prompt.data[0]?.content
+      ? prompt.data[0].content
+      : prompt.content || '';
+
+  const status = prompt.inbox_status || prompt.status || 'pending';
+
+  return {
+    id: prompt.id || '',
+    session_id: prompt.session_id || '',
+    content,
+    created_at: prompt.created_at ? new Date(prompt.created_at) : new Date(),
+    status,
+  };
+}
+
 /**
  * Hook to fetch messages for a specific prompt with polling.
  *
@@ -31,7 +67,10 @@ export function useMessages(
 
   return useQuery({
     queryKey: queryKeys.messages.list(promptId),
-    queryFn: () => api.messages.list(promptId),
+    queryFn: async () => {
+      const response = await api.handlersMessagesList({ promptId });
+      return deserializeBackendMessages(response.messages || []);
+    },
     enabled: !!promptId,
     refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true, // Continue polling when tab is not focused
@@ -166,7 +205,20 @@ export function useCreatePrompt(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) => api.prompts.create(sessionId, content),
+    mutationFn: async (content: string) => {
+      const response = await api.handlersPromptsCreate({
+        createPromptInput: {
+          sessionId,
+          data: [{ content, type: 'text' }],
+        },
+      });
+
+      if (!response.prompt) {
+        throw new Error('Failed to create prompt');
+      }
+
+      return deserializePrompt(response.prompt);
+    },
     onSuccess: (newPrompt, content, context) => {
       // Invalidate prompts query to trigger refetch
       queryClient.invalidateQueries({
@@ -204,7 +256,10 @@ export function usePrompts(
 
   return useQuery({
     queryKey: queryKeys.prompts.list(sessionId),
-    queryFn: () => api.prompts.list(sessionId),
+    queryFn: async () => {
+      const response = await api.handlersPromptsList({ sessionId });
+      return (response.prompts || []).map(deserializePrompt);
+    },
     enabled: !!sessionId,
     refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true,
