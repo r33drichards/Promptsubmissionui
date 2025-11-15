@@ -117,9 +117,11 @@ function AppLayout() {
 
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
+      if (!session.repo) return;
+      const sessionDate = new Date(session.created_at);
       const existing = repoMap.get(session.repo);
-      if (!existing || session.createdAt > existing) {
-        repoMap.set(session.repo, session.createdAt);
+      if (!existing || sessionDate > existing) {
+        repoMap.set(session.repo, sessionDate);
       }
     });
 
@@ -140,7 +142,7 @@ function AppLayout() {
     // Filter sessions based on filter type using filterMap
     const allowedStatuses = filterMap[filter];
     const filteredSessions = sessions.filter((s) =>
-      allowedStatuses.includes(s.uiStatus)
+      allowedStatuses.includes(s.ui_status)
     );
 
     // First pass: create a map of all sessions
@@ -151,8 +153,8 @@ function AppLayout() {
     // Second pass: build hierarchy
     filteredSessions.forEach((session) => {
       const sessionWithChildren = sessionMap.get(session.id)!;
-      if (session.parentId) {
-        const parent = sessionMap.get(session.parentId);
+      if (session.parent) {
+        const parent = sessionMap.get(session.parent);
         if (parent) {
           parent.children!.push(sessionWithChildren);
         } else {
@@ -170,7 +172,10 @@ function AppLayout() {
   const filteredSessions = useMemo(() => {
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         .map((session) => ({
           ...session,
           children: session.children ? sortByDate(session.children) : [],
@@ -205,7 +210,7 @@ function AppLayout() {
 
   const _handleOpenInCLI = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
+    if (session && session.repo) {
       toast.info(`Opening ${session.repo} in CLI...`);
     }
   };

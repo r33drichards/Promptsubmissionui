@@ -7,38 +7,47 @@ export type InboxStatus =
   | 'failed'
   | 'needs-review'
   | 'needs-review-ip-returned';
+
 export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
 
 export interface Session {
   id: string;
   title: string;
-  repo: string;
-  branch: string;
-  targetBranch: string;
+  repo?: string;
+  branch?: string;
+  target_branch?: string;
   messages: Message[] | null;
-  inboxStatus: InboxStatus;
-  uiStatus: UiStatus;
+  inbox_status: InboxStatus;
+  ui_status: UiStatus;
   statusMessage?: string;
-  sbxConfig: Record<string, any> | null;
-  parentId: string | null;
-  diffStats?: {
+  sbx_config: Record<string, any> | null;
+  parent: string | null;
+  diff_stats?: {
     additions: number;
     deletions: number;
   };
-  prUrl?: string;
-  createdAt: Date;
+  pr_url?: string;
+  created_at: string;
   children?: Session[];
-  sessionStatus: SessionStatus;
+  session_status: SessionStatus;
 }
 
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  createdAt: Date;
+  created_at: string;
 }
 
-// New backend message structure (from Claude Code output)
+export interface Prompt {
+  id: string;
+  session_id: string;
+  content: string;
+  created_at: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+}
+
+// BackendMessage is a unique structure for Claude Code output format
 export interface BackendMessage {
   type: 'assistant' | 'user' | 'system' | 'result';
   uuid: string;
@@ -68,12 +77,4 @@ export interface BackendMessage {
   };
   session_id: string;
   parent_tool_use_id?: string | null;
-}
-
-export interface Prompt {
-  id: string;
-  sessionId: string;
-  content: string;
-  createdAt: Date;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
 }

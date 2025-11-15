@@ -31,7 +31,10 @@ export function useMessages(
 
   return useQuery({
     queryKey: queryKeys.messages.list(promptId),
-    queryFn: () => api.messages.list(promptId),
+    queryFn: async () => {
+      const response = await api.handlersMessagesList({ promptId });
+      return response.messages || [];
+    },
     enabled: !!promptId,
     refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true, // Continue polling when tab is not focused
@@ -166,7 +169,20 @@ export function useCreatePrompt(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) => api.prompts.create(sessionId, content),
+    mutationFn: async (content: string) => {
+      const response = await api.handlersPromptsCreate({
+        createPromptInput: {
+          sessionId,
+          data: [{ content, type: 'text' }],
+        },
+      });
+
+      if (!response.prompt) {
+        throw new Error('Failed to create prompt');
+      }
+
+      return response.prompt;
+    },
     onSuccess: (newPrompt, content, context) => {
       // Invalidate prompts query to trigger refetch
       queryClient.invalidateQueries({
@@ -204,7 +220,10 @@ export function usePrompts(
 
   return useQuery({
     queryKey: queryKeys.prompts.list(sessionId),
-    queryFn: () => api.prompts.list(sessionId),
+    queryFn: async () => {
+      const response = await api.handlersPromptsList({ sessionId });
+      return response.prompts || [];
+    },
     enabled: !!sessionId,
     refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true,
@@ -284,7 +303,7 @@ export function useSessionConversation(sessionId: string) {
     // Build conversation by iterating through prompts in chronological order
     const sortedPrompts = [...prompts].sort(
       (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
 
     sortedPrompts.forEach((prompt) => {

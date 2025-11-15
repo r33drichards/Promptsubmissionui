@@ -29,7 +29,7 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  const _getStatusColor = (status: Session['inboxStatus']) => {
+  const _getStatusColor = (status: Session['inbox_status']) => {
     switch (status) {
       case 'completed':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
@@ -73,31 +73,33 @@ export function SessionListItem({
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-sm truncate">{session.title}</h3>
-              <p className="text-xs truncate mt-0.5">
-                <a
-                  href={`https://github.com/${session.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-blue-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {session.repo}
-                </a>
-              </p>
+              {session.repo && (
+                <p className="text-xs truncate mt-0.5">
+                  <a
+                    href={`https://github.com/${session.repo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-blue-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {session.repo}
+                  </a>
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
-              {session.diffStats && (
+              {session.diff_stats && (
                 <>
                   <span className="text-xs text-green-600">
-                    +{session.diffStats.additions}
+                    +{session.diff_stats.additions}
                   </span>
                   <span className="text-xs text-red-600">
-                    -{session.diffStats.deletions}
+                    -{session.diff_stats.deletions}
                   </span>
                 </>
               )}
-              {session.prUrl && (
+              {session.pr_url && (
                 <Badge
                   variant="outline"
                   className="text-xs bg-green-50 text-green-700 border-green-300"

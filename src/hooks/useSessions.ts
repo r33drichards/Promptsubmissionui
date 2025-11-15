@@ -1,7 +1,6 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { useApi } from '../providers/ApiProvider';
 import { Session } from '../types/session';
-import { ListSessionsParams } from '../services/api/types';
 import { queryKeys } from './queryKeys';
 
 /**
@@ -9,18 +8,21 @@ import { queryKeys } from './queryKeys';
  *
  * @example
  * ```tsx
- * const { data: sessions, isLoading, error } = useSessions({ status: 'pending' });
+ * const { data: sessions, isLoading, error } = useSessions();
  * ```
  */
 export function useSessions(
-  params?: ListSessionsParams,
+  _params?: any,
   options?: Omit<UseQueryOptions<Session[]>, 'queryKey' | 'queryFn'>
 ) {
   const api = useApi();
 
   return useQuery({
-    queryKey: queryKeys.sessions.list(params),
-    queryFn: () => api.sessions.list(params),
+    queryKey: queryKeys.sessions.list(),
+    queryFn: async () => {
+      const response = await api.handlersSessionsList();
+      return response.sessions || [];
+    },
     ...options,
   });
 }
@@ -41,7 +43,10 @@ export function useSession(
 
   return useQuery({
     queryKey: queryKeys.sessions.detail(id),
-    queryFn: () => api.sessions.get(id),
+    queryFn: async () => {
+      const response = await api.handlersSessionsRead({ id });
+      return response.session;
+    },
     enabled: !!id, // Only fetch if ID is provided
     ...options,
   });

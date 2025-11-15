@@ -8,40 +8,10 @@ import {
 } from './types';
 
 /**
- * Converts snake_case string to camelCase
- */
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-/**
  * Converts camelCase string to snake_case
  */
 function camelToSnake(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
-
-/**
- * Recursively converts object keys from snake_case to camelCase
- */
-function keysToCamel(obj: any): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(keysToCamel);
-  }
-
-  if (typeof obj === 'object' && obj.constructor === Object) {
-    return Object.keys(obj).reduce((acc, key) => {
-      const camelKey = snakeToCamel(key);
-      acc[camelKey] = keysToCamel(obj[key]);
-      return acc;
-    }, {} as any);
-  }
-
-  return obj;
 }
 
 /**
@@ -163,18 +133,17 @@ export class BackendClientImpl implements BackendClient {
   };
 
   /**
-   * Deserializes a single session, converting snake_case to camelCase and date strings to Date objects
+   * Deserializes a single session, converting date strings to Date objects
    */
   private deserializeSession(session: any): Session {
-    const camelSession = keysToCamel(session);
     return {
-      ...camelSession,
-      createdAt: new Date(camelSession.createdAt),
-      messages: camelSession.messages
-        ? this.deserializeMessages(camelSession.messages)
+      ...session,
+      created_at: new Date(session.created_at),
+      messages: session.messages
+        ? this.deserializeMessages(session.messages)
         : null,
-      children: camelSession.children
-        ? this.deserializeSessions(camelSession.children)
+      children: session.children
+        ? this.deserializeSessions(session.children)
         : undefined,
     };
   }
@@ -187,13 +156,12 @@ export class BackendClientImpl implements BackendClient {
   }
 
   /**
-   * Deserializes a single message, converting snake_case to camelCase and date strings to Date objects
+   * Deserializes a single message, converting date strings to Date objects
    */
   private deserializeMessage(message: any): Message {
-    const camelMessage = keysToCamel(message);
     return {
-      ...camelMessage,
-      createdAt: new Date(camelMessage.createdAt),
+      ...message,
+      created_at: new Date(message.created_at),
     };
   }
 
@@ -208,10 +176,9 @@ export class BackendClientImpl implements BackendClient {
    * Deserializes a single prompt
    */
   private deserializePrompt(prompt: any) {
-    const camelPrompt = keysToCamel(prompt);
     return {
-      ...camelPrompt,
-      createdAt: new Date(camelPrompt.createdAt),
+      ...prompt,
+      created_at: new Date(prompt.created_at),
     };
   }
 
@@ -227,12 +194,9 @@ export class BackendClientImpl implements BackendClient {
    */
   private deserializeBackendMessages(messages: any[]) {
     return messages.map((msg) => {
-      // Convert snake_case to camelCase recursively, preserving the full structure
-      const camelMsg = keysToCamel(msg);
-
       // The API wraps BackendMessage in { id, prompt_id, data: BackendMessage, created_at, updated_at }
       // We need to unwrap the 'data' field to match the BackendMessage type
-      return camelMsg.data || camelMsg;
+      return msg.data || msg;
     });
   }
 }

@@ -21,7 +21,7 @@ export function convertConversationToThreadMessages(
         id: item.data.id,
         role: 'user',
         content: [{ type: 'text', text: item.data.content ?? '' }],
-        createdAt: new Date(item.data.createdAt),
+        createdAt: new Date(item.data.created_at),
         status: { type: 'complete', reason: 'stop' },
         metadata: {
           submittedFeedback: undefined,

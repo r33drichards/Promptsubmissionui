@@ -147,65 +147,71 @@ export function SessionDetail({ session }: SessionDetailProps) {
               </p>
             )}
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Github className="w-4 h-4 flex-shrink-0" />
-                <a
-                  href={`https://github.com/${session.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-600 hover:underline truncate"
-                >
-                  {session.repo}
-                </a>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                <div className="flex items-center gap-1 min-w-0 flex-shrink">
-                  <GitBranch className="w-4 h-4 flex-shrink-0" />
+              {session.repo && (
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  <Github className="w-4 h-4 flex-shrink-0" />
                   <a
-                    href={`https://github.com/${session.repo}/tree/${session.branch}`}
+                    href={`https://github.com/${session.repo}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
-                    title={session.branch}
+                    className="hover:text-blue-600 hover:underline truncate"
                   >
-                    {truncateBranchName(session.branch)}
+                    {session.repo}
                   </a>
                 </div>
-                <GitMerge className="w-3 h-3 flex-shrink-0" />
-                <div className="flex items-center gap-1 min-w-0 flex-shrink">
-                  <GitBranch className="w-4 h-4 flex-shrink-0" />
-                  <a
-                    href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-600 hover:underline"
-                    title={session.targetBranch}
-                  >
-                    {truncateBranchName(session.targetBranch)}
-                  </a>
+              )}
+              {session.branch && session.target_branch && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0 flex-shrink">
+                    <GitBranch className="w-4 h-4 flex-shrink-0" />
+                    <a
+                      href={`https://github.com/${session.repo}/tree/${session.branch}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 hover:underline"
+                      title={session.branch}
+                    >
+                      {truncateBranchName(session.branch)}
+                    </a>
+                  </div>
+                  <GitMerge className="w-3 h-3 flex-shrink-0" />
+                  <div className="flex items-center gap-1 min-w-0 flex-shrink">
+                    <GitBranch className="w-4 h-4 flex-shrink-0" />
+                    <a
+                      href={`https://github.com/${session.repo}/tree/${session.target_branch}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 hover:underline"
+                      title={session.target_branch}
+                    >
+                      {truncateBranchName(session.target_branch)}
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                window.open(
-                  `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
-                  '_blank'
-                )
-              }
-            >
-              <GitPullRequest className="w-4 h-4 mr-2" />
-              View Diff on Github
-            </Button>
+            {session.repo && session.branch && session.target_branch && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `https://github.com/${session.repo}/compare/${session.target_branch}...${session.branch}`,
+                    '_blank'
+                  )
+                }
+              >
+                <GitPullRequest className="w-4 h-4 mr-2" />
+                View Diff on Github
+              </Button>
+            )}
             <Badge
               variant="outline"
-              className={getStatusBadgeClasses(session.uiStatus)}
+              className={getStatusBadgeClasses(session.ui_status)}
             >
-              {session.uiStatus}
+              {session.ui_status}
             </Badge>
           </div>
         </div>
@@ -224,16 +230,16 @@ export function SessionDetail({ session }: SessionDetailProps) {
           />
         </AssistantRuntimeProvider>
 
-        {session.inboxStatus === 'completed' && session.diffStats && (
+        {session.inbox_status === 'completed' && session.diff_stats && (
           <div className="p-4 border-t">
             <div className="bg-white border rounded-lg p-4 space-y-3">
               <h3 className="text-sm font-medium">Changes</h3>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-green-600">
-                  +{session.diffStats.additions} additions
+                  +{session.diff_stats.additions} additions
                 </span>
                 <span className="text-sm text-red-600">
-                  -{session.diffStats.deletions} deletions
+                  -{session.diff_stats.deletions} deletions
                 </span>
               </div>
             </div>

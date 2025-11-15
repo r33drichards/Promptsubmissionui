@@ -5,9 +5,13 @@
  * @returns Truncated branch name with ellipsis if needed
  */
 export function truncateBranchName(
-  branchName: string,
+  branchName: string | null | undefined,
   maxLength: number = 45
 ): string {
+  if (!branchName) {
+    return '';
+  }
+
   if (branchName.length <= maxLength) {
     return branchName;
   }

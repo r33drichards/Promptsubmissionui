@@ -1,40 +1,33 @@
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { BackendClient } from '../services/api/types';
-import { BackendClientImpl } from '../services/api/backendClient';
-import { PromptBackendClient } from '../services/api/promptBackendClient';
-import { MockHttpClient } from '../services/http/mockClient';
+import {
+  DefaultApi,
+  Configuration,
+} from '@wholelottahoopla/prompt-backend-client';
 
 /**
  * Context for the Backend API client.
- * This allows components to access the backend client throughout the app.
+ * This allows components to access the SDK API client throughout the app.
  */
-const ApiContext = createContext<BackendClient | null>(null);
+const ApiContext = createContext<DefaultApi | null>(null);
 
 interface ApiProviderProps {
   children: ReactNode;
-  client?: BackendClient;
-  useMock?: boolean;
+  client?: DefaultApi;
   backendUrl?: string;
 }
 
 /**
- * Provider component that makes the backend client available to all child components.
+ * Provider component that makes the SDK API client available to all child components.
  *
  * @example
  * ```tsx
- * // Use with real backend client
+ * // Use with default backend URL
  * <ApiProvider>
  *   <App />
  * </ApiProvider>
  *
- * // Use with mock client for testing
- * <ApiProvider useMock={true}>
- *   <App />
- * </ApiProvider>
- *
- * // Or inject a custom client with custom URL
- * const backendClient = new PromptBackendClient('http://localhost:8000');
- * <ApiProvider client={backendClient}>
+ * // Or inject a custom URL
+ * <ApiProvider backendUrl="http://localhost:8000">
  *   <App />
  * </ApiProvider>
  * ```
@@ -42,25 +35,28 @@ interface ApiProviderProps {
 export const ApiProvider: React.FC<ApiProviderProps> = ({
   children,
   client,
-  useMock = false,
   backendUrl,
 }) => {
-  // Create backend client once - Service Worker handles token injection
-  const backendClient = useMemo(() => {
+  // Create SDK client once - Service Worker handles token injection
+  const api = useMemo(() => {
     if (client) return client;
-    if (useMock) return new BackendClientImpl(new MockHttpClient());
 
-    // No token getter needed - Service Worker injects tokens automatically
-    return new PromptBackendClient(backendUrl);
-  }, [client, useMock, backendUrl]);
+    const config = new Configuration({
+      basePath:
+        backendUrl ||
+        import.meta.env.VITE_BACKEND_URL ||
+        'https://prompt-backend-production.up.railway.app',
+      credentials: 'include', // Required for Service Worker to inject Bearer tokens
+    });
 
-  return (
-    <ApiContext.Provider value={backendClient}>{children}</ApiContext.Provider>
-  );
+    return new DefaultApi(config);
+  }, [client, backendUrl]);
+
+  return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
 };
 
 /**
- * Hook to access the backend client from any component.
+ * Hook to access the SDK API client from any component.
  * Must be used within an ApiProvider.
  *
  * @throws {Error} If used outside of an ApiProvider
@@ -71,15 +67,15 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
  *   const api = useApi();
  *
  *   const loadSessions = async () => {
- *     const sessions = await api.sessions.list();
- *     console.log(sessions);
+ *     const response = await api.handlersSessionsList();
+ *     console.log(response.sessions);
  *   };
  *
  *   return <button onClick={loadSessions}>Load Sessions</button>;
  * }
  * ```
  */
-export const useApi = (): BackendClient => {
+export const useApi = (): DefaultApi => {
   const context = useContext(ApiContext);
 
   if (!context) {
