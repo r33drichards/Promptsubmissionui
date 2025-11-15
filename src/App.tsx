@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
-import { OidcSecure, useOidc } from '@axa-fr/react-oidc';
+import { OidcSecure } from '@axa-fr/react-oidc';
+import { useAuth } from './hooks/useAuth';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
@@ -51,7 +52,7 @@ const filterMap: Record<FilterType, UiStatus[]> = {
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { logout, isAuthenticated } = useOidc();
+  const { logout, isAuthenticated } = useAuth();
   const [filter, setFilter] = useState<FilterType>(() => {
     const saved = window.localStorage.getItem('sessionFilter');
     return (saved as FilterType) || 'needs-review';
@@ -487,12 +488,19 @@ function AppLayout() {
 }
 
 export default function App() {
-  return (
-    <OidcSecure>
-      <Routes>
-        <Route path="/" element={<AppLayout />} />
-        <Route path="/session/:id" element={<AppLayout />} />
-      </Routes>
-    </OidcSecure>
+  const isAuthDisabled = import.meta.env.VITE_DISABLE_AUTH === 'true';
+
+  const routes = (
+    <Routes>
+      <Route path="/" element={<AppLayout />} />
+      <Route path="/session/:id" element={<AppLayout />} />
+    </Routes>
   );
+
+  // In dev mode with auth disabled, skip OidcSecure wrapper
+  if (isAuthDisabled) {
+    return routes;
+  }
+
+  return <OidcSecure>{routes}</OidcSecure>;
 }
