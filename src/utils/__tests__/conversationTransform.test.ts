@@ -108,6 +108,7 @@ describe('convertConversationToMessages', () => {
       toolName: 'bash',
       toolCallId: 'tool-1',
       args: { command: 'ls -la' },
+      result: undefined,
     });
   });
 
@@ -150,6 +151,74 @@ describe('convertConversationToMessages', () => {
       toolCallId: 'tool-1',
       result: 'file1.txt\nfile2.txt',
     });
+  });
+
+  it('should merge tool_result with tool_use', () => {
+    const prompt: Prompt = {
+      id: 'prompt-3',
+      sessionId: 'session-1',
+      content: 'Run a bash command',
+      createdAt: new Date('2025-01-01'),
+      status: 'completed',
+    };
+
+    const toolUseMessage: BackendMessage = {
+      type: 'assistant',
+      uuid: 'msg-3a',
+      message: {
+        id: 'msg-3a',
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-1',
+            name: 'bash',
+            input: { command: 'ls -la' },
+          },
+        ],
+      },
+      session_id: 'session-1',
+    };
+
+    const toolResultMessage: BackendMessage = {
+      type: 'user',
+      uuid: 'msg-3b',
+      message: {
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: 'tool-1',
+            content: 'file1.txt\nfile2.txt',
+          },
+        ],
+      },
+      session_id: 'session-1',
+    };
+
+    const conversation: ConversationItem[] = [
+      {
+        type: 'prompt',
+        data: prompt,
+        messages: [toolUseMessage, toolResultMessage],
+      },
+    ];
+
+    const result = convertConversationToMessages(conversation);
+
+    // Should have prompt + tool use message only (tool result is merged)
+    expect(result).toHaveLength(2);
+    
+    // Tool call should include the result
+    expect(result[1].content[0]).toEqual({
+      type: 'tool-call',
+      toolName: 'bash',
+      toolCallId: 'tool-1',
+      args: { command: 'ls -la' },
+      result: 'file1.txt\nfile2.txt',
+    });
+
+    // Tool result message should be filtered out (empty content)
+    expect(result[1].content).toHaveLength(1);
   });
 
   it('should preserve token usage in metadata', () => {
