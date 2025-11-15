@@ -90,7 +90,7 @@ export function SessionListItem({
 
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* Show lattice animation for in-progress sessions */}
-              {session.inboxStatus === 'in-progress' && (
+              {session.uiStatus === 'InProgress' && (
                 <LatticeLoadingAnimation className="mr-1" />
               )}
               {session.diffStats && (
