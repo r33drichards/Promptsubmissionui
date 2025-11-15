@@ -1,4 +1,3 @@
-// @ts-nocheck - Type errors suppressed for formatting task
 import { Session } from '../types/session';
 import { Badge } from './ui/badge';
 import {

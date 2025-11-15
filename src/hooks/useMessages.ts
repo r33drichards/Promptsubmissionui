@@ -1,4 +1,3 @@
-// @ts-nocheck - Type errors suppressed for formatting task
 import {
   useQuery,
   useQueries,
