@@ -1,7 +1,6 @@
 import {
   DefaultApi,
   Configuration,
-  SessionStatus as SDKSessionStatus,
   UiStatus,
   CreateSessionWithPromptInput as _CreateSessionWithPromptInput,
   CreateSessionWithPromptOutput as _CreateSessionWithPromptOutput,
@@ -9,7 +8,6 @@ import {
 import {
   Session,
   Message,
-  SessionStatus as _SessionStatus,
   BackendMessage,
   Prompt,
 } from '../../types/session';
@@ -135,8 +133,6 @@ export class PromptBackendClient implements BackendClient {
 
         // Only include fields that are explicitly provided in the update data
         if (data.title !== undefined) updateInput.title = data.title;
-        if (data.sessionStatus !== undefined)
-          updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
         if (data.uiStatus !== undefined)
           updateInput.uiStatus = data.uiStatus as UiStatus;
         if (data.repo !== undefined) updateInput.repo = data.repo;
@@ -165,7 +161,6 @@ export class PromptBackendClient implements BackendClient {
     archive: withErrorHandler(async (id: string): Promise<Session> => {
       console.log('[PromptBackendClient] Archiving session:', id);
       const result = await this.sessions.update(id, {
-        sessionStatus: 'Archived',
         uiStatus: 'Archived',
       });
       console.log('[PromptBackendClient] Archive successful:', result);
@@ -173,7 +168,7 @@ export class PromptBackendClient implements BackendClient {
     }, 'Archiving session'),
 
     unarchive: withErrorHandler(async (id: string): Promise<Session> => {
-      return this.sessions.update(id, { sessionStatus: 'Active' });
+      return this.sessions.update(id, { uiStatus: 'Pending' });
     }, 'Unarchiving session'),
   };
 
@@ -234,25 +229,6 @@ export class PromptBackendClient implements BackendClient {
   };
 
   /**
-   * Maps SessionStatus to our local InboxStatus format
-   * Note: The new API uses SessionStatus instead of InboxStatus
-   */
-  private sessionStatusToInboxStatus(
-    sessionStatus: string
-  ): 'pending' | 'in-progress' | 'completed' | 'failed' {
-    const statusMap: Record<
-      string,
-      'pending' | 'in-progress' | 'completed' | 'failed'
-    > = {
-      Active: 'in-progress',
-      Archived: 'completed',
-      Completed: 'completed',
-      // Add other mappings as needed based on SessionStatus enum
-    };
-    return statusMap[sessionStatus] || 'pending';
-  }
-
-  /**
    * Deserializes a single session from the backend format
    */
   private deserializeSession(session: any): Session {
@@ -272,12 +248,6 @@ export class PromptBackendClient implements BackendClient {
       sbxConfig.target_branch ||
       'main';
 
-    // Map sessionStatus to inboxStatus for backwards compatibility
-    // Handle both camelCase and snake_case from API
-    const inboxStatus = this.sessionStatusToInboxStatus(
-      session.sessionStatus || session.session_status || 'Active'
-    );
-
     // Extract uiStatus from API (handle both camelCase and snake_case)
     const uiStatus = (session.uiStatus ||
       session.ui_status ||
@@ -292,10 +262,7 @@ export class PromptBackendClient implements BackendClient {
       branch,
       targetBranch,
       messages: null, // Messages are now separate entities in the new API
-      inboxStatus,
       uiStatus,
-      sessionStatus:
-        session.sessionStatus || session.session_status || 'Active',
       parentId: session.parent || null,
       createdAt:
         session.createdAt || session.created_at || new Date().toISOString(),
@@ -378,13 +345,13 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single prompt
    */
   private deserializePrompt(prompt: any): Prompt {
-    // The actual API response has content in data[0].content and status in inbox_status
+    // The actual API response has content in data[0].content
     const content =
       prompt.data && Array.isArray(prompt.data) && prompt.data[0]?.content
         ? prompt.data[0].content
         : prompt.content || '';
 
-    const status = prompt.inbox_status || prompt.status || 'pending';
+    const status = prompt.status || 'pending';
 
     return {
       id: prompt.id || '',

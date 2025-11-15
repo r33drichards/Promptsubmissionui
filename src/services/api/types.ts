@@ -1,8 +1,6 @@
 import {
   Session,
   Message,
-  InboxStatus,
-  SessionStatus,
   BackendMessage,
   Prompt,
 } from '../../types/session';
@@ -40,7 +38,6 @@ export interface BackendClient {
 // Request/Response types
 
 export interface ListSessionsParams {
-  status?: InboxStatus;
   archived?: boolean;
   parentId?: string | null;
   limit?: number;
@@ -56,14 +53,12 @@ export interface CreateSessionData {
 
 export interface UpdateSessionData {
   title?: string;
-  inboxStatus?: InboxStatus;
   uiStatus?: UiStatus;
   prUrl?: string;
   diffStats?: {
     additions: number;
     deletions: number;
   };
-  sessionStatus?: SessionStatus;
   repo?: string;
   branch?: string;
   targetBranch?: string;

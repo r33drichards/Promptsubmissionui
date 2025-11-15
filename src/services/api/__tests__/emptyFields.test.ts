@@ -54,11 +54,9 @@ describe('PromptBackendClient - Empty Fields Handling', () => {
           branch: '',
           targetBranch: '',
           messages: null,
-          inboxStatus: 'Pending',
           sbxConfig: null,
           parent: null,
           createdAt: new Date().toISOString(),
-          sessionStatus: 'Active',
         },
       }),
     };

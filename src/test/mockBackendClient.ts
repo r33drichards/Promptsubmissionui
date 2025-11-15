@@ -17,12 +17,10 @@ export function createMockBackendClient(
       branch: 'feature/test',
       targetBranch: 'main',
       messages: null,
-      inboxStatus: 'in-progress',
       uiStatus: 'NeedsReview',
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-01T10:00:00Z'),
-      sessionStatus: 'Active',
     },
     {
       id: 'test-session-2',
@@ -31,12 +29,10 @@ export function createMockBackendClient(
       branch: 'feature/test-2',
       targetBranch: 'main',
       messages: null,
-      inboxStatus: 'in-progress',
       uiStatus: 'NeedsReview',
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-02T10:00:00Z'),
-      sessionStatus: 'Active',
       diffStats: { additions: 10, deletions: 5 },
     },
     {
@@ -46,12 +42,10 @@ export function createMockBackendClient(
       branch: 'feature/completed',
       targetBranch: 'main',
       messages: null,
-      inboxStatus: 'completed',
       uiStatus: 'NeedsReview',
       sbxConfig: null,
       parentId: null,
       createdAt: new Date('2025-01-03T10:00:00Z'),
-      sessionStatus: 'Active',
       diffStats: { additions: 25, deletions: 8 },
       prUrl: 'https://github.com/test/repo/pull/123',
     },
@@ -90,12 +84,10 @@ export function createMockBackendClient(
           branch: data.branch,
           targetBranch: data.targetBranch,
           messages: [],
-          inboxStatus: 'pending',
           uiStatus: 'Pending',
           sbxConfig: data.sbxConfig || null,
           parentId: data.parentId || null,
           createdAt: new Date(),
-          sessionStatus: 'Active',
         };
         return Promise.resolve(newSession);
       }),
@@ -115,7 +107,6 @@ export function createMockBackendClient(
         }
         return Promise.resolve({
           ...session,
-          sessionStatus: 'Archived' as const,
         });
       }),
       unarchive: vi.fn().mockImplementation((id: string) => {
@@ -125,7 +116,6 @@ export function createMockBackendClient(
         }
         return Promise.resolve({
           ...session,
-          sessionStatus: 'Active' as const,
         });
       }),
     },

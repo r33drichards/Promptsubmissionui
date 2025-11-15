@@ -50,12 +50,10 @@ describe('SessionDetail', () => {
     branch: 'feature/test',
     targetBranch: 'main',
     messages: null,
-    inboxStatus: 'in-progress',
     uiStatus: 'in-progress',
     sbxConfig: null,
     parentId: null,
     createdAt: new Date('2025-01-01T09:00:00Z'),
-    sessionStatus: 'Active',
   };
 
   // Mock prompt for the session
@@ -181,7 +179,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const pendingSession: Session = {
         ...baseSession,
-        inboxStatus: 'pending',
         uiStatus: 'pending',
       };
       render(<SessionDetail session={pendingSession} />, {
@@ -197,7 +194,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const inProgressSession: Session = {
         ...baseSession,
-        inboxStatus: 'in-progress',
         uiStatus: 'in-progress',
       };
       render(<SessionDetail session={inProgressSession} />, {
@@ -213,7 +209,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const completedSession: Session = {
         ...baseSession,
-        inboxStatus: 'completed',
         uiStatus: 'completed',
       };
       render(<SessionDetail session={completedSession} />, {
@@ -229,7 +224,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const failedSession: Session = {
         ...baseSession,
-        inboxStatus: 'failed',
         uiStatus: 'failed',
       };
       render(<SessionDetail session={failedSession} />, { client: mockClient });
@@ -245,7 +239,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const completedSession: Session = {
         ...baseSession,
-        inboxStatus: 'completed',
         uiStatus: 'completed',
         diffStats: { additions: 50, deletions: 20 },
       };
@@ -265,7 +258,6 @@ describe('SessionDetail', () => {
       const mockClient = createMockClient();
       const inProgressSession: Session = {
         ...baseSession,
-        inboxStatus: 'in-progress',
         uiStatus: 'in-progress',
         diffStats: { additions: 50, deletions: 20 },
       };
@@ -303,7 +295,7 @@ describe('SessionDetail', () => {
           ? p.data[0]?.content || ''
           : p.data?.content || '',
         createdAt: new Date(p.created_at),
-        status: p.inbox_status?.toLowerCase() || 'completed',
+        status: 'completed',
       }));
 
       // read messages from testdata/message-1.json
