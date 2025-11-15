@@ -1,9 +1,4 @@
-import {
-  Session,
-  Message,
-  BackendMessage,
-  Prompt,
-} from '../../types/session';
+import { Session, Message, BackendMessage, Prompt } from '../../types/session';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 
 /**
