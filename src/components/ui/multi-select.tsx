@@ -38,6 +38,7 @@ export function MultiSelect({
   emptyMessage = 'No items found.',
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   const handleSelect = (value: string) => {
     const newSelected = selected.includes(value)
@@ -64,6 +65,7 @@ export function MultiSelect({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -72,14 +74,14 @@ export function MultiSelect({
             className
           )}
         >
-          <div className="flex flex-wrap gap-1 flex-1">
+          <div className="flex flex-wrap gap-1 flex-1 overflow-hidden">
             {selected.length === 0 ? (
               <span className="text-muted-foreground">{placeholder}</span>
             ) : (
               selectedLabels.map((label) => {
                 const value = options.find((opt) => opt.label === label)?.value;
                 return (
-                  <Badge key={value} variant="secondary" className="mr-1 mb-1">
+                  <Badge key={value} variant="secondary" className="mr-1 mb-1 shrink-0">
                     {label}
                     <button
                       className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -101,7 +103,7 @@ export function MultiSelect({
               })
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {selected.length > 0 && (
               <button
                 onClick={handleClear}
@@ -114,7 +116,12 @@ export function MultiSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent 
+        className="p-0" 
+        align="start"
+        style={{ width: triggerRef.current?.offsetWidth }}
+        collisionPadding={8}
+      >
         <Command>
           <CommandInput placeholder="Search..." />
           <CommandList>
