@@ -332,7 +332,7 @@ function AppLayout() {
         {!sidebarCollapsed ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b">
+            <div className="p-4 border-b space-y-2">
               <div className="flex gap-2">
                 {isAuthenticated && (
                   <DropdownMenu>
@@ -362,15 +362,7 @@ function AppLayout() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                <div className="relative flex-1">
-                  <MultiSelect
-                    options={filterOptions}
-                    selected={filters}
-                    onChange={(newFilters) => setFilters(newFilters as FilterType[])}
-                    placeholder="Filter sessions..."
-                    className="h-6 text-xs"
-                  />
-                </div>
+                <div className="flex-1" />
                 <Button
                   size="sm"
                   variant="ghost"
@@ -398,6 +390,15 @@ function AppLayout() {
                     <Plus className="w-4 h-4 " />
                   )}
                 </Button>
+              </div>
+              <div className="w-full">
+                <MultiSelect
+                  options={filterOptions}
+                  selected={filters}
+                  onChange={(newFilters) => setFilters(newFilters as FilterType[])}
+                  placeholder="Filter sessions..."
+                  className="h-6 text-xs w-full"
+                />
               </div>
             </div>
 
