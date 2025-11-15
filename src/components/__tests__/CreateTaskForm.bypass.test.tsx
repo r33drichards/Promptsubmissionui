@@ -61,11 +61,9 @@ describe('CreateTaskForm - Bypass Attempts', () => {
       branch: 'feature/parent',
       targetBranch: '', // Empty target branch
       messages: null,
-      inboxStatus: 'pending' as const,
       sbxConfig: null,
       parentId: null,
       createdAt: new Date(),
-      sessionStatus: 'Active' as const,
     };
 
     render(

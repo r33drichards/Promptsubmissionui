@@ -101,7 +101,6 @@ export class MockHttpClient implements HttpClient {
         id: crypto.randomUUID(),
         ...data,
         createdAt: new Date().toISOString(),
-        inboxStatus: 'pending',
       } as T;
     }
 
@@ -112,7 +111,6 @@ export class MockHttpClient implements HttpClient {
         repo: 'mock/repo',
         branch: 'main',
         targetBranch: 'main',
-        inboxStatus: 'pending',
         createdAt: new Date().toISOString(),
       } as T;
     }

@@ -1,14 +1,5 @@
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 
-export type InboxStatus =
-  | 'pending'
-  | 'in-progress'
-  | 'completed'
-  | 'failed'
-  | 'needs-review'
-  | 'needs-review-ip-returned';
-export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
-
 export interface Session {
   id: string;
   title: string;
@@ -16,7 +7,6 @@ export interface Session {
   branch: string;
   targetBranch: string;
   messages: Message[] | null;
-  inboxStatus: InboxStatus;
   uiStatus: UiStatus;
   statusMessage?: string;
   sbxConfig: Record<string, any> | null;
@@ -28,7 +18,6 @@ export interface Session {
   prUrl?: string;
   createdAt: Date;
   children?: Session[];
-  sessionStatus: SessionStatus;
 }
 
 export interface Message {

@@ -116,7 +116,6 @@ describe('Data Wrapper Bug', () => {
                 content: 'create a in memory heap store for this',
               },
             ],
-            inbox_status: 'Active',
             created_at: '2025-11-06 22:41:20.037132 +00:00',
             updated_at: '2025-11-06 22:41:20.037132 +00:00',
           },
@@ -136,7 +135,7 @@ describe('Data Wrapper Bug', () => {
 
       // Expected behavior (after fix):
       expect(result[0].content).toBe('create a in memory heap store for this');
-      expect(result[0].status).toBe('Active');
+      expect(result[0].status).toBe('pending');
     });
   });
 });

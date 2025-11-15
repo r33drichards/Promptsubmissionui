@@ -30,7 +30,6 @@ export function SessionListItem({
   const hasChildren = session.children && session.children.length > 0;
 
   // Disabled for now - status colors not currently displayed
-  // const getStatusColor = (status: Session['inboxStatus']) => {
   //   switch (status) {
   //     case 'completed':
   //       return 'bg-green-500/10 text-green-600 border-green-500/20';

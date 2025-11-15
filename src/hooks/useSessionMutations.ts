@@ -96,7 +96,7 @@ export function useCreateSession(
  * const handleUpdate = () => {
  *   updateSession.mutate({
  *     id: 'session-123',
- *     data: { inboxStatus: 'completed' },
+ *     data: { uiStatus: 'InProgress' },
  *   });
  * };
  * ```
@@ -208,7 +208,6 @@ export function useArchiveSession(
       if (previousSession) {
         queryClient.setQueryData<Session>(queryKeys.sessions.detail(id), {
           ...previousSession,
-          sessionStatus: 'Archived',
           uiStatus: 'Archived',
         });
       }

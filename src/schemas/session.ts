@@ -1,19 +1,6 @@
 import { z } from 'zod';
 
 // Enums - matching existing types
-export const InboxStatusSchema = z.enum([
-  'pending',
-  'in-progress',
-  'completed',
-  'failed',
-  'needs-review',
-  'needs-review-ip-returned',
-]);
-export const SessionStatusSchema = z.enum([
-  'Active',
-  'Archived',
-  'ReturningIp',
-]);
 export const UiStatusSchema = z.enum([
   'Pending',
   'InProgress',
@@ -37,9 +24,7 @@ export const SessionSchema = z.object({
   repo: z.string().min(1, 'Repository is required'),
   branch: z.string().min(1, 'Branch is required'),
   targetBranch: z.string().min(1, 'Target branch is required'),
-  inboxStatus: InboxStatusSchema,
   uiStatus: UiStatusSchema,
-  sessionStatus: SessionStatusSchema,
   createdAt: z.coerce.date(), // Coerce strings to Date objects
   prUrl: z.string().optional(),
   diffStats: z
@@ -72,7 +57,6 @@ export const CreateSessionDataSchema = z.object({
 // Update Session Data schema (for API requests)
 export const UpdateSessionDataSchema = z.object({
   title: z.string().optional(),
-  inboxStatus: InboxStatusSchema.optional(),
   uiStatus: UiStatusSchema.optional(),
   prUrl: z.string().optional(),
   diffStats: z
@@ -81,15 +65,12 @@ export const UpdateSessionDataSchema = z.object({
       deletions: z.number(),
     })
     .optional(),
-  sessionStatus: SessionStatusSchema.optional(),
   repo: z.string().optional(),
   branch: z.string().optional(),
   targetBranch: z.string().optional(),
 });
 
 // Infer TypeScript types from schemas
-export type InboxStatus = z.infer<typeof InboxStatusSchema>;
-export type SessionStatus = z.infer<typeof SessionStatusSchema>;
 export type Message = z.infer<typeof MessageSchema>;
 export type Session = z.infer<typeof SessionSchema>;
 export type CreateSessionData = z.infer<typeof CreateSessionDataSchema>;

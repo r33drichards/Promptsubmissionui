@@ -13,7 +13,6 @@ export const mockSession: Session = {
   branch: 'claude/auth-feature',
   targetBranch: 'main',
   messages: null,
-  inboxStatus: 'in-progress',
   uiStatus: 'InProgress',
   sbxConfig: {
     env: 'production',
@@ -21,14 +20,12 @@ export const mockSession: Session = {
   },
   parentId: null,
   createdAt: new Date('2025-01-01T09:00:00Z'),
-  sessionStatus: 'Active',
 };
 
 export const mockCompletedSession: Session = {
   ...mockSession,
   id: 'session-456',
   title: 'Fix login bug',
-  inboxStatus: 'completed',
   uiStatus: 'InProgress',
   diffStats: {
     additions: 150,
