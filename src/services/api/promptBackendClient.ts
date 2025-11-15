@@ -19,13 +19,6 @@ import {
   UpdateSessionData,
   ListSessionsParams,
 } from './types';
-import {
-  SessionSchema,
-  SessionsArraySchema as _SessionsArraySchema,
-  MessageSchema,
-  MessagesArraySchema,
-  CreateSessionDataSchema,
-} from '../../schemas/session';
 import { withErrorHandler } from '../../utils/apiErrorHandler';
 
 /**
@@ -66,20 +59,16 @@ export class PromptBackendClient implements BackendClient {
       async (data: CreateSessionData): Promise<Session> => {
         console.log('[PromptBackendClient] Creating session with data:', data);
 
-        // Parse input data using Zod
-        const validatedData = CreateSessionDataSchema.parse(data);
         console.log(
           '[PromptBackendClient] Creating session with prompt using new endpoint'
         );
         // Use Raw API to access response before SDK transformation
-        // The SDK incorrectly transforms snake_case to camelCase, but the backend
-        // actually returns camelCase already
         const rawResponse = await this.api.handlersSessionsCreateWithPromptRaw({
           createSessionWithPromptInput: {
-            repo: validatedData.repo,
-            target_branch: validatedData.target_branch,
-            messages: validatedData.messages,
-            parent: validatedData.parent || null,
+            repo: data.repo,
+            target_branch: data.target_branch,
+            messages: data.messages,
+            parent: data.parent || null,
           },
         });
 
@@ -277,8 +266,8 @@ export class PromptBackendClient implements BackendClient {
     // Extract ui_status from API
     const ui_status = (session.ui_status || 'Pending') as UiStatus;
 
-    // Prepare session data for validation
-    const sessionData = {
+    // Return session data
+    return {
       id: session.id || '',
       title: session.title || '',
       repo,
@@ -289,7 +278,7 @@ export class PromptBackendClient implements BackendClient {
       ui_status,
       session_status: session.session_status || 'Active',
       parent: session.parent || null,
-      created_at: session.created_at || new Date().toISOString(),
+      created_at: new Date(session.created_at || new Date().toISOString()),
       diff_stats: session.diff_stats,
       pr_url: session.pr_url,
       children: session.children
@@ -297,9 +286,6 @@ export class PromptBackendClient implements BackendClient {
         : undefined,
       sbx_config: session.sbx_config || null,
     };
-
-    // Parse and validate the session data (parse don't validate)
-    return SessionSchema.parse(sessionData);
   }
 
   /**
@@ -313,15 +299,12 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single message
    */
   private deserializeMessage(message: any): Message {
-    const messageData = {
+    return {
       id: message.id || '',
       role: message.role || 'user',
       content: message.content || '',
-      created_at: message.created_at || new Date().toISOString(),
+      created_at: new Date(message.created_at || new Date().toISOString()),
     };
-
-    // Parse and validate the message data (parse don't validate)
-    return MessageSchema.parse(messageData);
   }
 
   /**
@@ -332,15 +315,12 @@ export class PromptBackendClient implements BackendClient {
       return [];
     }
 
-    // Parse and validate the entire array (parse don't validate)
-    return MessagesArraySchema.parse(
-      messages.map((message) => ({
-        id: message.id || '',
-        role: message.role || 'user',
-        content: message.content || '',
-        created_at: message.created_at || new Date().toISOString(),
-      }))
-    );
+    return messages.map((message) => ({
+      id: message.id || '',
+      role: message.role || 'user',
+      content: message.content || '',
+      created_at: new Date(message.created_at || new Date().toISOString()),
+    }));
   }
 
   /**

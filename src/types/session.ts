@@ -7,6 +7,7 @@ export type InboxStatus =
   | 'failed'
   | 'needs-review'
   | 'needs-review-ip-returned';
+
 export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
 
 export interface Session {
@@ -38,7 +39,15 @@ export interface Message {
   created_at: Date;
 }
 
-// New backend message structure (from Claude Code output)
+export interface Prompt {
+  id: string;
+  session_id: string;
+  content: string;
+  created_at: Date;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+}
+
+// BackendMessage is a unique structure for Claude Code output format
 export interface BackendMessage {
   type: 'assistant' | 'user' | 'system' | 'result';
   uuid: string;
@@ -68,12 +77,4 @@ export interface BackendMessage {
   };
   session_id: string;
   parent_tool_use_id?: string | null;
-}
-
-export interface Prompt {
-  id: string;
-  session_id: string;
-  content: string;
-  created_at: Date;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
 }

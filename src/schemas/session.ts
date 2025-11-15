@@ -87,6 +87,15 @@ export const UpdateSessionDataSchema = z.object({
   target_branch: z.string().optional(),
 });
 
+// Prompt schema - using snake_case to match backend API
+export const PromptSchema = z.object({
+  id: z.string(),
+  session_id: z.string(),
+  content: z.string(),
+  created_at: z.coerce.date(),
+  status: z.enum(['pending', 'processing', 'completed', 'failed']),
+});
+
 // Infer TypeScript types from schemas
 export type InboxStatus = z.infer<typeof InboxStatusSchema>;
 export type SessionStatus = z.infer<typeof SessionStatusSchema>;
@@ -94,3 +103,4 @@ export type Message = z.infer<typeof MessageSchema>;
 export type Session = z.infer<typeof SessionSchema>;
 export type CreateSessionData = z.infer<typeof CreateSessionDataSchema>;
 export type UpdateSessionData = z.infer<typeof UpdateSessionDataSchema>;
+export type Prompt = z.infer<typeof PromptSchema>;
