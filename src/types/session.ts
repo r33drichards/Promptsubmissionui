@@ -13,9 +13,9 @@ export type SessionStatus = 'Active' | 'Archived' | 'ReturningIp';
 export interface Session {
   id: string;
   title: string;
-  repo: string;
-  branch: string;
-  target_branch: string;
+  repo?: string;
+  branch?: string;
+  target_branch?: string;
   messages: Message[] | null;
   inbox_status: InboxStatus;
   ui_status: UiStatus;

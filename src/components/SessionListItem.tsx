@@ -73,17 +73,19 @@ export function SessionListItem({
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-sm truncate">{session.title}</h3>
-              <p className="text-xs truncate mt-0.5">
-                <a
-                  href={`https://github.com/${session.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-blue-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {session.repo}
-                </a>
-              </p>
+              {session.repo && (
+                <p className="text-xs truncate mt-0.5">
+                  <a
+                    href={`https://github.com/${session.repo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-blue-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {session.repo}
+                  </a>
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">

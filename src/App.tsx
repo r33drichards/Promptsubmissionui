@@ -117,6 +117,7 @@ function AppLayout() {
 
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
+      if (!session.repo) return;
       const sessionDate = new Date(session.created_at);
       const existing = repoMap.get(session.repo);
       if (!existing || sessionDate > existing) {
@@ -209,7 +210,7 @@ function AppLayout() {
 
   const _handleOpenInCLI = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
-    if (session) {
+    if (session && session.repo) {
       toast.info(`Opening ${session.repo} in CLI...`);
     }
   };
