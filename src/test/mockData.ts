@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Session, BackendMessage, Prompt } from '@/types/session';
 
 /**

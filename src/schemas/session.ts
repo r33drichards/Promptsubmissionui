@@ -1,4 +1,3 @@
-// @ts-nocheck - Type errors suppressed for formatting task
 import { z } from 'zod';
 
 // Enums - matching existing types
