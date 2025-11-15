@@ -1427,6 +1427,18 @@
       var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
 
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  
+
+  
+
   .transition-\[color\,box-shadow\] {
     transition-property: color, box-shadow;
     transition-timing-function: var(
@@ -2130,6 +2142,15 @@
       color: var(--accent-foreground);
     }
   }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
 }
 
 :root {
@@ -2446,5 +2467,23 @@ html {
         var(--tw-exit-scale, 1)
       )
       rotate(var(--tw-exit-rotate, 0));
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

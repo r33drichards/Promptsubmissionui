@@ -59,7 +59,7 @@ export function SessionListItem({
       <div
         className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
           isActive ? 'bg-gray-100' : ''
-        } ${isInProgress ? 'bg-blue-50/50 animate-pulse' : ''}`}
+        } ${isInProgress ? 'bg-blue-50/50 animate-shimmer' : ''}`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
         {hasChildren && (
