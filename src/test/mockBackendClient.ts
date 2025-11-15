@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { vi } from 'vitest';
 import { BackendClient } from '@/services/api/types';
 import { Session, Message } from '@/types/session';

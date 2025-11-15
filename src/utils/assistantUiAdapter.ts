@@ -1,4 +1,3 @@
-// @ts-nocheck - Type errors suppressed for formatting task
 import { ConversationItem } from '@/hooks/useMessages';
 import type { ThreadMessageLike } from '@assistant-ui/react';
 

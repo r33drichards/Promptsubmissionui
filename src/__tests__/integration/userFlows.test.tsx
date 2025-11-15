@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -626,17 +625,29 @@ describe('User Flows Integration Tests', () => {
       const filterDropdown = screen.getByRole('combobox');
       await user.click(filterDropdown);
 
-      // Wait for dropdown options to appear and select "Pending"
+      // First, deselect "Needs Review" which is selected by default
+      await waitFor(async () => {
+        const needsReviewOption = screen.getByRole('option', {
+          name: /needs review/i,
+        });
+        expect(needsReviewOption).toBeInTheDocument();
+        await user.click(needsReviewOption);
+      });
+
+      // Then select "Pending"
       await waitFor(async () => {
         const pendingOption = screen.getByRole('option', {
-          name: /^pending$/i,
+          name: /pending/i,
         });
         expect(pendingOption).toBeInTheDocument();
         await user.click(pendingOption);
       });
 
-      // After selecting pending, sessions with pending status should be hidden
-      // since our mock sessions are all in-progress
+      // Close the dropdown by clicking somewhere else
+      await user.click(document.body);
+
+      // After selecting only pending, sessions without pending status should be hidden
+      // since our mock sessions are all in-progress or completed (none are pending)
       await waitFor(() => {
         expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
         expect(screen.queryByText('Test Session 2')).not.toBeInTheDocument();
