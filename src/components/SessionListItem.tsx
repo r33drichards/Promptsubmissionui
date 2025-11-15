@@ -12,6 +12,8 @@ import {
   Plus,
   Archive,
   Loader2,
+  Clock,
+  Eye,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -35,8 +37,10 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  // Check if session is in progress
+  // Check session states
   const isInProgress = session.uiStatus === 'InProgress';
+  const isPending = session.inboxStatus === 'pending';
+  const isNeedsReview = session.inboxStatus === 'needs-review' || session.inboxStatus === 'needs-review-ip-returned';
 
   // Disabled for now - status colors not currently displayed
   // const getStatusColor = (status: Session['inboxStatus']) => {
@@ -59,7 +63,7 @@ export function SessionListItem({
       <div
         className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
           isActive ? 'bg-gray-100' : ''
-        } ${isInProgress ? 'bg-blue-50/50 animate-shimmer' : ''}`}
+        } ${isInProgress ? 'bg-blue-50/50 animate-shimmer' : ''} ${isPending ? 'bg-gray-50/50 animate-pulse-slow' : ''} ${isNeedsReview ? 'bg-yellow-50/50' : ''}`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
         {hasChildren && (
@@ -85,6 +89,12 @@ export function SessionListItem({
               <div className="flex items-center gap-2">
                 {isInProgress && (
                   <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin flex-shrink-0" />
+                )}
+                {isPending && (
+                  <Clock className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                )}
+                {isNeedsReview && (
+                  <Eye className="w-3.5 h-3.5 text-yellow-600 flex-shrink-0" />
                 )}
                 <h3 className="text-sm truncate">{session.title}</h3>
               </div>
