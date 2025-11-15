@@ -28,7 +28,6 @@ import {
 import {
   Plus,
   Loader2,
-  LogOut,
   CircleUser,
   ChevronLeft,
   ChevronRight,
