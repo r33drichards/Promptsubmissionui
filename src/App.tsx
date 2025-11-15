@@ -188,28 +188,8 @@ function AppLayout() {
     const sessionMap = new Map<string, Session>();
     const rootSessions: Session[] = [];
 
-    // If no filters selected, show all sessions
+    // If no filters selected, return empty array (user must select filters)
     if (filters.length === 0) {
-      // First pass: create a map of all sessions
-      sessions.forEach((session) => {
-        sessionMap.set(session.id, { ...session, children: [] });
-      });
-
-      // Second pass: build hierarchy
-      sessions.forEach((session) => {
-        const sessionWithChildren = sessionMap.get(session.id)!;
-        if (session.parentId) {
-          const parent = sessionMap.get(session.parentId);
-          if (parent) {
-            parent.children!.push(sessionWithChildren);
-          } else {
-            rootSessions.push(sessionWithChildren);
-          }
-        } else {
-          rootSessions.push(sessionWithChildren);
-        }
-      });
-
       return rootSessions;
     }
 
@@ -468,7 +448,9 @@ function AppLayout() {
                   ))
                 ) : (
                   <div className="text-center py-8 text-gray-500 text-sm">
-                    No tasks yet
+                    {filters.length === 0
+                      ? 'Please select a filter above to view sessions'
+                      : 'No tasks yet'}
                   </div>
                 )}
               </div>
