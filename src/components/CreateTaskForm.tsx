@@ -130,7 +130,7 @@ export function CreateTaskForm({
   };
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-75 relative">
       {/* Loading Overlay */}
       {isSubmitting && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
