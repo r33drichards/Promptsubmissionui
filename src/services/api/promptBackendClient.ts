@@ -77,9 +77,9 @@ export class PromptBackendClient implements BackendClient {
         const rawResponse = await this.api.handlersSessionsCreateWithPromptRaw({
           createSessionWithPromptInput: {
             repo: validatedData.repo,
-            targetBranch: validatedData.targetBranch,
+            target_branch: validatedData.target_branch,
             messages: validatedData.messages,
-            parentId: validatedData.parentId || null,
+            parent: validatedData.parent || null,
           },
         });
 
@@ -90,9 +90,9 @@ export class PromptBackendClient implements BackendClient {
           rawJson
         );
 
-        // Extract IDs from raw JSON (backend sends camelCase)
-        const sessionId = rawJson.sessionId || rawJson.session_id || null;
-        const _promptId = rawJson.promptId || rawJson.prompt_id || null;
+        // Extract IDs from raw JSON
+        const sessionId = rawJson.session_id || null;
+        const _promptId = rawJson.prompt_id || null;
 
         console.log('[PromptBackendClient] Extracted IDs:', {
           sessionId,
@@ -135,14 +135,14 @@ export class PromptBackendClient implements BackendClient {
 
         // Only include fields that are explicitly provided in the update data
         if (data.title !== undefined) updateInput.title = data.title;
-        if (data.sessionStatus !== undefined)
-          updateInput.sessionStatus = data.sessionStatus as SDKSessionStatus;
-        if (data.uiStatus !== undefined)
-          updateInput.uiStatus = data.uiStatus as UiStatus;
+        if (data.session_status !== undefined)
+          updateInput.session_status = data.session_status as SDKSessionStatus;
+        if (data.ui_status !== undefined)
+          updateInput.ui_status = data.ui_status as UiStatus;
         if (data.repo !== undefined) updateInput.repo = data.repo;
         if (data.branch !== undefined) updateInput.branch = data.branch;
-        if (data.targetBranch !== undefined)
-          updateInput.targetBranch = data.targetBranch;
+        if (data.target_branch !== undefined)
+          updateInput.target_branch = data.target_branch;
 
         console.log('[PromptBackendClient] Update input:', updateInput);
 
@@ -165,22 +165,24 @@ export class PromptBackendClient implements BackendClient {
     archive: withErrorHandler(async (id: string): Promise<Session> => {
       console.log('[PromptBackendClient] Archiving session:', id);
       const result = await this.sessions.update(id, {
-        sessionStatus: 'Archived',
-        uiStatus: 'Archived',
+        session_status: 'Archived',
+        ui_status: 'Archived',
       });
       console.log('[PromptBackendClient] Archive successful:', result);
       return result;
     }, 'Archiving session'),
 
     unarchive: withErrorHandler(async (id: string): Promise<Session> => {
-      return this.sessions.update(id, { sessionStatus: 'Active' });
+      return this.sessions.update(id, { session_status: 'Active' });
     }, 'Unarchiving session'),
   };
 
   prompts = {
-    list: async (sessionId: string): Promise<Prompt[]> => {
+    list: async (session_id: string): Promise<Prompt[]> => {
       try {
-        const response = await this.api.handlersPromptsList({ sessionId });
+        const response = await this.api.handlersPromptsList({
+          sessionId: session_id,
+        });
         return this.deserializePrompts(response.prompts || []);
       } catch (error) {
         console.error('[PromptBackendClient] Failed to list prompts:', error);
@@ -189,10 +191,10 @@ export class PromptBackendClient implements BackendClient {
     },
 
     create: withErrorHandler(
-      async (sessionId: string, content: string): Promise<Prompt> => {
+      async (session_id: string, content: string): Promise<Prompt> => {
         const response = await this.api.handlersPromptsCreate({
           createPromptInput: {
-            sessionId,
+            sessionId: session_id,
             data: [{ content, type: 'text' }],
           },
         });
@@ -260,51 +262,40 @@ export class PromptBackendClient implements BackendClient {
       throw new Error('Cannot deserialize null or undefined session');
     }
 
-    // Extract repo, branch, and targetBranch from sbxConfig if they exist there
-    // Handle both camelCase and snake_case from API
-    const sbxConfig = session.sbxConfig || session.sbx_config || {};
-    const repo = session.repo || sbxConfig.repo || '';
-    const branch = session.branch || sbxConfig.branch || '';
-    const targetBranch =
-      session.targetBranch ||
-      session.target_branch ||
-      sbxConfig.targetBranch ||
-      sbxConfig.target_branch ||
-      'main';
+    // Extract repo, branch, and target_branch from sbx_config if they exist there
+    const sbx_config = session.sbx_config || {};
+    const repo = session.repo || sbx_config.repo || '';
+    const branch = session.branch || sbx_config.branch || '';
+    const target_branch =
+      session.target_branch || sbx_config.target_branch || 'main';
 
-    // Map sessionStatus to inboxStatus for backwards compatibility
-    // Handle both camelCase and snake_case from API
-    const inboxStatus = this.sessionStatusToInboxStatus(
-      session.sessionStatus || session.session_status || 'Active'
+    // Map session_status to inbox_status for backwards compatibility
+    const inbox_status = this.sessionStatusToInboxStatus(
+      session.session_status || 'Active'
     );
 
-    // Extract uiStatus from API (handle both camelCase and snake_case)
-    const uiStatus = (session.uiStatus ||
-      session.ui_status ||
-      'Pending') as UiStatus;
+    // Extract ui_status from API
+    const ui_status = (session.ui_status || 'Pending') as UiStatus;
 
     // Prepare session data for validation
-    // Handle both camelCase and snake_case from API
     const sessionData = {
       id: session.id || '',
       title: session.title || '',
       repo,
       branch,
-      targetBranch,
+      target_branch,
       messages: null, // Messages are now separate entities in the new API
-      inboxStatus,
-      uiStatus,
-      sessionStatus:
-        session.sessionStatus || session.session_status || 'Active',
-      parentId: session.parent || null,
-      createdAt:
-        session.createdAt || session.created_at || new Date().toISOString(),
-      diffStats: session.diffStats || session.diff_stats,
-      prUrl: session.prUrl || session.pr_url,
+      inbox_status,
+      ui_status,
+      session_status: session.session_status || 'Active',
+      parent: session.parent || null,
+      created_at: session.created_at || new Date().toISOString(),
+      diff_stats: session.diff_stats,
+      pr_url: session.pr_url,
       children: session.children
         ? this.deserializeSessions(session.children)
         : undefined,
-      sbxConfig: session.sbxConfig || session.sbx_config || null,
+      sbx_config: session.sbx_config || null,
     };
 
     // Parse and validate the session data (parse don't validate)
@@ -326,7 +317,7 @@ export class PromptBackendClient implements BackendClient {
       id: message.id || '',
       role: message.role || 'user',
       content: message.content || '',
-      createdAt: message.createdAt || new Date().toISOString(),
+      created_at: message.created_at || new Date().toISOString(),
     };
 
     // Parse and validate the message data (parse don't validate)
@@ -347,7 +338,7 @@ export class PromptBackendClient implements BackendClient {
         id: message.id || '',
         role: message.role || 'user',
         content: message.content || '',
-        createdAt: message.createdAt || new Date().toISOString(),
+        created_at: message.created_at || new Date().toISOString(),
       }))
     );
   }
@@ -368,7 +359,7 @@ export class PromptBackendClient implements BackendClient {
         type: data.type || 'user',
         uuid: data.uuid || msg.id || '',
         message: data.message || {},
-        session_id: data.session_id || data.sessionId || '',
+        session_id: data.session_id || '',
         parent_tool_use_id: data.parent_tool_use_id || null,
       };
     });
@@ -388,13 +379,9 @@ export class PromptBackendClient implements BackendClient {
 
     return {
       id: prompt.id || '',
-      sessionId: prompt.sessionId || prompt.session_id || '',
+      session_id: prompt.session_id || '',
       content,
-      createdAt: prompt.createdAt
-        ? new Date(prompt.createdAt)
-        : prompt.created_at
-          ? new Date(prompt.created_at)
-          : new Date(),
+      created_at: prompt.created_at ? new Date(prompt.created_at) : new Date(),
       status,
     };
   }

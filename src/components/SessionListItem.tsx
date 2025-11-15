@@ -29,7 +29,7 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
 
-  const _getStatusColor = (status: Session['inboxStatus']) => {
+  const _getStatusColor = (status: Session['inbox_status']) => {
     switch (status) {
       case 'completed':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
@@ -87,17 +87,17 @@ export function SessionListItem({
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
-              {session.diffStats && (
+              {session.diff_stats && (
                 <>
                   <span className="text-xs text-green-600">
-                    +{session.diffStats.additions}
+                    +{session.diff_stats.additions}
                   </span>
                   <span className="text-xs text-red-600">
-                    -{session.diffStats.deletions}
+                    -{session.diff_stats.deletions}
                   </span>
                 </>
               )}
-              {session.prUrl && (
+              {session.pr_url && (
                 <Badge
                   variant="outline"
                   className="text-xs bg-green-50 text-green-700 border-green-300"

@@ -284,7 +284,7 @@ export function useSessionConversation(sessionId: string) {
     // Build conversation by iterating through prompts in chronological order
     const sortedPrompts = [...prompts].sort(
       (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
 
     sortedPrompts.forEach((prompt) => {

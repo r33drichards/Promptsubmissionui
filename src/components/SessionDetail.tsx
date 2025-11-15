@@ -175,13 +175,13 @@ export function SessionDetail({ session }: SessionDetailProps) {
                 <div className="flex items-center gap-1 min-w-0 flex-shrink">
                   <GitBranch className="w-4 h-4 flex-shrink-0" />
                   <a
-                    href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
+                    href={`https://github.com/${session.repo}/tree/${session.target_branch}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-600 hover:underline"
-                    title={session.targetBranch}
+                    title={session.target_branch}
                   >
-                    {truncateBranchName(session.targetBranch)}
+                    {truncateBranchName(session.target_branch)}
                   </a>
                 </div>
               </div>
@@ -193,7 +193,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
               size="sm"
               onClick={() =>
                 window.open(
-                  `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
+                  `https://github.com/${session.repo}/compare/${session.target_branch}...${session.branch}`,
                   '_blank'
                 )
               }
@@ -203,9 +203,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </Button>
             <Badge
               variant="outline"
-              className={getStatusBadgeClasses(session.uiStatus)}
+              className={getStatusBadgeClasses(session.ui_status)}
             >
-              {session.uiStatus}
+              {session.ui_status}
             </Badge>
           </div>
         </div>
@@ -224,16 +224,16 @@ export function SessionDetail({ session }: SessionDetailProps) {
           />
         </AssistantRuntimeProvider>
 
-        {session.inboxStatus === 'completed' && session.diffStats && (
+        {session.inbox_status === 'completed' && session.diff_stats && (
           <div className="p-4 border-t">
             <div className="bg-white border rounded-lg p-4 space-y-3">
               <h3 className="text-sm font-medium">Changes</h3>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-green-600">
-                  +{session.diffStats.additions} additions
+                  +{session.diff_stats.additions} additions
                 </span>
                 <span className="text-sm text-red-600">
-                  -{session.diffStats.deletions} deletions
+                  -{session.diff_stats.deletions} deletions
                 </span>
               </div>
             </div>

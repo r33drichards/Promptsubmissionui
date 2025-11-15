@@ -14,28 +14,28 @@ export interface Session {
   title: string;
   repo: string;
   branch: string;
-  targetBranch: string;
+  target_branch: string;
   messages: Message[] | null;
-  inboxStatus: InboxStatus;
-  uiStatus: UiStatus;
+  inbox_status: InboxStatus;
+  ui_status: UiStatus;
   statusMessage?: string;
-  sbxConfig: Record<string, any> | null;
-  parentId: string | null;
-  diffStats?: {
+  sbx_config: Record<string, any> | null;
+  parent: string | null;
+  diff_stats?: {
     additions: number;
     deletions: number;
   };
-  prUrl?: string;
-  createdAt: Date;
+  pr_url?: string;
+  created_at: Date;
   children?: Session[];
-  sessionStatus: SessionStatus;
+  session_status: SessionStatus;
 }
 
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  createdAt: Date;
+  created_at: Date;
 }
 
 // New backend message structure (from Claude Code output)
@@ -72,8 +72,8 @@ export interface BackendMessage {
 
 export interface Prompt {
   id: string;
-  sessionId: string;
+  session_id: string;
   content: string;
-  createdAt: Date;
+  created_at: Date;
   status: 'pending' | 'processing' | 'completed' | 'failed';
 }

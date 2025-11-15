@@ -42,29 +42,29 @@ export interface BackendClient {
 export interface ListSessionsParams {
   status?: InboxStatus;
   archived?: boolean;
-  parentId?: string | null;
+  parent?: string | null;
   limit?: number;
   offset?: number;
 }
 
 export interface CreateSessionData {
   repo: string;
-  targetBranch: string;
+  target_branch: string;
   messages?: any; // Optional messages field
-  parentId?: string | null;
+  parent?: string | null;
 }
 
 export interface UpdateSessionData {
   title?: string;
-  inboxStatus?: InboxStatus;
-  uiStatus?: UiStatus;
-  prUrl?: string;
-  diffStats?: {
+  inbox_status?: InboxStatus;
+  ui_status?: UiStatus;
+  pr_url?: string;
+  diff_stats?: {
     additions: number;
     deletions: number;
   };
-  sessionStatus?: SessionStatus;
+  session_status?: SessionStatus;
   repo?: string;
   branch?: string;
-  targetBranch?: string;
+  target_branch?: string;
 }

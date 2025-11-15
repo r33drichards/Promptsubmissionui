@@ -119,9 +119,9 @@ export function CreateTaskForm({
 
     onSubmit({
       repo: validatedData.repo,
-      targetBranch: validatedData.targetBranch,
+      target_branch: validatedData.targetBranch,
       messages: [{ content: validatedData.prompt }], // Send as array to match backend API
-      parentId: parentSession?.id || null,
+      parent: parentSession?.id || null,
     });
 
     setRepo('');

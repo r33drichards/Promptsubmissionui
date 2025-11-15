@@ -118,8 +118,8 @@ function AppLayout() {
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
       const existing = repoMap.get(session.repo);
-      if (!existing || session.createdAt > existing) {
-        repoMap.set(session.repo, session.createdAt);
+      if (!existing || session.created_at > existing) {
+        repoMap.set(session.repo, session.created_at);
       }
     });
 
@@ -140,7 +140,7 @@ function AppLayout() {
     // Filter sessions based on filter type using filterMap
     const allowedStatuses = filterMap[filter];
     const filteredSessions = sessions.filter((s) =>
-      allowedStatuses.includes(s.uiStatus)
+      allowedStatuses.includes(s.ui_status)
     );
 
     // First pass: create a map of all sessions
@@ -151,8 +151,8 @@ function AppLayout() {
     // Second pass: build hierarchy
     filteredSessions.forEach((session) => {
       const sessionWithChildren = sessionMap.get(session.id)!;
-      if (session.parentId) {
-        const parent = sessionMap.get(session.parentId);
+      if (session.parent) {
+        const parent = sessionMap.get(session.parent);
         if (parent) {
           parent.children!.push(sessionWithChildren);
         } else {
@@ -170,7 +170,7 @@ function AppLayout() {
   const filteredSessions = useMemo(() => {
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
         .map((session) => ({
           ...session,
           children: session.children ? sortByDate(session.children) : [],
