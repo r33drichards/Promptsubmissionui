@@ -254,7 +254,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
           />
         </AssistantRuntimeProvider>
 
-        {session.diffStats && (
+        {session.diffStats && session.uiStatus === 'completed' && (
           <div className="p-4 border-t">
             <div className="bg-white border rounded-lg p-4 space-y-3">
               <h3 className="text-sm font-medium">Changes</h3>
