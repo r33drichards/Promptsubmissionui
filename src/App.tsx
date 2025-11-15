@@ -332,7 +332,7 @@ function AppLayout() {
         {!sidebarCollapsed ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b space-y-2">
+            <div className="p-4 border-b space-y-3">
               <div className="flex gap-2">
                 {isAuthenticated && (
                   <DropdownMenu>
@@ -391,7 +391,7 @@ function AppLayout() {
                   )}
                 </Button>
               </div>
-              <div className="w-full">
+              <div className="w-full mt-2">
                 <MultiSelect
                   options={filterOptions}
                   selected={filters}
