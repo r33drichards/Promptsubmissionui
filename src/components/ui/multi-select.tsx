@@ -81,7 +81,11 @@ export function MultiSelect({
               selectedLabels.map((label) => {
                 const value = options.find((opt) => opt.label === label)?.value;
                 return (
-                  <Badge key={value} variant="secondary" className="mr-1 mb-1 shrink-0">
+                  <Badge
+                    key={value}
+                    variant="secondary"
+                    className="mr-1 mb-1 shrink-0"
+                  >
                     {label}
                     <button
                       className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -116,8 +120,8 @@ export function MultiSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="p-0" 
+      <PopoverContent
+        className="p-0"
         align="start"
         style={{ width: triggerRef.current?.offsetWidth }}
         collisionPadding={8}
