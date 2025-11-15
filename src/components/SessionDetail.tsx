@@ -7,6 +7,7 @@ import {
   Check,
   X,
   GitPullRequest,
+  Container,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -35,6 +36,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(session.title);
+  const [copySuccess, setCopySuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
 
@@ -75,6 +77,19 @@ export function SessionDetail({ session }: SessionDetailProps) {
       handleSaveTitle();
     } else if (e.key === 'Escape') {
       handleCancelEdit();
+    }
+  };
+
+  const handleCopyBorrowToken = async () => {
+    const borrowToken = session.sbxConfig?.borrow_token;
+    if (borrowToken) {
+      try {
+        await navigator.clipboard.writeText(borrowToken);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy borrow token:', err);
+      }
     }
   };
 
@@ -201,6 +216,21 @@ export function SessionDetail({ session }: SessionDetailProps) {
               <GitPullRequest className="w-4 h-4 mr-2" />
               View Diff on Github
             </Button>
+            {session.sbxConfig?.borrow_token && (
+              <Badge
+                variant="outline"
+                className={`cursor-pointer transition-colors ${
+                  copySuccess
+                    ? 'bg-green-50 text-green-700 border-green-300'
+                    : 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100'
+                }`}
+                onClick={handleCopyBorrowToken}
+                title="Click to copy borrow token"
+              >
+                <Container className="w-3 h-3 mr-1" />
+                {copySuccess ? 'Copied!' : 'Container'}
+              </Badge>
+            )}
             <Badge
               variant="outline"
               className={getStatusBadgeClasses(session.uiStatus)}
