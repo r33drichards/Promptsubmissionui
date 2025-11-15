@@ -377,6 +377,9 @@ function AppLayout() {
                     >
                       <DropdownMenuLabel>Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => navigate('/')}>
+                        Home
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
                         onSelect={() => logout()}
