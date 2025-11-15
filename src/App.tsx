@@ -147,13 +147,19 @@ function AppLayout() {
     window.localStorage.setItem('sessionFilters', JSON.stringify(filters));
 
     // Update URL search params
-    const newSearchParams = new URLSearchParams(searchParams);
-    if (filters.length > 0) {
-      newSearchParams.set('filters', filters.join(','));
-    } else {
-      newSearchParams.delete('filters');
+    const currentFiltersParam = searchParams.get('filters');
+    const newFiltersParam = filters.length > 0 ? filters.join(',') : null;
+
+    // Only update if the URL needs to change
+    if (currentFiltersParam !== newFiltersParam) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (filters.length > 0) {
+        newSearchParams.set('filters', filters.join(','));
+      } else {
+        newSearchParams.delete('filters');
+      }
+      setSearchParams(newSearchParams, { replace: true });
     }
-    setSearchParams(newSearchParams, { replace: true });
   }, [filters, searchParams, setSearchParams]);
 
   // Get sorted repositories by most recently used
