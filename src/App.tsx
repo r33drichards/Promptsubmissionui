@@ -447,6 +447,7 @@ function AppLayout() {
                       onSelect={(session) => navigate(`/session/${session.id}`)}
                       onCreateSubtask={handleCreateSubtask}
                       onArchive={handleArchive}
+                      selectedSessionId={selectedSession?.id}
                     />
                   ))
                 ) : (
