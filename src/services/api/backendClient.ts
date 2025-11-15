@@ -8,40 +8,10 @@ import {
 } from './types';
 
 /**
- * Converts snake_case string to camelCase
- */
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-/**
  * Converts camelCase string to snake_case
  */
 function camelToSnake(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
-
-/**
- * Recursively converts object keys from snake_case to camelCase
- */
-function keysToCamel(obj: any): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(keysToCamel);
-  }
-
-  if (typeof obj === 'object' && obj.constructor === Object) {
-    return Object.keys(obj).reduce((acc, key) => {
-      const camelKey = snakeToCamel(key);
-      acc[camelKey] = keysToCamel(obj[key]);
-      return acc;
-    }, {} as any);
-  }
-
-  return obj;
 }
 
 /**

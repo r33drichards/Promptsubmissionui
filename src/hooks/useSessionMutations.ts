@@ -12,46 +12,6 @@ import {
   UiStatus,
 } from '@wholelottahoopla/prompt-backend-client';
 
-// Deserialize helper (same as useSessions)
-function deserializeSession(session: any): Session {
-  const sbx_config = session.sbx_config || {};
-  const repo = session.repo || sbx_config.repo || '';
-  const branch = session.branch || sbx_config.branch || '';
-  const target_branch =
-    session.target_branch || sbx_config.target_branch || 'main';
-
-  const sessionStatusToInboxStatus = (status: string) => {
-    const map: Record<string, Session['inbox_status']> = {
-      Active: 'in-progress',
-      Archived: 'completed',
-      Completed: 'completed',
-    };
-    return map[status] || 'pending';
-  };
-
-  return {
-    id: session.id || '',
-    title: session.title || '',
-    repo,
-    branch,
-    target_branch,
-    messages: null,
-    inbox_status: sessionStatusToInboxStatus(
-      session.session_status || 'Active'
-    ),
-    ui_status: (session.ui_status || 'Pending') as UiStatus,
-    session_status: session.session_status || 'Active',
-    parent: session.parent || null,
-    created_at: new Date(session.created_at || new Date().toISOString()),
-    diff_stats: session.diff_stats,
-    pr_url: session.pr_url,
-    children: session.children
-      ? session.children.map(deserializeSession)
-      : undefined,
-    sbx_config: session.sbx_config || null,
-  };
-}
-
 export interface CreateSessionData {
   repo: string;
   target_branch: string;
@@ -125,7 +85,7 @@ export function useCreateSession(
 
       // Fetch the full session
       const response = await api.handlersSessionsRead({ id: sessionId });
-      return deserializeSession(response.session);
+      return response.session;
     },
     onSuccess: (newSession, variables, context) => {
       // Set the new session in the detail cache
@@ -218,7 +178,7 @@ export function useUpdateSession(
 
       // Fetch updated session
       const response = await api.handlersSessionsRead({ id });
-      return deserializeSession(response.session);
+      return response.session;
     },
     onMutate: async ({ id, data }) => {
       // Cancel outgoing refetches
@@ -313,7 +273,7 @@ export function useArchiveSession(
       });
 
       const response = await api.handlersSessionsRead({ id });
-      return deserializeSession(response.session);
+      return response.session;
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({
@@ -399,7 +359,7 @@ export function useUnarchiveSession(
       });
 
       const response = await api.handlersSessionsRead({ id });
-      return deserializeSession(response.session);
+      return response.session;
     },
     onSuccess: (unarchivedSession, id, context) => {
       queryClient.setQueryData(

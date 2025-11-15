@@ -12,42 +12,6 @@ import { queryKeys } from './queryKeys';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
 
-// Helper to deserialize backend messages
-function deserializeBackendMessages(messages: any[]): BackendMessage[] {
-  if (!Array.isArray(messages)) {
-    return [];
-  }
-
-  return messages.map((msg) => {
-    const data = msg.data || msg;
-    return {
-      type: data.type || 'user',
-      uuid: data.uuid || msg.id || '',
-      message: data.message || {},
-      session_id: data.session_id || '',
-      parent_tool_use_id: data.parent_tool_use_id || null,
-    };
-  });
-}
-
-// Helper to deserialize prompts
-function deserializePrompt(prompt: any): Prompt {
-  const content =
-    prompt.data && Array.isArray(prompt.data) && prompt.data[0]?.content
-      ? prompt.data[0].content
-      : prompt.content || '';
-
-  const status = prompt.inbox_status || prompt.status || 'pending';
-
-  return {
-    id: prompt.id || '',
-    session_id: prompt.session_id || '',
-    content,
-    created_at: prompt.created_at ? new Date(prompt.created_at) : new Date(),
-    status,
-  };
-}
-
 /**
  * Hook to fetch messages for a specific prompt with polling.
  *
@@ -69,7 +33,7 @@ export function useMessages(
     queryKey: queryKeys.messages.list(promptId),
     queryFn: async () => {
       const response = await api.handlersMessagesList({ promptId });
-      return deserializeBackendMessages(response.messages || []);
+      return response.messages || [];
     },
     enabled: !!promptId,
     refetchInterval: 2000, // Poll every 2 seconds
@@ -217,7 +181,7 @@ export function useCreatePrompt(
         throw new Error('Failed to create prompt');
       }
 
-      return deserializePrompt(response.prompt);
+      return response.prompt;
     },
     onSuccess: (newPrompt, content, context) => {
       // Invalidate prompts query to trigger refetch
@@ -258,7 +222,7 @@ export function usePrompts(
     queryKey: queryKeys.prompts.list(sessionId),
     queryFn: async () => {
       const response = await api.handlersPromptsList({ sessionId });
-      return (response.prompts || []).map(deserializePrompt);
+      return response.prompts || [];
     },
     enabled: !!sessionId,
     refetchInterval: 2000, // Poll every 2 seconds
