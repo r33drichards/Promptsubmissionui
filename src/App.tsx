@@ -1,5 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useParams,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import { OidcSecure } from '@axa-fr/react-oidc';
 import { useAuth } from './hooks/useAuth';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
@@ -53,8 +59,29 @@ const filterOptions = [
 function AppLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { logout, isAuthenticated } = useAuth();
+
+  // Initialize filters from URL, then localStorage, then default
   const [filters, setFilters] = useState<FilterType[]>(() => {
+    // First, try to get filters from URL
+    const urlFilters = searchParams.get('filters');
+    if (urlFilters) {
+      try {
+        const parsed = urlFilters.split(',') as FilterType[];
+        // Validate that all filters are valid
+        const validFilters = parsed.filter((f) =>
+          ['pending', 'in-progress', 'needs-review', 'archived'].includes(f)
+        );
+        if (validFilters.length > 0) {
+          return validFilters;
+        }
+      } catch {
+        // Continue to localStorage fallback
+      }
+    }
+
+    // Fall back to localStorage
     const saved = window.localStorage.getItem('sessionFilters');
     if (saved) {
       try {
@@ -114,10 +141,26 @@ function AppLayout() {
     );
   }, [sidebarCollapsed]);
 
-  // Persist session filters state
+  // Sync filters with URL and localStorage
   useEffect(() => {
+    // Update localStorage
     window.localStorage.setItem('sessionFilters', JSON.stringify(filters));
-  }, [filters]);
+
+    // Update URL search params
+    const currentFiltersParam = searchParams.get('filters');
+    const newFiltersParam = filters.length > 0 ? filters.join(',') : null;
+
+    // Only update if the URL needs to change
+    if (currentFiltersParam !== newFiltersParam) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (filters.length > 0) {
+        newSearchParams.set('filters', filters.join(','));
+      } else {
+        newSearchParams.delete('filters');
+      }
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [filters, searchParams, setSearchParams]);
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
