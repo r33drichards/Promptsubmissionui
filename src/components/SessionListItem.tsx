@@ -8,6 +8,7 @@ import {
 } from './ui/collapsible';
 import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
 import { useState } from 'react';
+import { LatticeLoadingAnimation } from './LatticeLoadingAnimation';
 
 interface SessionListItemProps {
   session: Session;
@@ -87,7 +88,11 @@ export function SessionListItem({
               </p>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Show lattice animation for in-progress sessions */}
+              {session.uiStatus === 'InProgress' && (
+                <LatticeLoadingAnimation className="mr-1" />
+              )}
               {session.diffStats && (
                 <>
                   <span className="text-xs text-green-600">
