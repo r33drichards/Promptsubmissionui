@@ -378,13 +378,13 @@ export class PromptBackendClient implements BackendClient {
    * Deserializes a single prompt
    */
   private deserializePrompt(prompt: any): Prompt {
-    // The actual API response has content in data[0].content and status in inbox_status
+    // The actual API response has content in data[0].content
     const content =
       prompt.data && Array.isArray(prompt.data) && prompt.data[0]?.content
         ? prompt.data[0].content
         : prompt.content || '';
 
-    const status = prompt.inbox_status || prompt.status || 'pending';
+    const status = prompt.status || 'pending';
 
     return {
       id: prompt.id || '',

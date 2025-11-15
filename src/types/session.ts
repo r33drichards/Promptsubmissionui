@@ -16,7 +16,6 @@ export interface Session {
   branch: string;
   targetBranch: string;
   messages: Message[] | null;
-  inboxStatus: InboxStatus;
   uiStatus: UiStatus;
   statusMessage?: string;
   sbxConfig: Record<string, any> | null;
@@ -75,5 +74,4 @@ export interface Prompt {
   sessionId: string;
   content: string;
   createdAt: Date;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
 }

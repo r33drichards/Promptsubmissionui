@@ -640,7 +640,6 @@ pub async fn create(
         repo: Set(input.repo.clone()),
         target_branch: Set(input.target_branch.clone()),
         user_id: Set(user.user_id.clone()),
-        inbox_status: Set(InboxStatus::Pending),
         session_status: Set(SessionStatus::Active),
         sbx_config: NotSet,
         branch: NotSet,
@@ -740,9 +739,6 @@ pub async fn update(
     let mut session: session::ActiveModel = session.into();
 
     // Update fields from input
-    if let Some(inbox_status) = &input.inbox_status {
-        session.inbox_status = Set(inbox_status.clone());
-    }
     if let Some(session_status) = &input.session_status {
         session.session_status = Set(session_status.clone());
     }

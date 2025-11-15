@@ -303,7 +303,7 @@ describe('SessionDetail', () => {
           ? p.data[0]?.content || ''
           : p.data?.content || '',
         createdAt: new Date(p.created_at),
-        status: p.inbox_status?.toLowerCase() || 'completed',
+        status: p.status?.toLowerCase() || 'completed',
       }));
 
       // read messages from testdata/message-1.json

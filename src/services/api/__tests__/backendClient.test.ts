@@ -30,7 +30,7 @@ describe('BackendClient API Boundaries', () => {
             branch: 'feature/test',
             target_branch: 'main',
             messages: null,
-            inbox_status: 'pending',
+            status: 'pending',
             sbx_config: null,
             parent_id: null,
             created_at: '2025-01-01T10:00:00Z',
@@ -105,7 +105,7 @@ describe('BackendClient API Boundaries', () => {
               created_at: '2025-01-01T10:05:00Z',
             },
           ],
-          inbox_status: 'in-progress',
+          status: 'in-progress',
           sbx_config: { key: 'value' },
           parent_id: null,
           diff_stats: { additions: 10, deletions: 5 },
@@ -161,7 +161,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'claude/task-123',
           target_branch: 'main',
           messages: [],
-          inbox_status: 'pending',
+          status: 'pending',
           sbx_config: null,
           parent_id: null,
           created_at: '2025-01-01T10:00:00Z',
@@ -216,7 +216,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'feature/test',
           target_branch: 'main',
           messages: null,
-          inbox_status: 'completed',
+          status: 'completed',
           sbx_config: null,
           parent_id: null,
           pr_url: 'https://github.com/test/repo/pull/1',
@@ -239,7 +239,7 @@ describe('BackendClient API Boundaries', () => {
         '/api/sessions/session-1',
         {
           title: 'Updated Title',
-          inbox_status: 'completed',
+          status: 'completed',
           pr_url: 'https://github.com/test/repo/pull/1',
         }
       );
@@ -277,7 +277,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'feature/test',
           target_branch: 'main',
           messages: null,
-          inbox_status: 'pending',
+          status: 'pending',
           sbx_config: null,
           parent_id: null,
           session_status: 'Archived',
@@ -309,7 +309,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'feature/test',
           target_branch: 'main',
           messages: null,
-          inbox_status: 'pending',
+          status: 'pending',
           sbx_config: null,
           parent_id: null,
           session_status: 'Active',
@@ -435,7 +435,7 @@ describe('BackendClient API Boundaries', () => {
         data: {
           id: 'test',
           target_branch: 'main',
-          inbox_status: 'pending',
+          status: 'pending',
           parent_id: 'parent',
           sbx_config: { test: true },
           diff_stats: { additions: 1, deletions: 0 },
@@ -463,7 +463,6 @@ describe('BackendClient API Boundaries', () => {
       expect(session).toHaveProperty('prUrl');
       expect(session).toHaveProperty('createdAt');
       expect(session).not.toHaveProperty('target_branch');
-      expect(session).not.toHaveProperty('inbox_status');
     });
 
     it('should properly convert camelCase to snake_case for requests', async () => {
@@ -475,7 +474,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'test',
           target_branch: 'main',
           messages: null,
-          inbox_status: 'completed',
+          status: 'completed',
           sbx_config: null,
           parent_id: null,
           pr_url: 'http://test.com',
@@ -494,7 +493,7 @@ describe('BackendClient API Boundaries', () => {
       });
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith('/api/sessions/test', {
-        inbox_status: 'completed',
+        status: 'completed',
         pr_url: 'http://test.com',
       });
     });
@@ -508,7 +507,7 @@ describe('BackendClient API Boundaries', () => {
           branch: 'test',
           target_branch: 'main',
           messages: null,
-          inbox_status: 'pending',
+          status: 'pending',
           sbx_config: null,
           parent_id: null,
           created_at: '2025-01-01T10:00:00Z',

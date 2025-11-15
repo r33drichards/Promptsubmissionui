@@ -35,7 +35,12 @@ function keysToCamel(obj: any): any {
 
   if (typeof obj === 'object' && obj.constructor === Object) {
     return Object.keys(obj).reduce((acc, key) => {
-      const camelKey = snakeToCamel(key);
+      // Special case: map status to inboxStatus for sessions (but not for prompts)
+      // We check if the object has session-like properties to distinguish
+      const hasSessionProps =
+        'repo' in obj || 'branch' in obj || 'target_branch' in obj;
+      const camelKey =
+        key === 'status' && hasSessionProps ? 'inboxStatus' : snakeToCamel(key);
       acc[camelKey] = keysToCamel(obj[key]);
       return acc;
     }, {} as any);
