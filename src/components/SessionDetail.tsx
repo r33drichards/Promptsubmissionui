@@ -20,6 +20,7 @@ import { useUpdateSession } from '../hooks/useSessionMutations';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
+import { StatusBadge } from './StatusBadge';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -90,26 +91,6 @@ export function SessionDetail({ session }: SessionDetailProps) {
       } catch (err) {
         console.error('Failed to copy borrow token:', err);
       }
-    }
-  };
-
-  // Helper function to get badge color classes based on status
-  const getStatusBadgeClasses = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-gray-50 text-gray-700 border-gray-300';
-      case 'in-progress':
-        return 'bg-blue-50 text-blue-700 border-blue-300';
-      case 'completed':
-        return 'bg-green-50 text-green-700 border-green-300';
-      case 'failed':
-        return 'bg-red-50 text-red-700 border-red-300';
-      case 'needs-review':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-300';
-      case 'needs-review-ip-returned':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-300';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-300';
     }
   };
 
@@ -231,12 +212,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
                 {copySuccess ? 'Copied!' : 'Container'}
               </Badge>
             )}
-            <Badge
-              variant="outline"
-              className={getStatusBadgeClasses(session.uiStatus)}
-            >
-              {session.uiStatus}
-            </Badge>
+            <StatusBadge status={session.uiStatus} />
           </div>
         </div>
       </div>

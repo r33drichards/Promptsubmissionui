@@ -8,6 +8,7 @@ import {
 } from './ui/collapsible';
 import { ChevronRight, ChevronDown, Plus, Archive } from 'lucide-react';
 import { useState } from 'react';
+import { StatusBadge } from './StatusBadge';
 
 interface SessionListItemProps {
   session: Session;
@@ -87,7 +88,12 @@ export function SessionListItem({
               </p>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <StatusBadge
+                status={session.uiStatus}
+                className="text-xs"
+                showIcon={false}
+              />
               {session.diffStats && (
                 <>
                   <span className="text-xs text-green-600">
