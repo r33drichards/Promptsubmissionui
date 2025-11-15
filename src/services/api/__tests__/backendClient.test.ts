@@ -463,7 +463,6 @@ describe('BackendClient API Boundaries', () => {
       expect(session).toHaveProperty('prUrl');
       expect(session).toHaveProperty('createdAt');
       expect(session).not.toHaveProperty('target_branch');
-      expect(session).not.toHaveProperty('inbox_status');
     });
 
     it('should properly convert camelCase to snake_case for requests', async () => {

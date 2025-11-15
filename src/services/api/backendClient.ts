@@ -63,8 +63,7 @@ function keysToSnake(obj: any): any {
 
   if (typeof obj === 'object' && obj.constructor === Object) {
     return Object.keys(obj).reduce((acc, key) => {
-      // Special case: map inboxStatus to status (not inbox_status)
-      const snakeKey = key === 'inboxStatus' ? 'status' : camelToSnake(key);
+      const snakeKey = camelToSnake(key);
       acc[snakeKey] = keysToSnake(obj[key]);
       return acc;
     }, {} as any);
