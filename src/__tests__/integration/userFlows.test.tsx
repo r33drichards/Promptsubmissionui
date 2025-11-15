@@ -40,12 +40,10 @@ describe('User Flows Integration Tests', () => {
           branch: 'feature/test',
           targetBranch: 'main',
           messages: null,
-          inboxStatus: 'in-progress' as const,
           uiStatus: 'NeedsReview' as const,
           sbxConfig: null,
           parentId: null,
           createdAt: new Date(),
-          sessionStatus: 'Active' as const,
         },
       ];
 
@@ -374,12 +372,10 @@ describe('User Flows Integration Tests', () => {
                   branch: 'feature/test',
                   targetBranch: 'main',
                   messages: null,
-                  inboxStatus: 'pending',
                   uiStatus: 'Pending' as const,
                   sbxConfig: null,
                   parentId: null,
                   createdAt: new Date('2025-01-01T10:00:00Z'),
-                  sessionStatus: 'Archived' as const,
                 },
                 {
                   id: 'test-session-2',
@@ -388,12 +384,10 @@ describe('User Flows Integration Tests', () => {
                   branch: 'feature/test-2',
                   targetBranch: 'main',
                   messages: null,
-                  inboxStatus: 'in-progress',
                   uiStatus: 'NeedsReview' as const,
                   sbxConfig: null,
                   parentId: null,
                   createdAt: new Date('2025-01-02T10:00:00Z'),
-                  sessionStatus: 'Active' as const,
                   diffStats: { additions: 10, deletions: 5 },
                 },
                 {
@@ -403,12 +397,10 @@ describe('User Flows Integration Tests', () => {
                   branch: 'feature/completed',
                   targetBranch: 'main',
                   messages: null,
-                  inboxStatus: 'completed',
                   uiStatus: 'NeedsReview' as const,
                   sbxConfig: null,
                   parentId: null,
                   createdAt: new Date('2025-01-03T10:00:00Z'),
-                  sessionStatus: 'Active' as const,
                   diffStats: { additions: 25, deletions: 8 },
                   prUrl: 'https://github.com/test/repo/pull/123',
                 },
@@ -423,12 +415,10 @@ describe('User Flows Integration Tests', () => {
                 branch: 'feature/test',
                 targetBranch: 'main',
                 messages: null,
-                inboxStatus: 'in-progress',
                 uiStatus: 'NeedsReview',
                 sbxConfig: null,
                 parentId: null,
                 createdAt: new Date('2025-01-01T10:00:00Z'),
-                sessionStatus: 'Active' as const,
               },
               {
                 id: 'test-session-2',
@@ -437,12 +427,10 @@ describe('User Flows Integration Tests', () => {
                 branch: 'feature/test-2',
                 targetBranch: 'main',
                 messages: null,
-                inboxStatus: 'in-progress',
                 uiStatus: 'NeedsReview',
                 sbxConfig: null,
                 parentId: null,
                 createdAt: new Date('2025-01-02T10:00:00Z'),
-                sessionStatus: 'Active' as const,
                 diffStats: { additions: 10, deletions: 5 },
               },
               {
@@ -452,12 +440,10 @@ describe('User Flows Integration Tests', () => {
                 branch: 'feature/completed',
                 targetBranch: 'main',
                 messages: null,
-                inboxStatus: 'in-progress',
                 uiStatus: 'NeedsReview',
                 sbxConfig: null,
                 parentId: null,
                 createdAt: new Date('2025-01-03T10:00:00Z'),
-                sessionStatus: 'Active' as const,
                 diffStats: { additions: 25, deletions: 8 },
                 prUrl: 'https://github.com/test/repo/pull/123',
               },
@@ -564,7 +550,7 @@ describe('User Flows Integration Tests', () => {
   });
 
   describe('Replying to Sessions', () => {
-    it.skip('should send a reply and update session status', async () => {
+    it.skip('should send a reply', async () => {
       // Skipped: Multiple Send buttons exist now (one from @assistant-ui/react Thread and one from custom reply textarea)
       const user = userEvent.setup();
       render(<App />, { client: mockClient });
