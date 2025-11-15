@@ -58,7 +58,7 @@ export function StatusBadge({
           label: 'Needs Review',
           icon: Eye,
           className: 'bg-yellow-50 text-yellow-700 border-yellow-300',
-          iconClassName: '',
+          iconClassName: 'animate-bounce-slow',
         };
       default:
         return {
