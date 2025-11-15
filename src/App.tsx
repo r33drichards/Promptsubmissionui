@@ -110,6 +110,27 @@ function AppLayout() {
     window.localStorage.setItem('sessionFilter', filter);
   }, [filter]);
 
+  // Add keyboard shortcut: Option/Alt + c to toggle sidebar collapse
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // On macOS, Option+c produces 'ç', so check for both 'c' and 'ç'
+      // On Windows/Linux, Alt+c produces 'c'
+      const isToggleKey =
+        (event.key === 'c' || event.key === 'ç') &&
+        event.altKey &&
+        !event.metaKey &&
+        !event.ctrlKey;
+
+      if (isToggleKey) {
+        event.preventDefault();
+        setSidebarCollapsed((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
     const repoMap = new Map<string, Date>();
