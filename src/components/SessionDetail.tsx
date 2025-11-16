@@ -18,6 +18,7 @@ import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
 import { truncateBranchName } from '@/utils/stringUtils';
 import { useUpdateSession } from '../hooks/useSessionMutations';
+import { usePrStatus } from '../hooks/usePrStatus';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
@@ -44,6 +45,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
   >(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
+
+  // Fetch PR status from GitHub and update session when it changes
+  const { prInfo } = usePrStatus(session);
 
   // Reset title value when session changes
   useEffect(() => {
@@ -310,11 +314,11 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {session.prUrl ? (
+            {(session.prUrl || prInfo?.prUrl) ? (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(session.prUrl, '_blank')}
+                onClick={() => window.open(session.prUrl || prInfo?.prUrl, '_blank')}
               >
                 <GitPullRequest className="w-4 h-4 mr-2" />
                 View PR
@@ -349,12 +353,12 @@ export function SessionDetail({ session }: SessionDetailProps) {
                 {copySuccess ? 'Copied!' : 'Container'}
               </Badge>
             )}
-            {session.prUrl && session.prStatus && (
+            {(session.prStatus || prInfo?.status) && (
               <Badge
                 variant="outline"
-                className={getPrStatusBadgeClasses(session.prStatus)}
+                className={getPrStatusBadgeClasses(session.prStatus || prInfo?.status)}
               >
-                {getPrStatusText(session.prStatus)}
+                {getPrStatusText(session.prStatus || prInfo?.status)}
               </Badge>
             )}
             <Badge
