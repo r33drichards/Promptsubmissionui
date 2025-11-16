@@ -18,6 +18,7 @@ export interface Session {
   prUrl?: string;
   createdAt: Date;
   children?: Session[];
+  depth?: number; // Used for visual indentation in topological sort modes
 }
 
 export interface Message {

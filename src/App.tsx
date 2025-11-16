@@ -169,7 +169,8 @@ function AppLayout() {
   });
 
   // Track the previous sessionTreeFilter value to detect transitions
-  const prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
+  // Currently unused but kept for future enhancements
+  const _prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
 
   // Fetch sessions using TanStack Query
   const {
@@ -307,6 +308,7 @@ function AppLayout() {
         setSortOrder(preferredSortOrder);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionTreeFilter]); // Only run when sessionTreeFilter changes
 
   // Get sorted repositories by most recently used
@@ -405,19 +407,19 @@ function AppLayout() {
       const result: Session[] = [];
       const visited = new Set<string>();
 
-      const visit = (session: Session) => {
+      const visit = (session: Session, depth: number = 0) => {
         if (visited.has(session.id)) return;
         visited.add(session.id);
 
-        // Add parent first
-        result.push({ ...session, children: [] });
+        // Add parent first with depth information
+        result.push({ ...session, children: [], depth });
 
         // Then visit children (sorted by date)
         if (session.children && session.children.length > 0) {
           const sortedChildren = [...session.children].sort(
             (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
           );
-          sortedChildren.forEach(visit);
+          sortedChildren.forEach((child) => visit(child, depth + 1));
         }
       };
 
@@ -425,7 +427,7 @@ function AppLayout() {
       const sortedRoots = [...sessions].sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
-      sortedRoots.forEach(visit);
+      sortedRoots.forEach((session) => visit(session, 0));
 
       return result;
     };
@@ -435,7 +437,7 @@ function AppLayout() {
       const result: Session[] = [];
       const visited = new Set<string>();
 
-      const visit = (session: Session) => {
+      const visit = (session: Session, depth: number = 0) => {
         if (visited.has(session.id)) return;
         visited.add(session.id);
 
@@ -444,18 +446,18 @@ function AppLayout() {
           const sortedChildren = [...session.children].sort(
             (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
           );
-          sortedChildren.forEach(visit);
+          sortedChildren.forEach((child) => visit(child, depth + 1));
         }
 
-        // Then add parent
-        result.push({ ...session, children: [] });
+        // Then add parent with depth information
+        result.push({ ...session, children: [], depth });
       };
 
       // Sort root sessions by date first
       const sortedRoots = [...sessions].sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
-      sortedRoots.forEach(visit);
+      sortedRoots.forEach((session) => visit(session, 0));
 
       return result;
     };
@@ -793,6 +795,7 @@ function AppLayout() {
                       onCreateSubtask={handleCreateSubtask}
                       onArchive={handleArchive}
                       onUnarchive={handleUnarchive}
+                      level={session.depth ?? 0}
                     />
                   ))
                 ) : (
