@@ -314,11 +314,13 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {(session.prUrl || prInfo?.prUrl) ? (
+            {session.prUrl || prInfo?.prUrl ? (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(session.prUrl || prInfo?.prUrl, '_blank')}
+                onClick={() =>
+                  window.open(session.prUrl || prInfo?.prUrl, '_blank')
+                }
               >
                 <GitPullRequest className="w-4 h-4 mr-2" />
                 View PR
@@ -356,7 +358,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
             {(session.prStatus || prInfo?.status) && (
               <Badge
                 variant="outline"
-                className={getPrStatusBadgeClasses(session.prStatus || prInfo?.status)}
+                className={getPrStatusBadgeClasses(
+                  session.prStatus || prInfo?.status
+                )}
               >
                 {getPrStatusText(session.prStatus || prInfo?.status)}
               </Badge>
