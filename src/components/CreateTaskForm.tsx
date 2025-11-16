@@ -8,7 +8,7 @@ import { CreateSessionData } from '../services/api/types';
 import { RepositoryCombobox } from './RepositoryCombobox';
 import { BranchCombobox } from './BranchCombobox';
 import { MonacoEditor } from './MonacoEditor';
-import { useGitHubBranches } from '../hooks';
+import { useGitHubBranches, usePrompts } from '../hooks';
 import { X, Loader2 } from 'lucide-react';
 
 // Zod schema for form validation
@@ -22,6 +22,7 @@ interface CreateTaskFormProps {
   onSubmit: (task: CreateSessionData) => void;
   onCancel: () => void;
   parentSession?: Session | null;
+  resubmitSession?: Session | null;
   repositories: string[];
   isSubmitting?: boolean;
 }
@@ -33,15 +34,28 @@ export function CreateTaskForm({
   onSubmit,
   onCancel,
   parentSession,
+  resubmitSession,
   repositories,
   isSubmitting = false,
 }: CreateTaskFormProps) {
-  const [repo, setRepo] = useState(parentSession?.repo || '');
-  const [targetBranch, setTargetBranch] = useState(parentSession?.branch || '');
+  // Use resubmitSession if provided, otherwise use parentSession
+  const sourceSession = resubmitSession || parentSession;
+
+  const [repo, setRepo] = useState(sourceSession?.repo || '');
+  const [targetBranch, setTargetBranch] = useState(
+    resubmitSession?.targetBranch || parentSession?.branch || ''
+  );
   const [prompt, setPrompt] = useState('');
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateTaskFormData, string>>
   >({});
+  // Track if we've initialized the prompt from resubmitSession to avoid overwriting user edits
+  const [hasInitializedPrompt, setHasInitializedPrompt] = useState(false);
+
+  // Fetch prompts if resubmitSession is provided
+  const { data: prompts = [] } = usePrompts(resubmitSession?.id || '', {
+    enabled: !!resubmitSession,
+  });
 
   // Fetch branches from GitHub API based on selected repository
   const {
@@ -51,13 +65,25 @@ export function CreateTaskForm({
     error: branchesError,
   } = useGitHubBranches(repo);
 
+  // Populate prompt from resubmitSession when prompts are loaded (only once)
+  useEffect(() => {
+    if (resubmitSession && prompts.length > 0 && !hasInitializedPrompt) {
+      // Get the first prompt's content (the original prompt for this session)
+      const firstPrompt = prompts[0];
+      if (firstPrompt && firstPrompt.content) {
+        setPrompt(firstPrompt.content);
+        setHasInitializedPrompt(true);
+      }
+    }
+  }, [resubmitSession, prompts, hasInitializedPrompt]);
+
   // Update targetBranch when repository changes and default branch is loaded
   useEffect(() => {
-    if (defaultBranch && !parentSession && !targetBranch) {
+    if (defaultBranch && !parentSession && !resubmitSession && !targetBranch) {
       // Use GitHub's configured default branch
       setTargetBranch(defaultBranch);
     }
-  }, [defaultBranch, parentSession, targetBranch]);
+  }, [defaultBranch, parentSession, resubmitSession, targetBranch]);
 
   // Handle Escape key to close the form
   useEffect(() => {
