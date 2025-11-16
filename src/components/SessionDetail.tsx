@@ -23,6 +23,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { ErrorBoundary } from './ErrorBoundary';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -357,16 +358,18 @@ export function SessionDetail({ session }: SessionDetailProps) {
 
       {/* Chat Container */}
       <div className="flex-1 min-h-0 overflow-auto">
-        <AssistantRuntimeProvider runtime={runtime}>
-          <Thread
-            assistantMessage={{
-              components: {
-                Text: MarkdownTextPrimitive,
-                ToolFallback: ToolFallback,
-              },
-            }}
-          />
-        </AssistantRuntimeProvider>
+        <ErrorBoundary>
+          <AssistantRuntimeProvider runtime={runtime}>
+            <Thread
+              assistantMessage={{
+                components: {
+                  Text: MarkdownTextPrimitive,
+                  ToolFallback: ToolFallback,
+                },
+              }}
+            />
+          </AssistantRuntimeProvider>
+        </ErrorBoundary>
 
         {session.diffStats && session.uiStatus === 'completed' && (
           <div className="p-4 border-t">
