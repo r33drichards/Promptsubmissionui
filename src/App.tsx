@@ -35,7 +35,12 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSessions, useCreateSession, useArchiveSession } from './hooks';
+import {
+  useSessions,
+  useCreateSession,
+  useArchiveSession,
+  useUnarchiveSession,
+} from './hooks';
 
 type FilterType = 'pending' | 'in-progress' | 'needs-review' | 'archived';
 
@@ -104,6 +109,7 @@ function AppLayout() {
   // Mutations
   const createSessionMutation = useCreateSession();
   const archiveSessionMutation = useArchiveSession();
+  const unarchiveSessionMutation = useUnarchiveSession();
 
   // Derive selectedSession from URL parameter
   const selectedSession = useMemo(() => {
@@ -295,6 +301,7 @@ function AppLayout() {
       // Archive parent and all children
       const session = sessions.find((s) => s.id === sessionId);
       const childIds = session?.children?.map((c) => c.id) || [];
+      const allIds = [sessionId, ...childIds];
 
       // Archive all children first
       const archivePromises = childIds.map((childId) =>
@@ -312,6 +319,19 @@ function AppLayout() {
               }
               setArchiveDialogOpen(false);
               setSessionToArchive(null);
+
+              // Show toast with undo action
+              toast.success('Task and subtasks archived', {
+                action: {
+                  label: 'Undo',
+                  onClick: () => {
+                    // Unarchive all sessions that were archived
+                    allIds.forEach((id) => {
+                      unarchiveSessionMutation.mutate(id);
+                    });
+                  },
+                },
+              });
             },
           });
         })
@@ -329,6 +349,16 @@ function AppLayout() {
           }
           setArchiveDialogOpen(false);
           setSessionToArchive(null);
+
+          // Show toast with undo action
+          toast.success('Task archived', {
+            action: {
+              label: 'Undo',
+              onClick: () => {
+                unarchiveSessionMutation.mutate(sessionId);
+              },
+            },
+          });
         },
       });
     }
