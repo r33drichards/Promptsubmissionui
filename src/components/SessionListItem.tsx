@@ -106,6 +106,11 @@ export function SessionListItem({
                 >
                   {session.repo}
                 </a>
+                {session.branch && (
+                  <span className="text-gray-400 ml-1">
+                    • {session.branch}
+                  </span>
+                )}
               </p>
             </div>
 
