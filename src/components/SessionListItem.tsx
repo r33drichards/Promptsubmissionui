@@ -97,8 +97,8 @@ export function SessionListItem({
                 <h3 className="text-sm truncate">{session.title}</h3>
               </div>
               <div className="flex items-center gap-2">
-                {/* Spacer to align with status indicator above */}
-                <div className="w-4 h-4 flex-shrink-0" />
+                {/* Spacer to align with status indicator above - matches icon width (w-4) plus gap (gap-2) */}
+                <div className="w-6 flex-shrink-0" />
                 <p className="text-xs truncate mt-0.5">
                   <a
                     href={`https://github.com/${session.repo}`}
