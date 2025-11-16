@@ -9,6 +9,7 @@ import {
   GitPullRequest,
   Container,
   Copy,
+  Share2,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -42,6 +43,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
   const [copiedBranch, setCopiedBranch] = useState<
     'branch' | 'targetBranch' | null
   >(null);
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
 
@@ -110,6 +112,18 @@ export function SessionDetail({ session }: SessionDetailProps) {
     }
   };
 
+  const handleCopyShareLink = async () => {
+    try {
+      // Build URL without any filter parameters
+      const baseUrl = `${window.location.origin}/session/${session.id}`;
+      await navigator.clipboard.writeText(baseUrl);
+      setCopiedShareLink(true);
+      setTimeout(() => setCopiedShareLink(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy share link:', err);
+    }
+  };
+
   // Helper function to get badge color classes based on status
   const getStatusBadgeClasses = (status: string) => {
     switch (status) {
@@ -165,12 +179,33 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   </Button>
                 </div>
               ) : (
-                <h2
-                  className="flex-1 cursor-pointer hover:text-gray-600 transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                >
-                  {session.title}
-                </h2>
+                <>
+                  <h2
+                    className="flex-1 cursor-pointer hover:text-gray-600 transition-colors"
+                    onClick={() => setIsEditingTitle(true)}
+                  >
+                    {session.title}
+                  </h2>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 flex-shrink-0"
+                        onClick={handleCopyShareLink}
+                      >
+                        {copiedShareLink ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Share2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {copiedShareLink ? 'Copied!' : 'Copy share link'}
+                    </TooltipContent>
+                  </Tooltip>
+                </>
               )}
             </div>
             {session.statusMessage && (
