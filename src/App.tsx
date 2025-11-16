@@ -70,7 +70,7 @@ const filterOptions = [
 ];
 
 const sortOptions = [
-  { label: 'Date (Newest First)', value: 'date' },
+  { label: 'Tree View', value: 'date' },
   { label: 'Topological (Parents First)', value: 'topological' },
   {
     label: 'Reverse Topological (Children First)',
@@ -423,6 +423,15 @@ function AppLayout() {
       sessionsToDisplay = sessionsToDisplay.filter(
         (session) => session.id === sessionTreeFilter
       );
+    }
+
+    // Don't allow topological sort when all session trees are selected
+    // (i.e., when sessionTreeFilter is null)
+    if (
+      !sessionTreeFilter &&
+      (sortOrder === 'topological' || sortOrder === 'reverse-topological')
+    ) {
+      return sortByDate(sessionsToDisplay);
     }
 
     // Apply sorting based on sortOrder
