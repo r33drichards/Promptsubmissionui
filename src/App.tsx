@@ -50,6 +50,7 @@ import {
 } from './hooks';
 
 type FilterType = 'pending' | 'in-progress' | 'needs-review' | 'archived';
+type SortType = 'date' | 'topological' | 'reverse-topological';
 
 const filterMap: Record<FilterType, UiStatus[]> = {
   pending: ['Pending' as UiStatus],
@@ -66,6 +67,15 @@ const filterOptions = [
   { label: 'In Progress', value: 'in-progress' },
   { label: 'Needs Review', value: 'needs-review' },
   { label: 'Archived', value: 'archived' },
+];
+
+const sortOptions = [
+  { label: 'Date (Newest First)', value: 'date' },
+  { label: 'Topological (Parents First)', value: 'topological' },
+  {
+    label: 'Reverse Topological (Children First)',
+    value: 'reverse-topological',
+  },
 ];
 
 function AppLayout() {
@@ -122,6 +132,28 @@ function AppLayout() {
       return null;
     }
   );
+
+  // Initialize sort order from URL, then localStorage, then default
+  const [sortOrder, setSortOrder] = useState<SortType>(() => {
+    // First, try to get from URL
+    const urlSort = searchParams.get('sort');
+    if (
+      urlSort &&
+      ['date', 'topological', 'reverse-topological'].includes(urlSort)
+    ) {
+      return urlSort as SortType;
+    }
+
+    // Fall back to localStorage
+    const saved = window.localStorage.getItem('sessionSortOrder');
+    if (
+      saved &&
+      ['date', 'topological', 'reverse-topological'].includes(saved)
+    ) {
+      return saved as SortType;
+    }
+    return 'date';
+  });
 
   // Fetch sessions using TanStack Query
   const {
@@ -217,6 +249,22 @@ function AppLayout() {
     }
   }, [sessionTreeFilter, searchParams, setSearchParams]);
 
+  // Sync sort order with URL and localStorage
+  useEffect(() => {
+    // Update localStorage
+    window.localStorage.setItem('sessionSortOrder', sortOrder);
+
+    // Update URL search params
+    const currentSortParam = searchParams.get('sort');
+
+    // Only update if the URL needs to change
+    if (currentSortParam !== sortOrder) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('sort', sortOrder);
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [sortOrder, searchParams, setSearchParams]);
+
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
     const repoMap = new Map<string, Date>();
@@ -296,8 +344,9 @@ function AppLayout() {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [sessions, filters]);
 
-  // Sort sessions by created date (newest first) and apply session tree filter
+  // Sort sessions and apply session tree filter
   const filteredSessions = useMemo(() => {
+    // Sort by date (newest first)
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -305,6 +354,66 @@ function AppLayout() {
           ...session,
           children: session.children ? sortByDate(session.children) : [],
         }));
+    };
+
+    // Topological sort (parents before children) - flattens the hierarchy
+    const sortTopological = (sessions: Session[]): Session[] => {
+      const result: Session[] = [];
+      const visited = new Set<string>();
+
+      const visit = (session: Session) => {
+        if (visited.has(session.id)) return;
+        visited.add(session.id);
+
+        // Add parent first
+        result.push({ ...session, children: [] });
+
+        // Then visit children (sorted by date)
+        if (session.children && session.children.length > 0) {
+          const sortedChildren = [...session.children].sort(
+            (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+          );
+          sortedChildren.forEach(visit);
+        }
+      };
+
+      // Sort root sessions by date first
+      const sortedRoots = [...sessions].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
+      sortedRoots.forEach(visit);
+
+      return result;
+    };
+
+    // Reverse topological sort (children before parents) - flattens the hierarchy
+    const sortReverseTopological = (sessions: Session[]): Session[] => {
+      const result: Session[] = [];
+      const visited = new Set<string>();
+
+      const visit = (session: Session) => {
+        if (visited.has(session.id)) return;
+        visited.add(session.id);
+
+        // Visit children first (sorted by date, deepest first)
+        if (session.children && session.children.length > 0) {
+          const sortedChildren = [...session.children].sort(
+            (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+          );
+          sortedChildren.forEach(visit);
+        }
+
+        // Then add parent
+        result.push({ ...session, children: [] });
+      };
+
+      // Sort root sessions by date first
+      const sortedRoots = [...sessions].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
+      sortedRoots.forEach(visit);
+
+      return result;
     };
 
     let sessionsToDisplay = [...hierarchicalSessions];
@@ -316,8 +425,17 @@ function AppLayout() {
       );
     }
 
-    return sortByDate(sessionsToDisplay);
-  }, [hierarchicalSessions, sessionTreeFilter]);
+    // Apply sorting based on sortOrder
+    switch (sortOrder) {
+      case 'topological':
+        return sortTopological(sessionsToDisplay);
+      case 'reverse-topological':
+        return sortReverseTopological(sessionsToDisplay);
+      case 'date':
+      default:
+        return sortByDate(sessionsToDisplay);
+    }
+  }, [hierarchicalSessions, sessionTreeFilter, sortOrder]);
 
   const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(task, {
@@ -552,6 +670,21 @@ function AppLayout() {
                   placeholder="Filter sessions..."
                   className="h-6 text-xs w-full"
                 />
+                <Select
+                  value={sortOrder}
+                  onValueChange={(value) => setSortOrder(value as SortType)}
+                >
+                  <SelectTrigger size="sm" className="h-6 text-xs w-full">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {rootSessionOptions.length > 0 && (
                   <Select
                     value={sessionTreeFilter || 'all'}
