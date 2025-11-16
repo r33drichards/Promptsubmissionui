@@ -146,28 +146,35 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {prInfo?.status && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center">
-                      {prInfo.status === 'open' && (
+              {(session.prUrl && session.prStatus) || prInfo?.status ? (
+                <>
+                  {/* Use prInfo if available, otherwise fall back to session.prStatus */}
+                  {(prInfo?.status || session.prStatus) === 'open' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                      )}
-                      {prInfo.status === 'closed' && (
+                      </TooltipTrigger>
+                      <TooltipContent>PR Open</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {(prInfo?.status || session.prStatus) === 'closed' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <X className="w-3.5 h-3.5 text-red-600" />
-                      )}
-                      {prInfo.status === 'merged' && (
+                      </TooltipTrigger>
+                      <TooltipContent>PR Closed</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {(prInfo?.status || session.prStatus) === 'merged' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <GitMerge className="w-3.5 h-3.5 text-purple-600" />
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {prInfo.status === 'open' && 'PR Open'}
-                    {prInfo.status === 'closed' && 'PR Closed'}
-                    {prInfo.status === 'merged' && 'PR Merged'}
-                  </TooltipContent>
-                </Tooltip>
-              )}
+                      </TooltipTrigger>
+                      <TooltipContent>PR Merged</TooltipContent>
+                    </Tooltip>
+                  )}
+                </>
+              ) : null}
             </div>
           </div>
         </div>
