@@ -6,6 +6,7 @@ import { queryKeys } from './queryKeys';
 
 /**
  * Hook to fetch a list of sessions with optional filters.
+ * By default, this hook will automatically refetch every 5 seconds to keep the UI updated.
  *
  * @example
  * ```tsx
@@ -21,6 +22,8 @@ export function useSessions(
   return useQuery({
     queryKey: queryKeys.sessions.list(params),
     queryFn: () => api.sessions.list(params),
+    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchIntervalInBackground: false, // Only poll when window is focused
     ...options,
   });
 }
