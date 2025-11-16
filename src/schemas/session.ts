@@ -27,6 +27,7 @@ export const SessionSchema = z.object({
   uiStatus: UiStatusSchema,
   createdAt: z.coerce.date(), // Coerce strings to Date objects
   prUrl: z.string().optional(),
+  prStatus: z.enum(['open', 'closed', 'merged']).optional(),
   diffStats: z
     .object({
       additions: z.number(),

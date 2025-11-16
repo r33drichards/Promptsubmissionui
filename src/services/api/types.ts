@@ -50,6 +50,7 @@ export interface UpdateSessionData {
   title?: string;
   uiStatus?: UiStatus;
   prUrl?: string;
+  prStatus?: 'open' | 'closed' | 'merged';
   diffStats?: {
     additions: number;
     deletions: number;

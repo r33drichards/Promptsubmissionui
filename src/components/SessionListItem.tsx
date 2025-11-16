@@ -139,12 +139,22 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {session.prUrl && (
+              {session.prUrl && session.prStatus && (
                 <Badge
                   variant="outline"
-                  className="text-xs bg-green-50 text-green-700 border-green-300"
+                  className={`text-xs ${
+                    session.prStatus === 'open'
+                      ? 'bg-green-50 text-green-700 border-green-300'
+                      : session.prStatus === 'closed'
+                        ? 'bg-red-50 text-red-700 border-red-300'
+                        : 'bg-purple-50 text-purple-700 border-purple-300'
+                  }`}
                 >
-                  Open
+                  {session.prStatus === 'open'
+                    ? 'Open'
+                    : session.prStatus === 'closed'
+                      ? 'Closed'
+                      : 'Merged'}
                 </Badge>
               )}
             </div>

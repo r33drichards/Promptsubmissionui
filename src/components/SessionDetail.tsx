@@ -130,6 +130,34 @@ export function SessionDetail({ session }: SessionDetailProps) {
     }
   };
 
+  // Helper function to get PR status badge color classes
+  const getPrStatusBadgeClasses = (prStatus?: 'open' | 'closed' | 'merged') => {
+    switch (prStatus) {
+      case 'open':
+        return 'bg-green-50 text-green-700 border-green-300';
+      case 'closed':
+        return 'bg-red-50 text-red-700 border-red-300';
+      case 'merged':
+        return 'bg-purple-50 text-purple-700 border-purple-300';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-300';
+    }
+  };
+
+  // Helper function to get PR status display text
+  const getPrStatusText = (prStatus?: 'open' | 'closed' | 'merged') => {
+    switch (prStatus) {
+      case 'open':
+        return 'PR Open';
+      case 'closed':
+        return 'PR Closed';
+      case 'merged':
+        return 'PR Merged';
+      default:
+        return 'PR';
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Session Header */}
@@ -282,19 +310,30 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                window.open(
-                  `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
-                  '_blank'
-                )
-              }
-            >
-              <GitPullRequest className="w-4 h-4 mr-2" />
-              View Diff on Github
-            </Button>
+            {session.prUrl ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(session.prUrl, '_blank')}
+              >
+                <GitPullRequest className="w-4 h-4 mr-2" />
+                View PR
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
+                    '_blank'
+                  )
+                }
+              >
+                <GitPullRequest className="w-4 h-4 mr-2" />
+                View Diff on Github
+              </Button>
+            )}
             {session.sbxConfig?.borrow_token && (
               <Badge
                 variant="outline"
@@ -308,6 +347,14 @@ export function SessionDetail({ session }: SessionDetailProps) {
               >
                 <Container className="w-3 h-3 mr-1" />
                 {copySuccess ? 'Copied!' : 'Container'}
+              </Badge>
+            )}
+            {session.prUrl && session.prStatus && (
+              <Badge
+                variant="outline"
+                className={getPrStatusBadgeClasses(session.prStatus)}
+              >
+                {getPrStatusText(session.prStatus)}
               </Badge>
             )}
             <Badge
