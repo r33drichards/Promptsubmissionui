@@ -14,8 +14,20 @@ export function convertConversationToThreadMessages(
     return messages;
   }
 
+  // Track seen message IDs to prevent duplicates
+  const seenMessageIds = new Set<string>();
+
   for (const item of conversation) {
     if (item.type === 'prompt') {
+      // Skip if we've already seen this prompt ID (corrupted data)
+      if (seenMessageIds.has(item.data.id)) {
+        console.warn(
+          `[assistantUiAdapter] Skipping duplicate prompt ID: ${item.data.id}`
+        );
+        continue;
+      }
+      seenMessageIds.add(item.data.id);
+
       // Add prompt as user message (showing what the user requested)
       messages.push({
         id: item.data.id,
@@ -141,6 +153,15 @@ export function convertConversationToThreadMessages(
           }
           return c;
         });
+
+        // Skip if we've already seen this message UUID (corrupted data)
+        if (!msg.uuid || seenMessageIds.has(msg.uuid)) {
+          console.warn(
+            `[assistantUiAdapter] Skipping duplicate or missing message UUID: ${msg.uuid}`
+          );
+          continue;
+        }
+        seenMessageIds.add(msg.uuid);
 
         messages.push({
           id: msg.uuid,
