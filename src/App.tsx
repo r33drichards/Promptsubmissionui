@@ -272,13 +272,23 @@ function AppLayout() {
   }, [sessions, filters]);
 
   // Get list of root sessions for the session tree filter dropdown
+  // Only include sessions that have no parent (parentId === null)
   const rootSessionOptions = useMemo(() => {
-    return hierarchicalSessions.map((session) => ({
-      id: session.id,
-      title: session.title,
-      createdAt: session.createdAt,
-    }));
-  }, [hierarchicalSessions]);
+    return sessions
+      .filter((session) => session.parentId === null)
+      .filter((session) => {
+        // Apply status filters
+        if (filters.length === 0) return false;
+        const allowedStatuses = filters.flatMap((filter) => filterMap[filter]);
+        return allowedStatuses.includes(session.uiStatus);
+      })
+      .map((session) => ({
+        id: session.id,
+        title: session.title,
+        createdAt: session.createdAt,
+      }))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }, [sessions, filters]);
 
   // Sort sessions by created date (newest first) and apply session tree filter
   const filteredSessions = useMemo(() => {
