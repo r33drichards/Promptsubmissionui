@@ -53,8 +53,8 @@ export class ErrorBoundary extends Component<Props, State> {
                   Something went wrong
                 </h3>
                 <p className="text-sm text-red-800">
-                  There was an error displaying the conversation. This may be due
-                  to corrupted message data.
+                  There was an error displaying the conversation. This may be
+                  due to corrupted message data.
                 </p>
                 {this.state.error && (
                   <details className="text-xs text-red-700 mt-2">
