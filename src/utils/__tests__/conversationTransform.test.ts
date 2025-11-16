@@ -52,6 +52,7 @@ describe('convertConversationToMessages', () => {
       metadata: {
         isPrompt: true,
         status: 'completed',
+        createdAt: new Date('2025-01-01'),
       },
     });
     expect(result[1]).toEqual({
