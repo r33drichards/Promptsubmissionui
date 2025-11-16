@@ -67,6 +67,7 @@ ANTHROPIC_API_KEY=sk-ant-your_api_key_here
 ```
 
 **Important**: You need to create:
+
 - **GitHub Personal Access Token**: https://github.com/settings/tokens/new
   - Select scopes: `repo`, `user:email`
 - **Anthropic API Key**: https://console.anthropic.com/account/keys
@@ -122,6 +123,7 @@ cargo run -- --server
 ```
 
 The backend will:
+
 - Run database migrations automatically
 - Start the web server on port 8000
 - Start all background task workers
@@ -136,6 +138,7 @@ curl http://localhost:8000/health
 ```
 
 View API documentation:
+
 - Swagger UI: http://localhost:8000/swagger-ui/
 - RapiDoc: http://localhost:8000/rapidoc/
 
@@ -174,17 +177,17 @@ Frontend (5173) ──API──> Backend (8000) ──> PostgreSQL (5432)
 
 ## Service URLs
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Frontend | http://localhost:5173 | - |
-| Backend API | http://localhost:8000 | JWT required |
-| Swagger UI | http://localhost:8000/swagger-ui/ | - |
-| Keycloak | http://localhost:8080 | admin/admin |
-| Keycloak Admin | http://localhost:8080/admin | admin/admin |
-| Prometheus | http://localhost:9090 | - |
-| Grafana | http://localhost:3000 | admin/admin |
-| PostgreSQL | localhost:5432 | promptuser/promptpass |
-| Redis | localhost:6379 | - |
+| Service        | URL                               | Credentials           |
+| -------------- | --------------------------------- | --------------------- |
+| Frontend       | http://localhost:5173             | -                     |
+| Backend API    | http://localhost:8000             | JWT required          |
+| Swagger UI     | http://localhost:8000/swagger-ui/ | -                     |
+| Keycloak       | http://localhost:8080             | admin/admin           |
+| Keycloak Admin | http://localhost:8080/admin       | admin/admin           |
+| Prometheus     | http://localhost:9090             | -                     |
+| Grafana        | http://localhost:3000             | admin/admin           |
+| PostgreSQL     | localhost:5432                    | promptuser/promptpass |
+| Redis          | localhost:6379                    | -                     |
 
 ## Common Development Tasks
 
@@ -258,6 +261,7 @@ cargo run -- --server
 The backend exposes Prometheus metrics at http://localhost:8000/metrics
 
 Key metrics to watch:
+
 - `apalis_jobs_total` - Total jobs processed
 - `apalis_jobs_duration_seconds` - Job processing duration
 - `http_requests_total` - HTTP request count
@@ -290,6 +294,7 @@ nix develop --command cargo run -- --server
 **Problem**: Backend can't connect to PostgreSQL or Redis
 
 **Solution**:
+
 ```bash
 # Check services are running
 docker compose -f docker-compose.backend.yml ps
@@ -306,6 +311,7 @@ docker exec prompt-backend-redis redis-cli ping
 **Problem**: Keycloak is starting up (takes 30-60 seconds)
 
 **Solution**:
+
 ```bash
 # Check Keycloak logs
 docker compose -f docker-compose.backend.yml logs -f keycloak
@@ -318,6 +324,7 @@ docker compose -f docker-compose.backend.yml logs -f keycloak
 **Problem**: JWT validation failing
 
 **Solutions**:
+
 1. Check you're logged in (visit http://localhost:5173)
 2. Check backend can reach Keycloak:
    ```bash
@@ -330,6 +337,7 @@ docker compose -f docker-compose.backend.yml logs -f keycloak
 **Problem**: Backend started without `--server` flag
 
 **Solution**:
+
 ```bash
 # Restart with --server flag
 cargo run -- --server
@@ -340,6 +348,7 @@ cargo run -- --server
 **Problem**: Database schema mismatch or corrupted state
 
 **Solution**:
+
 ```bash
 # Reset database
 docker compose -f docker-compose.backend.yml down -v
@@ -357,17 +366,20 @@ cargo run -- --server
 ### Typical Development Session
 
 1. **Start infrastructure** (once per day):
+
    ```bash
    docker compose -f docker-compose.backend.yml up -d
    ```
 
 2. **Start backend** (in one terminal):
+
    ```bash
    cd ~/workspace/prompt-backend
    nix develop --command cargo run -- --server
    ```
 
 3. **Start frontend** (in another terminal):
+
    ```bash
    npm run dev
    ```
