@@ -586,7 +586,10 @@ describe('User Flows Integration Tests', () => {
 
       await waitFor(() => {
         // Check for the filter dropdown (Select component)
-        const filterDropdown = screen.getByRole('combobox');
+        // Since there are multiple comboboxes, look for the one containing "Needs Review"
+        const filterDropdown = screen.getAllByRole('combobox').find((el) =>
+          el.textContent?.includes('Needs Review')
+        );
         expect(filterDropdown).toBeInTheDocument();
       });
     });
@@ -607,9 +610,12 @@ describe('User Flows Integration Tests', () => {
         screen.getByText('Test Session 3 (Completed)')
       ).toBeInTheDocument();
 
-      // Open the filter dropdown
-      const filterDropdown = screen.getByRole('combobox');
-      await user.click(filterDropdown);
+      // Open the filter dropdown - find the one containing "Needs Review"
+      const filterDropdown = screen.getAllByRole('combobox').find((el) =>
+        el.textContent?.includes('Needs Review')
+      );
+      expect(filterDropdown).toBeInTheDocument();
+      await user.click(filterDropdown!);
 
       // First, deselect "Needs Review" which is selected by default
       await waitFor(async () => {
