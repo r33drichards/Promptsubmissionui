@@ -260,9 +260,8 @@ function AppLayout() {
         const parent = sessionMap.get(session.parentId);
         if (parent) {
           parent.children!.push(sessionWithChildren);
-        } else {
-          rootSessions.push(sessionWithChildren);
         }
+        // Don't add sessions with parentId to rootSessions even if parent isn't in filtered set
       } else {
         rootSessions.push(sessionWithChildren);
       }
