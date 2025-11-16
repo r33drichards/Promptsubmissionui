@@ -19,6 +19,7 @@ export interface AssistantMessage {
       output_tokens: number;
       cache_read_input_tokens?: number;
     };
+    createdAt?: Date;
   };
 }
 
@@ -42,6 +43,7 @@ export function convertConversationToMessages(
         metadata: {
           isPrompt: true,
           status: item.data.status,
+          createdAt: item.data.createdAt,
         },
       });
 
@@ -82,11 +84,10 @@ export function convertConversationToMessages(
           id: msg.uuid,
           role: msg.message.role || (msg.type as 'user' | 'assistant'),
           content,
-          metadata: msg.message.usage
-            ? {
-                usage: msg.message.usage,
-              }
-            : undefined,
+          metadata: {
+            ...(msg.message.usage && { usage: msg.message.usage }),
+            ...(msg.createdAt && { createdAt: msg.createdAt }),
+          },
         });
       }
     }

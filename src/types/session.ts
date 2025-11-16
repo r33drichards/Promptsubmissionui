@@ -57,6 +57,8 @@ export interface BackendMessage {
   };
   session_id: string;
   parent_tool_use_id?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Prompt {

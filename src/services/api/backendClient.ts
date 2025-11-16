@@ -231,8 +231,23 @@ export class BackendClientImpl implements BackendClient {
       const camelMsg = keysToCamel(msg);
 
       // The API wraps BackendMessage in { id, prompt_id, data: BackendMessage, created_at, updated_at }
-      // We need to unwrap the 'data' field to match the BackendMessage type
-      return camelMsg.data || camelMsg;
+      // We need to unwrap the 'data' field to match the BackendMessage type, but preserve timestamps
+      const messageData = camelMsg.data || camelMsg;
+
+      // If timestamps exist at the wrapper level, attach them to the message data
+      if (camelMsg.createdAt || camelMsg.updatedAt) {
+        return {
+          ...messageData,
+          createdAt: camelMsg.createdAt
+            ? new Date(camelMsg.createdAt)
+            : undefined,
+          updatedAt: camelMsg.updatedAt
+            ? new Date(camelMsg.updatedAt)
+            : undefined,
+        };
+      }
+
+      return messageData;
     });
   }
 }
