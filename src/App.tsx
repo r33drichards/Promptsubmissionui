@@ -688,7 +688,15 @@ function AppLayout() {
                   </SelectTrigger>
                   <SelectContent>
                     {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        disabled={
+                          !sessionTreeFilter &&
+                          (option.value === 'topological' ||
+                            option.value === 'reverse-topological')
+                        }
+                      >
                         {option.label}
                       </SelectItem>
                     ))}
