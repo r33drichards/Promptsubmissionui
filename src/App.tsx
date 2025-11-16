@@ -457,7 +457,21 @@ function AppLayout() {
   const handleCancelCreate = () => {
     setIsCreatingTask(false);
     setParentForNewTask(null);
+    setResubmitSession(null);
     // Don't navigate - stay on current URL
+  };
+
+  const [resubmitSession, setResubmitSession] = useState<Session | null>(null);
+
+  const handleResubmit = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      // Pass the session to CreateTaskForm which will fetch and display the original prompt
+      setResubmitSession(session);
+      setParentForNewTask(null);
+      navigate('/');
+      setIsCreatingTask(true);
+    }
   };
 
   // Disabled for now - will be re-enabled when CLI integration is ready
@@ -787,11 +801,15 @@ function AppLayout() {
             onSubmit={handleCreateTask}
             onCancel={handleCancelCreate}
             parentSession={parentForNewTask}
+            resubmitSession={resubmitSession}
             repositories={sortedRepositories}
             isSubmitting={createSessionMutation.isPending}
           />
         ) : selectedSession ? (
-          <SessionDetail session={selectedSession} />
+          <SessionDetail
+            session={selectedSession}
+            onResubmit={handleResubmit}
+          />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
             <div className="text-center space-y-3">
