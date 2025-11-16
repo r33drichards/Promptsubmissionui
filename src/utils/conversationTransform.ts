@@ -80,14 +80,16 @@ export function convertConversationToMessages(
           return { type: 'text' as const, text: '' };
         });
 
+        const metadata: AssistantMessage['metadata'] = {
+          ...(msg.message.usage && { usage: msg.message.usage }),
+          ...(msg.createdAt && { createdAt: msg.createdAt }),
+        };
+
         messages.push({
           id: msg.uuid,
           role: msg.message.role || (msg.type as 'user' | 'assistant'),
           content,
-          metadata: {
-            ...(msg.message.usage && { usage: msg.message.usage }),
-            ...(msg.createdAt && { createdAt: msg.createdAt }),
-          },
+          ...(Object.keys(metadata).length > 0 && { metadata }),
         });
       }
     }
