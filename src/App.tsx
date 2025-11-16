@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Routes,
   Route,
@@ -70,7 +70,7 @@ const filterOptions = [
 ];
 
 const sortOptions = [
-  { label: 'Tree View', value: 'date' },
+  { label: 'Date (Newest First)', value: 'date' },
   { label: 'Topological (Parents First)', value: 'topological' },
   {
     label: 'Reverse Topological (Children First)',
@@ -154,22 +154,6 @@ function AppLayout() {
     }
     return 'date';
   });
-
-  // Track the user's preferred sort order for when viewing a single session tree
-  // This allows us to restore topo sort when going from all trees -> single tree
-  const [preferredSortOrder, setPreferredSortOrder] = useState<SortType>(() => {
-    const saved = window.localStorage.getItem('preferredSortOrder');
-    if (
-      saved &&
-      ['date', 'topological', 'reverse-topological'].includes(saved)
-    ) {
-      return saved as SortType;
-    }
-    return 'date';
-  });
-
-  // Track the previous sessionTreeFilter value to detect transitions
-  const _prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
 
   // Fetch sessions using TanStack Query
   const {
@@ -280,34 +264,6 @@ function AppLayout() {
       setSearchParams(newSearchParams, { replace: true });
     }
   }, [sortOrder, searchParams, setSearchParams]);
-
-  // Persist preferred sort order separately
-  useEffect(() => {
-    window.localStorage.setItem('preferredSortOrder', preferredSortOrder);
-  }, [preferredSortOrder]);
-
-  // Handle state transitions when switching between all trees and single tree views
-  useEffect(() => {
-    // When switching to all session trees (sessionTreeFilter becomes null)
-    if (!sessionTreeFilter) {
-      // If we're in topo sort, save it as the preferred sort order
-      if (sortOrder === 'topological' || sortOrder === 'reverse-topological') {
-        setPreferredSortOrder(sortOrder);
-        // Force convert to tree view (date sort)
-        setSortOrder('date');
-      }
-    } else {
-      // When switching to a specific session tree (sessionTreeFilter is set)
-      // Restore the preferred sort order if it was a topo sort
-      if (
-        sortOrder === 'date' &&
-        (preferredSortOrder === 'topological' ||
-          preferredSortOrder === 'reverse-topological')
-      ) {
-        setSortOrder(preferredSortOrder);
-      }
-    }
-  }, [sessionTreeFilter]); // Only run when sessionTreeFilter changes
 
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
@@ -467,15 +423,6 @@ function AppLayout() {
       sessionsToDisplay = sessionsToDisplay.filter(
         (session) => session.id === sessionTreeFilter
       );
-    }
-
-    // Don't allow topological sort when all session trees are selected
-    // (i.e., when sessionTreeFilter is null)
-    if (
-      !sessionTreeFilter &&
-      (sortOrder === 'topological' || sortOrder === 'reverse-topological')
-    ) {
-      return sortByDate(sessionsToDisplay);
     }
 
     // Apply sorting based on sortOrder
@@ -750,32 +697,14 @@ function AppLayout() {
                 />
                 <Select
                   value={sortOrder}
-                  onValueChange={(value) => {
-                    const newSortOrder = value as SortType;
-                    setSortOrder(newSortOrder);
-                    // When user manually changes sort, update their preferred sort order
-                    if (
-                      newSortOrder === 'topological' ||
-                      newSortOrder === 'reverse-topological'
-                    ) {
-                      setPreferredSortOrder(newSortOrder);
-                    }
-                  }}
+                  onValueChange={(value) => setSortOrder(value as SortType)}
                 >
                   <SelectTrigger size="sm" className="h-6 text-xs w-full">
                     <SelectValue placeholder="Sort by..." />
                   </SelectTrigger>
                   <SelectContent>
                     {sortOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        disabled={
-                          !sessionTreeFilter &&
-                          (option.value === 'topological' ||
-                            option.value === 'reverse-topological')
-                        }
-                      >
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
