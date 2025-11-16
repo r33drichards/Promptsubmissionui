@@ -169,7 +169,7 @@ function AppLayout() {
   });
 
   // Track the previous sessionTreeFilter value to detect transitions
-  const prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
+  const _prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
 
   // Fetch sessions using TanStack Query
   const {
@@ -729,7 +729,10 @@ function AppLayout() {
                     const newSortOrder = value as SortType;
                     setSortOrder(newSortOrder);
                     // When user manually changes sort, update their preferred sort order
-                    if (newSortOrder === 'topological' || newSortOrder === 'reverse-topological') {
+                    if (
+                      newSortOrder === 'topological' ||
+                      newSortOrder === 'reverse-topological'
+                    ) {
                       setPreferredSortOrder(newSortOrder);
                     }
                   }}
