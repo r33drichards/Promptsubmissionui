@@ -1,5 +1,5 @@
 [build]
 # Disable Dockerfile builds - Railway will use Railpack (Nixpacks) instead
-builder = "NIXPACKS"
+builder = "RAILPACK"
 
 
