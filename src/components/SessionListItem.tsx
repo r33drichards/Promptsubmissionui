@@ -47,8 +47,8 @@ export function SessionListItem({
   return (
     <div>
       <div
-        className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-          isActive ? 'bg-gray-100' : ''
+        className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-200 ${
+          isActive ? 'bg-gray-100 border-l-4 border-l-blue-500' : ''
         }`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
