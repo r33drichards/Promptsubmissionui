@@ -43,9 +43,7 @@
         "http://localhost:3000/authentication/callback",
         "http://localhost:3000/authentication/silent-callback"
       ],
-      "webOrigins": [
-        "http://localhost:3000"
-      ],
+      "webOrigins": ["http://localhost:3000"],
       "publicClient": true,
       "protocol": "openid-connect",
       "attributes": {
@@ -144,9 +142,7 @@
         }
       ],
       "requiredActions": [],
-      "realmRoles": [
-        "default-roles-oauth2-realm"
-      ]
+      "realmRoles": ["default-roles-oauth2-realm"]
     }
   ],
   "roles": {
@@ -156,15 +152,9 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
-          "realm": [
-            "offline_access",
-            "uma_authorization"
-          ],
+          "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "account": [
-              "view-profile",
-              "manage-account"
-            ]
+            "account": ["view-profile", "manage-account"]
           }
         }
       },
@@ -239,9 +229,7 @@
     "clientRole": false,
     "containerId": "oauth2-realm"
   },
-  "requiredCredentials": [
-    "password"
-  ],
+  "requiredCredentials": ["password"],
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
@@ -249,9 +237,7 @@
   "otpPolicyLookAheadWindow": 1,
   "otpPolicyPeriod": 30,
   "webAuthnPolicyRpEntityName": "keycloak",
-  "webAuthnPolicySignatureAlgorithms": [
-    "ES256"
-  ],
+  "webAuthnPolicySignatureAlgorithms": ["ES256"],
   "webAuthnPolicyRpId": "",
   "webAuthnPolicyAttestationConveyancePreference": "not specified",
   "webAuthnPolicyAuthenticatorAttachment": "not specified",
@@ -1075,9 +1061,7 @@
   },
   "smtpServer": {},
   "eventsEnabled": false,
-  "eventsListeners": [
-    "jboss-logging"
-  ],
+  "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
@@ -1088,9 +1072,7 @@
         "providerId": "rsa-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ]
+          "priority": ["100"]
         }
       },
       {
@@ -1098,12 +1080,8 @@
         "providerId": "hmac-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "HS256"
-          ]
+          "priority": ["100"],
+          "algorithm": ["HS256"]
         }
       },
       {
@@ -1111,9 +1089,7 @@
         "providerId": "aes-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ]
+          "priority": ["100"]
         }
       }
     ]

@@ -108,6 +108,7 @@ This guide will help you set up the Prompt Submission UI for local development u
 - **Realm Import:** `keycloak/oauth2-realm.json`
 
 The realm configuration includes:
+
 - Frontend client (`prompt-submission-ui`)
 - Backend client (`prompt-backend`)
 - Test user with credentials
@@ -176,11 +177,13 @@ docker-compose up -d --build frontend
 If you see 401 errors after logging in:
 
 1. Ensure Keycloak is running and healthy:
+
    ```bash
    docker-compose ps keycloak
    ```
 
 2. Check backend logs for authentication errors:
+
    ```bash
    docker-compose logs backend | grep -i "error\|auth"
    ```
@@ -196,11 +199,13 @@ If you see 401 errors after logging in:
 If the test user doesn't work:
 
 1. Check Keycloak logs:
+
    ```bash
    docker-compose logs keycloak | grep -i import
    ```
 
 2. You should see:
+
    ```
    Realm 'oauth2-realm' imported
    ```
@@ -219,6 +224,7 @@ If you see React warnings about nested buttons, ensure you're running the latest
 If the backend can't connect to PostgreSQL:
 
 1. Check if PostgreSQL is healthy:
+
    ```bash
    docker-compose ps postgres
    ```
@@ -233,6 +239,7 @@ If the backend can't connect to PostgreSQL:
 If you get port binding errors:
 
 1. Check which process is using the port:
+
    ```bash
    # macOS/Linux
    lsof -i :3000
@@ -300,16 +307,19 @@ To make changes:
 If you want to run the frontend outside of Docker:
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Copy environment variables:
+
    ```bash
    cp .env.development .env.local
    ```
 
 3. Start the dev server:
+
    ```bash
    npm run dev
    ```

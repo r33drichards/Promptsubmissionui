@@ -19,26 +19,30 @@ This Docker Compose configuration provides a complete local development environm
 ## Quick Start
 
 1. **Clone the repository** (if you haven't already):
+
    ```bash
    git clone https://github.com/r33drichards/Promptsubmissionui.git
    cd Promptsubmissionui
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.docker .env
    ```
-   
+
    Edit `.env` and add your:
    - `GITHUB_TOKEN`: Your GitHub personal access token
    - `ANTHROPIC_API_KEY`: Your Anthropic API key
 
 3. **Start all services**:
+
    ```bash
    docker-compose up -d
    ```
 
 4. **Initialize the database** (first time only):
+
    ```bash
    # Run migrations
    docker-compose exec backend rust-redis-webserver --migrate
@@ -54,6 +58,7 @@ This Docker Compose configuration provides a complete local development environm
 ### Hot Reload
 
 The frontend container is configured with volume mounts for hot-reload during development:
+
 - Changes to `src/` will automatically reload
 - Changes to configuration files will also trigger reload
 
@@ -94,6 +99,7 @@ docker-compose build
 ## Service Details
 
 ### PostgreSQL
+
 - **Database**: `prompt_backend`
 - **User**: `promptuser`
 - **Password**: `promptpass`
@@ -101,20 +107,24 @@ docker-compose build
 - **Data**: Persisted in `postgres_data` volume
 
 ### Redis
+
 - **Port**: 6379
 - **Data**: Persisted in `redis_data` volume
 
 ### Backend
+
 - Built from https://github.com/r33drichards/prompt-backend
 - Automatically runs database migrations on startup
 - Connects to PostgreSQL, Redis, and Sandbox
 
 ### Frontend
+
 - Vite dev server with HMR (Hot Module Replacement)
 - Authentication disabled by default (`VITE_DISABLE_AUTH=true`)
 - Source code mounted for live editing
 
 ### Sandbox
+
 - Uses `wholelottahoopla/sandbox:latest`
 - Provides isolated code execution environment
 - Accessible at http://localhost:8001
@@ -122,20 +132,24 @@ docker-compose build
 ## Troubleshooting
 
 ### Backend won't start
+
 - Check if PostgreSQL is healthy: `docker-compose ps postgres`
 - View backend logs: `docker-compose logs backend`
 - Ensure environment variables are set correctly in `.env`
 
 ### Frontend build errors
+
 - Rebuild with no cache: `docker-compose build frontend --no-cache`
 - Check Node.js version compatibility
 
 ### Database connection issues
+
 - Ensure PostgreSQL healthcheck passes
 - Verify `DATABASE_URL` environment variable
 - Check network connectivity: `docker-compose exec backend ping postgres`
 
 ### Port conflicts
+
 If you have services already running on ports 3000, 5432, 6379, 8000, or 8001, you can modify the port mappings in `docker-compose.yml`.
 
 ## Networking
@@ -151,6 +165,7 @@ All services are connected via the `prompt-network` bridge network, allowing the
 ## Production Considerations
 
 This setup is designed for **local development only**. For production:
+
 - Use stronger database credentials
 - Enable authentication (`VITE_DISABLE_AUTH=false`)
 - Use production builds (`npm run build`)
