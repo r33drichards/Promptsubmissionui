@@ -283,11 +283,56 @@ export function useUnarchiveSession(
 
   return useMutation({
     mutationFn: (id: string) => api.sessions.unarchive(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
+
+      const previousSession = queryClient.getQueryData<Session>(
+        queryKeys.sessions.detail(id)
+      );
+
+      // Optimistically update the session status
+      if (previousSession) {
+        queryClient.setQueryData<Session>(queryKeys.sessions.detail(id), {
+          ...previousSession,
+          uiStatus: 'NeedsReview', // Default status when unarchiving
+        });
+      }
+
+      return { previousSession };
+    },
     onSuccess: (unarchivedSession, id, context) => {
+      // Update the detail cache with the server response
       queryClient.setQueryData(
         queryKeys.sessions.detail(unarchivedSession.id),
         unarchivedSession
       );
+
+      // Optimistically update all list caches
+      queryClient.setQueriesData(
+        { queryKey: queryKeys.sessions.lists() },
+        (oldSessions: Session[] | undefined) => {
+          if (!oldSessions) return [unarchivedSession];
+
+          // Check if the session already exists in the list
+          const existingIndex = oldSessions.findIndex(
+            (s) => s.id === unarchivedSession.id
+          );
+
+          if (existingIndex >= 0) {
+            // Update the existing session
+            const updatedSessions = [...oldSessions];
+            updatedSessions[existingIndex] = unarchivedSession;
+            return updatedSessions;
+          } else {
+            // Add the unarchived session to the list
+            return [unarchivedSession, ...oldSessions];
+          }
+        }
+      );
+
+      // Invalidate and refetch to ensure consistency with backend
       queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.lists(),
         refetchType: 'active',
@@ -298,10 +343,24 @@ export function useUnarchiveSession(
       options?.onSuccess?.(unarchivedSession, id, context);
     },
     onError: (error, id, context) => {
+      // Rollback to the previous value on error
+      if (context?.previousSession) {
+        queryClient.setQueryData(
+          queryKeys.sessions.detail(id),
+          context.previousSession
+        );
+      }
+
       console.error('Failed to unarchive session:', error);
       toast.error('Failed to unarchive task');
 
       options?.onError?.(error, id, context);
+    },
+    onSettled: (data, error, id) => {
+      // Always refetch after error or success to ensure consistency
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.detail(id),
+      });
     },
     ...options,
   });
