@@ -96,17 +96,26 @@ export function SessionListItem({
                 {renderStatusIndicator()}
                 <h3 className="text-sm truncate">{session.title}</h3>
               </div>
-              <p className="text-xs truncate mt-0.5">
-                <a
-                  href={`https://github.com/${session.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-blue-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {session.repo}
-                </a>
-              </p>
+              <div className="flex items-center gap-2">
+                {/* Spacer to align with status indicator above - matches icon width (w-4) plus gap (gap-2) */}
+                <div className="w-6 flex-shrink-0" />
+                <p className="text-xs truncate mt-0.5">
+                  <a
+                    href={`https://github.com/${session.repo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-blue-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {session.repo}
+                  </a>
+                  {session.branch && (
+                    <span className="text-gray-400 ml-1">
+                      • {session.branch}
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
