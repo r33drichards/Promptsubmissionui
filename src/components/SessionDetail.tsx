@@ -8,6 +8,7 @@ import {
   X,
   GitPullRequest,
   Container,
+  Copy,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -20,6 +21,7 @@ import { useUpdateSession } from '../hooks/useSessionMutations';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -37,6 +39,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(session.title);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [copiedBranch, setCopiedBranch] = useState<
+    'branch' | 'targetBranch' | null
+  >(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
 
@@ -90,6 +95,18 @@ export function SessionDetail({ session }: SessionDetailProps) {
       } catch (err) {
         console.error('Failed to copy borrow token:', err);
       }
+    }
+  };
+
+  const handleCopyBranch = async (branchType: 'branch' | 'targetBranch') => {
+    const branchName =
+      branchType === 'branch' ? session.branch : session.targetBranch;
+    try {
+      await navigator.clipboard.writeText(branchName);
+      setCopiedBranch(branchType);
+      setTimeout(() => setCopiedBranch(null), 2000);
+    } catch (err) {
+      console.error(`Failed to copy ${branchType}:`, err);
     }
   };
 
@@ -185,6 +202,37 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   >
                     {truncateBranchName(session.branch)}
                   </a>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyBranch('branch');
+                        }}
+                      >
+                        <Check
+                          className={`h-3 w-3 ${
+                            copiedBranch === 'branch'
+                              ? 'text-green-600'
+                              : 'hidden'
+                          }`}
+                        />
+                        <Copy
+                          className={`h-3 w-3 ${
+                            copiedBranch === 'branch' ? 'hidden' : ''
+                          }`}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {copiedBranch === 'branch'
+                        ? 'Copied!'
+                        : 'Copy branch name'}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <GitMerge className="w-3 h-3 flex-shrink-0" />
                 <div className="flex items-center gap-1 min-w-0 flex-shrink">
@@ -198,6 +246,37 @@ export function SessionDetail({ session }: SessionDetailProps) {
                   >
                     {truncateBranchName(session.targetBranch)}
                   </a>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyBranch('targetBranch');
+                        }}
+                      >
+                        <Check
+                          className={`h-3 w-3 ${
+                            copiedBranch === 'targetBranch'
+                              ? 'text-green-600'
+                              : 'hidden'
+                          }`}
+                        />
+                        <Copy
+                          className={`h-3 w-3 ${
+                            copiedBranch === 'targetBranch' ? 'hidden' : ''
+                          }`}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {copiedBranch === 'targetBranch'
+                        ? 'Copied!'
+                        : 'Copy branch name'}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </div>
