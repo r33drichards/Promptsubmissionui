@@ -586,8 +586,9 @@ describe('User Flows Integration Tests', () => {
 
       await waitFor(() => {
         // Check for the filter dropdown (Select component)
-        const filterDropdown = screen.getByRole('combobox');
-        expect(filterDropdown).toBeInTheDocument();
+        // Now there are two comboboxes: status filter and session tree filter
+        const filterDropdowns = screen.getAllByRole('combobox');
+        expect(filterDropdowns.length).toBeGreaterThanOrEqual(1);
       });
     });
 
@@ -607,9 +608,13 @@ describe('User Flows Integration Tests', () => {
         screen.getByText('Test Session 3 (Completed)')
       ).toBeInTheDocument();
 
-      // Open the filter dropdown
-      const filterDropdown = screen.getByRole('combobox');
-      await user.click(filterDropdown);
+      // Open the status filter dropdown (first combobox, contains "Needs Review")
+      const filterDropdowns = screen.getAllByRole('combobox');
+      const statusFilterDropdown = filterDropdowns.find((dropdown) =>
+        dropdown.textContent?.includes('Needs Review')
+      );
+      expect(statusFilterDropdown).toBeDefined();
+      await user.click(statusFilterDropdown!);
 
       // First, deselect "Needs Review" which is selected by default
       await waitFor(async () => {
