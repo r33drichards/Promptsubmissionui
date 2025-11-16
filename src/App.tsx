@@ -17,6 +17,13 @@ import { CreateTaskForm } from './components/CreateTaskForm';
 import { ArchiveSessionDialog } from './components/ArchiveSessionDialog';
 import { Button } from './components/ui/button';
 import { MultiSelect } from './components/ui/multi-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './components/ui/select';
 
 import {
   DropdownMenu,
@@ -93,6 +100,24 @@ function AppLayout() {
     return ['needs-review'];
   });
 
+  // Initialize session tree filter from URL, then localStorage, then default (null = show all)
+  const [sessionTreeFilter, setSessionTreeFilter] = useState<string | null>(
+    () => {
+      // First, try to get from URL
+      const urlSessionTree = searchParams.get('sessionTree');
+      if (urlSessionTree) {
+        return urlSessionTree;
+      }
+
+      // Fall back to localStorage
+      const saved = window.localStorage.getItem('sessionTreeFilter');
+      if (saved && saved !== 'null') {
+        return saved;
+      }
+      return null;
+    }
+  );
+
   // Fetch sessions using TanStack Query
   const {
     data: sessions = [],
@@ -162,6 +187,30 @@ function AppLayout() {
     }
   }, [filters, searchParams, setSearchParams]);
 
+  // Sync session tree filter with URL and localStorage
+  useEffect(() => {
+    // Update localStorage
+    window.localStorage.setItem(
+      'sessionTreeFilter',
+      sessionTreeFilter || 'null'
+    );
+
+    // Update URL search params
+    const currentTreeParam = searchParams.get('sessionTree');
+    const newTreeParam = sessionTreeFilter;
+
+    // Only update if the URL needs to change
+    if (currentTreeParam !== newTreeParam) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (sessionTreeFilter) {
+        newSearchParams.set('sessionTree', sessionTreeFilter);
+      } else {
+        newSearchParams.delete('sessionTree');
+      }
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [sessionTreeFilter, searchParams, setSearchParams]);
+
   // Get sorted repositories by most recently used
   const sortedRepositories = useMemo(() => {
     const repoMap = new Map<string, Date>();
@@ -222,7 +271,16 @@ function AppLayout() {
     return rootSessions;
   }, [sessions, filters]);
 
-  // Sort sessions by created date (newest first)
+  // Get list of root sessions for the session tree filter dropdown
+  const rootSessionOptions = useMemo(() => {
+    return hierarchicalSessions.map((session) => ({
+      id: session.id,
+      title: session.title,
+      createdAt: session.createdAt,
+    }));
+  }, [hierarchicalSessions]);
+
+  // Sort sessions by created date (newest first) and apply session tree filter
   const filteredSessions = useMemo(() => {
     const sortByDate = (sessions: Session[]): Session[] => {
       return sessions
@@ -233,8 +291,17 @@ function AppLayout() {
         }));
     };
 
-    return sortByDate([...hierarchicalSessions]);
-  }, [hierarchicalSessions]);
+    let sessionsToDisplay = [...hierarchicalSessions];
+
+    // Apply session tree filter if one is selected
+    if (sessionTreeFilter) {
+      sessionsToDisplay = sessionsToDisplay.filter(
+        (session) => session.id === sessionTreeFilter
+      );
+    }
+
+    return sortByDate(sessionsToDisplay);
+  }, [hierarchicalSessions, sessionTreeFilter]);
 
   const handleCreateTask = (task: CreateSessionData) => {
     createSessionMutation.mutate(task, {
@@ -418,7 +485,7 @@ function AppLayout() {
                   )}
                 </Button>
               </div>
-              <div className="w-full mt-2">
+              <div className="w-full mt-2 space-y-2">
                 <MultiSelect
                   options={filterOptions}
                   selected={filters}
@@ -428,6 +495,26 @@ function AppLayout() {
                   placeholder="Filter sessions..."
                   className="h-6 text-xs w-full"
                 />
+                {rootSessionOptions.length > 0 && (
+                  <Select
+                    value={sessionTreeFilter || 'all'}
+                    onValueChange={(value) =>
+                      setSessionTreeFilter(value === 'all' ? null : value)
+                    }
+                  >
+                    <SelectTrigger size="sm" className="h-6 text-xs w-full">
+                      <SelectValue placeholder="Show all session trees" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All session trees</SelectItem>
+                      {rootSessionOptions.map((session) => (
+                        <SelectItem key={session.id} value={session.id}>
+                          <span className="truncate">{session.title}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 
