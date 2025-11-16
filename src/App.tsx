@@ -728,15 +728,9 @@ function AppLayout() {
                   onValueChange={(value) => {
                     const newSortOrder = value as SortType;
                     setSortOrder(newSortOrder);
-                    // When user manually changes sort to topological, save it for this specific tree
-                    if (
-                      sessionTreeFilter &&
-                      (newSortOrder === 'topological' || newSortOrder === 'reverse-topological')
-                    ) {
-                      setPreferredSortOrderByTree((prev) => ({
-                        ...prev,
-                        [sessionTreeFilter]: newSortOrder,
-                      }));
+                    // When user manually changes sort, update their preferred sort order
+                    if (newSortOrder === 'topological' || newSortOrder === 'reverse-topological') {
+                      setPreferredSortOrder(newSortOrder);
                     }
                   }}
                 >
