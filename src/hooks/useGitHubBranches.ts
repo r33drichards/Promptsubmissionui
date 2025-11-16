@@ -18,30 +18,62 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
   // Parse and validate repository format
   const validatedRepo = RepoFormatSchema.parse(repo);
 
-  const url = `${GITHUB_API_BASE}/repos/${validatedRepo}/branches?per_page=100`;
+  const allBranches: GitHubBranch[] = [];
+  let url: string | null =
+    `${GITHUB_API_BASE}/repos/${validatedRepo}/branches?per_page=100`;
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-    },
-  });
+  // Paginate through all branches
+  while (url) {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
 
-  if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error(
-        'GitHub API rate limit exceeded. Please try again later.'
-      );
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error(
+          'GitHub API rate limit exceeded. Please try again later.'
+        );
+      }
+      if (response.status === 404) {
+        throw new Error(
+          'Repository not found or you do not have access to it.'
+        );
+      }
+      throw new Error(`GitHub API error: ${response.statusText}`);
     }
-    if (response.status === 404) {
-      throw new Error('Repository not found or you do not have access to it.');
-    }
-    throw new Error(`GitHub API error: ${response.statusText}`);
+
+    const rawData = await response.json();
+    // Parse and validate the response data (parse don't validate)
+    const data = GitHubBranchesArraySchema.parse(rawData);
+    allBranches.push(...data);
+
+    // Check for next page in Link header
+    const linkHeader = response.headers.get('Link');
+    url = parseLinkHeader(linkHeader);
   }
 
-  const rawData = await response.json();
-  // Parse and validate the response data (parse don't validate)
-  const data = GitHubBranchesArraySchema.parse(rawData);
-  return data;
+  return allBranches;
+}
+
+// Helper function to parse the Link header and extract the next page URL
+function parseLinkHeader(linkHeader: string | null): string | null {
+  if (!linkHeader) return null;
+
+  // Link header format: <url>; rel="next", <url>; rel="last"
+  const links = linkHeader.split(',');
+  for (const link of links) {
+    const parts = link.trim().split(';');
+    if (parts.length === 2) {
+      const url = parts[0].trim().replace(/^<|>$/g, '');
+      const rel = parts[1].trim();
+      if (rel.includes('rel="next"')) {
+        return url;
+      }
+    }
+  }
+  return null;
 }
 
 async function fetchGitHubRepoInfo(repo: string): Promise<GitHubRepoInfo> {

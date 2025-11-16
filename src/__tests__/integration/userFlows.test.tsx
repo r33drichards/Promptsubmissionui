@@ -585,9 +585,11 @@ describe('User Flows Integration Tests', () => {
       render(<App />, { client: mockClient });
 
       await waitFor(() => {
-        // Check for the filter dropdown (Select component)
-        const filterDropdown = screen.getByRole('combobox');
-        expect(filterDropdown).toBeInTheDocument();
+        // Check for the filter dropdown (there are multiple comboboxes)
+        const comboboxes = screen.getAllByRole('combobox');
+        expect(comboboxes.length).toBeGreaterThan(0);
+        // First combobox should be the status filter
+        expect(comboboxes[0]).toBeInTheDocument();
       });
     });
 
@@ -607,8 +609,9 @@ describe('User Flows Integration Tests', () => {
         screen.getByText('Test Session 3 (Completed)')
       ).toBeInTheDocument();
 
-      // Open the filter dropdown
-      const filterDropdown = screen.getByRole('combobox');
+      // Open the filter dropdown (first combobox is the status filter)
+      const comboboxes = screen.getAllByRole('combobox');
+      const filterDropdown = comboboxes[0]; // MultiSelect for status filters
       await user.click(filterDropdown);
 
       // First, deselect "Needs Review" which is selected by default
