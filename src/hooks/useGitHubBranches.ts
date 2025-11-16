@@ -19,7 +19,8 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
   const validatedRepo = RepoFormatSchema.parse(repo);
 
   const allBranches: GitHubBranch[] = [];
-  let url: string | null = `${GITHUB_API_BASE}/repos/${validatedRepo}/branches?per_page=100`;
+  let url: string | null =
+    `${GITHUB_API_BASE}/repos/${validatedRepo}/branches?per_page=100`;
 
   // Paginate through all branches
   while (url) {
@@ -36,7 +37,9 @@ async function fetchGitHubBranches(repo: string): Promise<GitHubBranch[]> {
         );
       }
       if (response.status === 404) {
-        throw new Error('Repository not found or you do not have access to it.');
+        throw new Error(
+          'Repository not found or you do not have access to it.'
+        );
       }
       throw new Error(`GitHub API error: ${response.statusText}`);
     }
