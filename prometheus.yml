@@ -1,0 +1,29 @@
+# Prometheus configuration for prompt-backend monitoring
+# This file configures Prometheus to scrape metrics from the backend API
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'local-dev'
+    replica: '0'
+
+# Scrape configurations
+scrape_configs:
+  # Backend API metrics
+  - job_name: 'prompt-backend'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: 'api'
+          environment: 'development'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
