@@ -9,7 +9,7 @@ import { queryKeys } from './queryKeys';
  * 1. Check if a PR exists for the session's branch
  * 2. Fetch the PR status (open, closed, merged) from GitHub
  * 3. Return the PR info for display in the UI
- * 
+ *
  * The PR status is derived from GitHub API in real-time, not from stored state.
  * This ensures the UI always shows the current state of the PR without storing
  * it in the session, which could cause infinite loops or stale data.

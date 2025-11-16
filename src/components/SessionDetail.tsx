@@ -318,9 +318,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  window.open(prInfo.prUrl, '_blank')
-                }
+                onClick={() => window.open(prInfo.prUrl, '_blank')}
               >
                 <GitPullRequest className="w-4 h-4 mr-2" />
                 View PR
