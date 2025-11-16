@@ -121,6 +121,9 @@ export class PromptBackendClient implements BackendClient {
           data
         );
 
+        // Fetch the current session to preserve fields that aren't being updated
+        const currentSession = await this.sessions.get(id);
+
         // Build update input with only the fields that are provided or need to be updated
         const updateInput: any = {
           id,
@@ -134,6 +137,11 @@ export class PromptBackendClient implements BackendClient {
         if (data.branch !== undefined) updateInput.branch = data.branch;
         if (data.targetBranch !== undefined)
           updateInput.targetBranch = data.targetBranch;
+
+        // Preserve the parentId from the current session
+        if (currentSession.parentId !== null) {
+          updateInput.parentId = currentSession.parentId;
+        }
 
         console.log('[PromptBackendClient] Update input:', updateInput);
 
