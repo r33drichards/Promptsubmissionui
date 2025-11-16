@@ -10,6 +10,7 @@ import {
   Container,
   Copy,
   Share2,
+  RotateCcw,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -29,9 +30,10 @@ import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
   session: Session;
+  onResubmit?: (sessionId: string) => void;
 }
 
-export function SessionDetail({ session }: SessionDetailProps) {
+export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
   const { conversation, isLoading } = useSessionConversation(session.id);
   const runtime = useAssistantRuntime(
     session.id,
@@ -350,6 +352,17 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {onResubmit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onResubmit(session.id)}
+                title="Resubmit - Create a new task with the original prompt"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Resubmit
+              </Button>
+            )}
             {prInfo?.prUrl ? (
               <Button
                 variant="outline"
