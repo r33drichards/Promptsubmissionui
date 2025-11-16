@@ -3,3 +3,12 @@ build
 dist
 *.log
 .worktrees/
+
+# Docker
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea

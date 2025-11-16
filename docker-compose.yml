@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: prompt-postgres
+    environment:
+      POSTGRES_DB: prompt_backend
+      POSTGRES_USER: promptuser
+      POSTGRES_PASSWORD: promptpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U promptuser -d prompt_backend"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prompt-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: prompt-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prompt-network
+
+  # Backend API (Rust)
+  backend:
+    build:
+      context: https://github.com/r33drichards/prompt-backend.git
+      dockerfile: Dockerfile
+    container_name: prompt-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      sandbox:
+        condition: service_started
+    environment:
+      - REDIS_URL=redis://redis:6379/
+      - DATABASE_URL=postgres://promptuser:promptpass@postgres/prompt_backend
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-your_github_token_here}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-your_anthropic_api_key_here}
+      - IP_ALLOCATOR_URL=http://sandbox:8000
+      - RUST_LOG=info
+    networks:
+      - prompt-network
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prompt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8000
+      - VITE_DISABLE_AUTH=true
+      - VITE_OIDC_AUTHORITY=http://localhost:8080/realms/oauth2-realm
+      - VITE_OIDC_CLIENT_ID=prompt-submission-ui
+      - VITE_OIDC_REDIRECT_URI=http://localhost:3000/authentication/callback
+      - VITE_OIDC_SCOPE=openid profile email
+      - VITE_OIDC_SILENT_REDIRECT_URI=http://localhost:3000/authentication/silent-callback
+    networks:
+      - prompt-network
+    restart: unless-stopped
+
+  # Sandbox Environment
+  sandbox:
+    image: wholelottahoopla/sandbox:latest
+    container_name: prompt-sandbox
+    ports:
+      - "8001:8000"
+    networks:
+      - prompt-network
+    restart: unless-stopped
+    # Add any required environment variables for the sandbox
+    environment:
+      - SANDBOX_ENV=development
+
+networks:
+  prompt-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
