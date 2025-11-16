@@ -1,4 +1,5 @@
 import { Session } from '../types/session';
+import { Badge } from './ui/badge';
 import { Button as _Button } from './ui/button';
 import {
   Collapsible,
@@ -14,13 +15,8 @@ import {
   Clock,
   Loader2,
   CheckCircle2,
-  GitPullRequest,
-  GitMerge,
-  X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { usePrStatus } from '../hooks/usePrStatus';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface SessionListItemProps {
   session: Session;
@@ -44,9 +40,6 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
   const isArchived = session.uiStatus === 'Archived';
-
-  // Fetch PR status from GitHub
-  const { prInfo } = usePrStatus(session);
 
   // Render status indicator based on UI status
   const renderStatusIndicator = () => {
@@ -146,78 +139,24 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {/* Show PR status icons - prefer live data from GitHub API, fall back to session data */}
-              {(() => {
-                const status = prInfo?.status || session.prStatus;
-                const prUrl = prInfo?.prUrl || session.prUrl;
-                const hasPr = prUrl || prInfo?.status;
-
-                if (!hasPr) return null;
-
-                // Wrapper for PR icon that links to the PR if URL exists
-                const PrIconLink = ({
-                  children,
-                  tooltip,
-                }: {
-                  children: React.ReactNode;
-                  tooltip: string;
-                }) => {
-                  if (prUrl) {
-                    return (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={prUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="hover:opacity-80 transition-opacity"
-                          >
-                            {children}
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>{tooltip}</TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-                  return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>{children}</div>
-                      </TooltipTrigger>
-                      <TooltipContent>{tooltip}</TooltipContent>
-                    </Tooltip>
-                  );
-                };
-
-                // If we have status info, show the appropriate icon
-                if (status === 'open') {
-                  return (
-                    <PrIconLink tooltip="PR Open">
-                      <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                    </PrIconLink>
-                  );
-                } else if (status === 'closed') {
-                  return (
-                    <PrIconLink tooltip="PR Closed">
-                      <X className="w-3.5 h-3.5 text-red-600" />
-                    </PrIconLink>
-                  );
-                } else if (status === 'merged') {
-                  return (
-                    <PrIconLink tooltip="PR Merged">
-                      <GitMerge className="w-3.5 h-3.5 text-purple-600" />
-                    </PrIconLink>
-                  );
-                } else {
-                  // Fallback: if we have a PR URL but no status, assume it's open
-                  return (
-                    <PrIconLink tooltip="PR">
-                      <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                    </PrIconLink>
-                  );
-                }
-              })()}
+              {session.prUrl && session.prStatus && (
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${
+                    session.prStatus === 'open'
+                      ? 'bg-green-50 text-green-700 border-green-300'
+                      : session.prStatus === 'closed'
+                        ? 'bg-red-50 text-red-700 border-red-300'
+                        : 'bg-purple-50 text-purple-700 border-purple-300'
+                  }`}
+                >
+                  {session.prStatus === 'open'
+                    ? 'Open'
+                    : session.prStatus === 'closed'
+                      ? 'Closed'
+                      : 'Merged'}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
