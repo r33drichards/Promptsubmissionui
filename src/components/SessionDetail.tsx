@@ -19,6 +19,7 @@ import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
 import { truncateBranchName } from '@/utils/stringUtils';
 import { useUpdateSession } from '../hooks/useSessionMutations';
+import { usePrStatus } from '../hooks/usePrStatus';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
@@ -47,6 +48,9 @@ export function SessionDetail({ session }: SessionDetailProps) {
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
+
+  // Fetch PR status from GitHub and update session when it changes
+  const { prInfo } = usePrStatus(session);
 
   // Reset title value when session changes
   useEffect(() => {
@@ -142,6 +146,34 @@ export function SessionDetail({ session }: SessionDetailProps) {
         return 'bg-yellow-50 text-yellow-700 border-yellow-300';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-300';
+    }
+  };
+
+  // Helper function to get PR status badge color classes
+  const getPrStatusBadgeClasses = (prStatus?: 'open' | 'closed' | 'merged') => {
+    switch (prStatus) {
+      case 'open':
+        return 'bg-green-50 text-green-700 border-green-300';
+      case 'closed':
+        return 'bg-red-50 text-red-700 border-red-300';
+      case 'merged':
+        return 'bg-purple-50 text-purple-700 border-purple-300';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-300';
+    }
+  };
+
+  // Helper function to get PR status display text
+  const getPrStatusText = (prStatus?: 'open' | 'closed' | 'merged') => {
+    switch (prStatus) {
+      case 'open':
+        return 'PR Open';
+      case 'closed':
+        return 'PR Closed';
+      case 'merged':
+        return 'PR Merged';
+      default:
+        return 'PR';
     }
   };
 
@@ -318,19 +350,30 @@ export function SessionDetail({ session }: SessionDetailProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                window.open(
-                  `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
-                  '_blank'
-                )
-              }
-            >
-              <GitPullRequest className="w-4 h-4 mr-2" />
-              View Diff on Github
-            </Button>
+            {prInfo?.prUrl ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(prInfo.prUrl, '_blank')}
+              >
+                <GitPullRequest className="w-4 h-4 mr-2" />
+                View PR
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
+                    '_blank'
+                  )
+                }
+              >
+                <GitPullRequest className="w-4 h-4 mr-2" />
+                View Diff on Github
+              </Button>
+            )}
             {session.sbxConfig?.borrow_token && (
               <Badge
                 variant="outline"
@@ -344,6 +387,14 @@ export function SessionDetail({ session }: SessionDetailProps) {
               >
                 <Container className="w-3 h-3 mr-1" />
                 {copySuccess ? 'Copied!' : 'Container'}
+              </Badge>
+            )}
+            {prInfo?.status && (
+              <Badge
+                variant="outline"
+                className={getPrStatusBadgeClasses(prInfo.status)}
+              >
+                {getPrStatusText(prInfo.status)}
               </Badge>
             )}
             <Badge

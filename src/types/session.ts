@@ -16,6 +16,7 @@ export interface Session {
     deletions: number;
   };
   prUrl?: string;
+  prStatus?: 'open' | 'closed' | 'merged';
   createdAt: Date;
   children?: Session[];
 }

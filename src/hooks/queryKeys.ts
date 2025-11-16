@@ -30,4 +30,12 @@ export const queryKeys = {
     list: (sessionId: string) =>
       [...queryKeys.messages.lists(), sessionId] as const,
   },
+
+  // GitHub query keys
+  github: {
+    all: ['github'] as const,
+    prStatuses: () => [...queryKeys.github.all, 'prStatus'] as const,
+    prStatus: (repo: string, branch: string, targetBranch: string) =>
+      [...queryKeys.github.prStatuses(), repo, branch, targetBranch] as const,
+  },
 } as const;
