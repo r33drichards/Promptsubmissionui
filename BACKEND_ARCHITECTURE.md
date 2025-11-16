@@ -1,6 +1,7 @@
 # Backend Architecture Guide
 
 ## Repository
+
 - **URL**: https://github.com/r33drichards/prompt-backend
 - **Tech Stack**: Rust + Rocket + PostgreSQL + Redis + Keycloak OAuth
 
@@ -94,6 +95,7 @@ The prompt-backend is a Rust web service that manages AI-powered code assistance
 ## Database Schema
 
 ### Sessions Table
+
 The core entity representing a user's work session.
 
 ```rust
@@ -116,6 +118,7 @@ pub struct Session {
 ```
 
 **Session Status Flow:**
+
 ```
 Active → Processing → ReturningIp → Archived
    ↓
@@ -123,6 +126,7 @@ Cancelled / Failed
 ```
 
 ### Prompts Table
+
 User prompts/requests submitted to a session.
 
 ```rust
@@ -136,6 +140,7 @@ pub struct Prompt {
 ```
 
 ### Messages Table
+
 Claude Code responses streamed during prompt processing.
 
 ```rust
@@ -149,6 +154,7 @@ pub struct Message {
 ```
 
 ### Dead Letter Queue (DLQ)
+
 Failed jobs for manual inspection/retry.
 
 ```rust
@@ -188,6 +194,7 @@ pub async fn create(
 ```
 
 The guard (`src/auth/guard.rs`):
+
 - Extracts JWT from `Authorization` header
 - Validates signature using cached JWKS
 - Extracts claims (user_id, email)
@@ -213,24 +220,25 @@ pub const CANCELLATION_ENFORCER: &str = "cancellation-enforcer";
 **Implementation**: `src/bg_tasks/prompt_poller.rs`
 
 **Logic**:
+
 ```rust
 loop {
     // Every 5 seconds
     sleep(Duration::from_secs(5)).await;
-    
+
     // Find prompts in Pending status
     let pending_prompts = Prompt::find()
         .filter(prompt::Column::Status.eq("Pending"))
         .all(&db)
         .await?;
-    
+
     // Enqueue each as OutboxJob
     for prompt in pending_prompts {
         storage.push(OutboxJob {
             prompt_id: prompt.id.to_string(),
             payload: prompt.data,
         }).await?;
-        
+
         // Mark as enqueued to avoid duplicates
     }
 }
@@ -249,44 +257,44 @@ pub async fn process_outbox_job(job: OutboxJob, ctx: Data<OutboxContext>) -> Res
     // 1. Load prompt and session from database
     let prompt = Prompt::find_by_id(job.prompt_id).one(&ctx.db).await?;
     let session = Session::find_by_id(prompt.session_id).one(&ctx.db).await?;
-    
+
     // 2. Borrow sandbox IP from allocator
     let ip_allocator_url = env::var("IP_ALLOCATOR_URL")?;
     let ip_client = ip_allocator_client::Client::new(&ip_allocator_url);
     let borrowed_ip = ip_client.handlers_ip_borrow(None).await?;
-    
+
     // 3. Setup sandbox environment
     let sbx = sandbox_client::Client::new(&borrowed_ip.api_url);
-    
+
     // Authenticate with GitHub
     sbx.exec_command(&format!("echo '{}' | gh auth login --with-token", github_token)).await?;
-    
+
     // Clone repository
     let repo_dir = format!("repo_{}", session.id);
     sbx.exec_command(&format!("git clone {} {}", session.repo, repo_dir)).await?;
-    
+
     // Checkout target branch
     sbx.exec_command(&format!("git checkout {}", session.target_branch)).await?;
-    
+
     // Create/checkout working branch
     sbx.exec_command(&format!("git checkout {} || git switch -c {}", branch, branch)).await?;
-    
+
     // 4. Run Claude Code CLI (fire-and-forget spawned task)
     tokio::spawn(async move {
         // Create temp directory for MCP config
         let temp_dir = tempfile::Builder::new()
             .prefix(&format!("claude_session_{}_", session_id))
             .tempdir()?;
-        
+
         // Write MCP config
         fs::write(temp_dir.path().join("mcp_config.json"), &mcp_json_string)?;
-        
+
         // Load system prompt from embedded file
         let system_prompt = include_str!("../../prompts/outbox_handler_system_prompt.md")
             .replace("{{repo_path}}", &repo_path)
             .replace("{{repo_name}}", &session.repo)
             .replace("{{branch}}", &branch);
-        
+
         // Execute Claude CLI with streaming output
         let mut child = Command::new("claude")
             .args([
@@ -303,12 +311,12 @@ pub async fn process_outbox_job(job: OutboxJob, ctx: Data<OutboxContext>) -> Res
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()?;
-        
+
         // Stream stdout line-by-line to messages table
         let stdout_reader = BufReader::new(child.stdout.take()?);
         for line in stdout_reader.lines() {
             let json = serde_json::from_str(&line?)?;
-            
+
             // Insert each message into database
             let new_message = message::ActiveModel {
                 id: Set(Uuid::new_v4()),
@@ -319,21 +327,22 @@ pub async fn process_outbox_job(job: OutboxJob, ctx: Data<OutboxContext>) -> Res
             };
             new_message.insert(&db).await?;
         }
-        
+
         // Wait for process completion
         child.wait()?;
-        
+
         // Return borrowed IP (always, even on failure)
         ip_client.handlers_ip_return_item(&ReturnInput {
             item: borrowed_ip.item
         }).await?;
     });
-    
+
     Ok(())
 }
 ```
 
 **Key Features**:
+
 - **Fire-and-forget spawning**: Main job returns quickly, spawned task runs for hours
 - **Streaming JSON**: Claude output piped line-by-line to database
 - **MCP Integration**: Sandbox access via Model Context Protocol
@@ -346,21 +355,22 @@ pub async fn process_outbox_job(job: OutboxJob, ctx: Data<OutboxContext>) -> Res
 **Implementation**: `src/bg_tasks/ip_return_poller.rs`
 
 **Logic**:
+
 ```rust
 loop {
     sleep(Duration::from_secs(5)).await;
-    
+
     // Find sessions in ReturningIp status
     let sessions = Session::find()
         .filter(session::Column::SessionStatus.eq(SessionStatus::ReturningIp))
         .filter(session::Column::SbxConfig.is_not_null())
         .all(&db)
         .await?;
-    
+
     for session in sessions {
         // Return IP to allocator
         ip_client.handlers_ip_return_item(&session.sbx_config).await?;
-        
+
         // Update session to Archived
         session.update()
             .set(session::Column::SessionStatus, SessionStatus::Archived)
@@ -382,8 +392,9 @@ loop {
 ### Session Management
 
 **POST /sessions**
+
 - **Auth**: Required (JWT)
-- **Body**: 
+- **Body**:
   ```json
   {
     "repo": "owner/repo",
@@ -395,21 +406,25 @@ loop {
 - **Side Effects**: Creates session in database, auto-generates title via Anthropic API
 
 **GET /sessions**
+
 - **Auth**: Required (JWT)
 - **Response**: Array of user's sessions
 - **Filters**: By status, date range, repo
 
 **GET /sessions/:id**
+
 - **Auth**: Required (JWT)
 - **Response**: Session details including status and prompts
 
 **DELETE /sessions/:id**
+
 - **Auth**: Required (JWT)
 - **Side Effects**: Soft-deletes session (sets `deleted_at`)
 
 ### Prompt Management
 
 **POST /prompts**
+
 - **Auth**: Required (JWT)
 - **Body**:
   ```json
@@ -424,15 +439,18 @@ loop {
 - **Side Effects**: Creates prompt, prompt_poller picks it up for processing
 
 **GET /prompts/:id/messages**
+
 - **Auth**: Required (JWT)
 - **Response**: Array of messages (streaming Claude responses)
-- **Format**: 
+- **Format**:
   ```json
   [
     {
       "id": "uuid",
       "prompt_id": "uuid",
-      "data": { /* Claude streaming JSON */ },
+      "data": {
+        /* Claude streaming JSON */
+      },
       "created_at": "2025-01-01T12:00:00Z"
     }
   ]
@@ -441,10 +459,12 @@ loop {
 ### System Endpoints
 
 **GET /health**
+
 - **Auth**: None
 - **Response**: `{ "status": "ok" }`
 
 **GET /metrics**
+
 - **Auth**: None
 - **Response**: Prometheus metrics (text format)
 - **Metrics**:
@@ -454,6 +474,7 @@ loop {
   - HTTP request counts/latencies
 
 **GET /swagger-ui/**
+
 - **Auth**: None
 - **Response**: Interactive API documentation
 
@@ -489,6 +510,7 @@ ROCKET_ADDRESS=0.0.0.0
 See `BACKEND_SETUP.md` for complete setup instructions.
 
 Quick start:
+
 ```bash
 # Clone backend
 git clone https://github.com/r33drichards/prompt-backend
@@ -537,6 +559,7 @@ GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
 ### Railway Configuration
 
 Services deployed:
+
 - **Web**: Rust backend (with all background tasks)
 - **Postgres**: Main database
 - **Redis**: Cache and job queue
@@ -547,21 +570,25 @@ Environment variables set via Railway dashboard.
 ## Architecture Patterns
 
 ### Outbox Pattern
+
 - Prompts are written to database first (durable)
 - Background poller processes them asynchronously
 - Ensures no lost work even on crashes
 
 ### Poller-Based Processing
+
 - Resilient to restarts (rediscovers pending work)
 - Self-healing (automatically retries on failures)
 - Simple to reason about (no complex queue state)
 
 ### JWT Validation
+
 - Stateless authentication (no session storage)
 - JWKS caching (performance optimization)
 - Automatic token refresh (handled by frontend)
 
 ### Fire-and-Forget Long Tasks
+
 - Main job returns quickly (Apalis sees success)
 - Spawned task runs independently (hours)
 - Database provides durability (streaming messages)
@@ -579,15 +606,19 @@ Environment variables set via Railway dashboard.
 ## Common Issues & Solutions
 
 ### Issue: JWT validation fails
+
 **Solution**: Check KEYCLOAK_JWKS_URI is reachable from backend
 
 ### Issue: Background tasks not running
+
 **Solution**: Ensure `--server` flag is used when starting
 
 ### Issue: Sessions stuck in Processing
+
 **Solution**: Check IP allocator is running and accessible
 
 ### Issue: Database connection pool exhausted
+
 **Solution**: Increase pool size or check for connection leaks
 
 ## References
