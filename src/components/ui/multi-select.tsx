@@ -87,8 +87,10 @@ export function MultiSelect({
                     className="mr-1 mb-1 shrink-0"
                   >
                     {label}
-                    <button
-                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleRemove(value!, e as any);
@@ -101,7 +103,7 @@ export function MultiSelect({
                       onClick={(e) => handleRemove(value!, e)}
                     >
                       <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                    </button>
+                    </span>
                   </Badge>
                 );
               })
@@ -109,12 +111,19 @@ export function MultiSelect({
           </div>
           <div className="flex items-center gap-1 shrink-0">
             {selected.length > 0 && (
-              <button
+              <span
+                role="button"
+                tabIndex={0}
                 onClick={handleClear}
-                className="mr-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleClear(e as any);
+                  }
+                }}
+                className="mr-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
               >
                 <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-              </button>
+              </span>
             )}
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </div>

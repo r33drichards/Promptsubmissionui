@@ -1,0 +1,176 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: prompt-postgres
+    environment:
+      POSTGRES_DB: prompt_backend
+      POSTGRES_USER: promptuser
+      POSTGRES_PASSWORD: promptpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U promptuser -d prompt_backend"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prompt-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: prompt-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prompt-network
+
+  # Keycloak PostgreSQL Database
+  keycloak-postgres:
+    image: postgres:15-alpine
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prompt-network
+
+  # Keycloak Authentication Service
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: prompt-keycloak
+    environment:
+      # Admin credentials
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # Database configuration
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+
+      # HTTP configuration
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_PROXY: edge
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    depends_on:
+      keycloak-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /realms/oauth2-realm HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;grep 'HTTP/1.1 200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - prompt-network
+
+  # Backend API (Rust)
+  backend:
+    image: wholelottahoopla/prompt-backend:latest
+    container_name: prompt-backend
+    command: ["rust-redis-webserver", "--server"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      sandbox:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/
+      - DATABASE_URL=postgres://promptuser:promptpass@postgres/prompt_backend
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-your_github_token_here}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-your_anthropic_api_key_here}
+      - IP_ALLOCATOR_URL=http://sandbox:8000
+      - RUST_LOG=info
+      - KEYCLOAK_ISSUER=http://localhost:8080/realms/oauth2-realm
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/oauth2-realm/protocol/openid-connect/certs
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=oauth2-realm
+      - KEYCLOAK_ADMIN_USERNAME=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    networks:
+      - prompt-network
+    restart: unless-stopped
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prompt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8000
+      - VITE_DISABLE_AUTH=false
+      - VITE_OIDC_AUTHORITY=http://localhost:8080/realms/oauth2-realm
+      - VITE_OIDC_CLIENT_ID=prompt-submission-ui
+      - VITE_OIDC_REDIRECT_URI=http://localhost:3000/authentication/callback
+      - VITE_OIDC_SCOPE=openid profile email
+      - VITE_OIDC_SILENT_REDIRECT_URI=http://localhost:3000/authentication/silent-callback
+    networks:
+      - prompt-network
+    restart: unless-stopped
+
+  # Sandbox Environment
+  sandbox:
+    image: wholelottahoopla/sandbox:latest
+    container_name: prompt-sandbox
+    ports:
+      - "8001:8000"
+    networks:
+      - prompt-network
+    restart: unless-stopped
+    # Add any required environment variables for the sandbox
+    environment:
+      - SANDBOX_ENV=development
+
+networks:
+  prompt-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  keycloak_postgres_data:
