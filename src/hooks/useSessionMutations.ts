@@ -179,12 +179,25 @@ export function useUpdateSession(
 /**
  * Hook to archive a session.
  *
+ * Note: This hook does NOT automatically show a toast notification.
+ * The caller should handle toast notifications, including undo functionality.
+ *
  * @example
  * ```tsx
  * const archiveSession = useArchiveSession();
+ * const unarchiveSession = useUnarchiveSession();
  *
- * const handleArchive = () => {
- *   archiveSession.mutate('session-123');
+ * const handleArchive = (id: string) => {
+ *   archiveSession.mutate(id, {
+ *     onSuccess: (archivedSession) => {
+ *       toast.success('Task archived', {
+ *         action: {
+ *           label: 'Undo',
+ *           onClick: () => unarchiveSession.mutate(archivedSession.id),
+ *         },
+ *       });
+ *     },
+ *   });
  * };
  * ```
  */
@@ -224,7 +237,7 @@ export function useArchiveSession(
         refetchType: 'active',
       });
 
-      toast.success('Task archived');
+      // Note: Toast notification is handled by the caller to allow for undo functionality
 
       options?.onSuccess?.(archivedSession, id, context);
     },
