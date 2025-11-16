@@ -375,6 +375,23 @@ function AppLayout() {
     setSessionToArchive(null);
   };
 
+  const handleUnarchive = (sessionId: string) => {
+    console.log('[App] handleUnarchive called for session:', sessionId);
+    unarchiveSessionMutation.mutate(sessionId, {
+      onSuccess: () => {
+        console.log('[App] Unarchive mutation succeeded');
+        toast.success('Task unarchived', {
+          action: {
+            label: 'Undo',
+            onClick: () => {
+              archiveSessionMutation.mutate(sessionId);
+            },
+          },
+        });
+      },
+    });
+  };
+
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
@@ -477,6 +494,7 @@ function AppLayout() {
                       onSelect={(session) => navigate(`/session/${session.id}`)}
                       onCreateSubtask={handleCreateSubtask}
                       onArchive={handleArchive}
+                      onUnarchive={handleUnarchive}
                     />
                   ))
                 ) : (
