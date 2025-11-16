@@ -68,11 +68,26 @@ export function SessionListItem({
     }
   };
 
+  // Calculate background color based on nesting level
+  const getBackgroundColor = () => {
+    if (isActive) return 'bg-gray-100';
+    if (level === 0) return ''; // Root sessions - default white background
+    if (level === 1) return 'bg-gray-50'; // First level children - light gray
+    if (level === 2) return 'bg-gray-100'; // Second level children - medium gray
+    return 'bg-gray-150'; // Deeper nesting - darker gray
+  };
+
+  const getHoverColor = () => {
+    if (level === 0) return 'hover:bg-gray-50';
+    if (level === 1) return 'hover:bg-gray-100';
+    return 'hover:bg-gray-150';
+  };
+
   return (
     <div>
       <div
-        className={`group relative flex items-start gap-2 p-3 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-200 ${
-          isActive ? 'bg-gray-100 border-l-4 border-l-blue-500' : ''
+        className={`group relative flex items-start gap-2 p-3 cursor-pointer transition-colors border-b border-gray-200 ${getBackgroundColor()} ${getHoverColor()} ${
+          isActive ? 'border-l-4 border-l-blue-500' : ''
         }`}
         style={{ paddingLeft: `${12 + level * 24}px` }}
       >
