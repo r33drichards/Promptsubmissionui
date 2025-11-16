@@ -123,13 +123,16 @@ function AppLayout() {
     }
   );
 
-  // Fetch sessions using TanStack Query
+  // Fetch sessions using TanStack Query with polling every 5 seconds
   const {
     data: sessions = [],
     isLoading: isLoadingSessions,
     refetch: refetchSessions,
     isFetching: isFetchingSessions,
-  } = useSessions();
+  } = useSessions(undefined, {
+    refetchInterval: 5000, // Poll every 5 seconds
+    refetchIntervalInBackground: false, // Don't poll when tab is not visible
+  });
 
   // Mutations
   const createSessionMutation = useCreateSession();
