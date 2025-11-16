@@ -293,7 +293,7 @@ export function useUnarchiveSession(
         refetchType: 'active',
       });
 
-      toast.success('Task unarchived');
+      // Note: Toast notification is handled by the caller to allow for undo functionality
 
       options?.onSuccess?.(unarchivedSession, id, context);
     },
