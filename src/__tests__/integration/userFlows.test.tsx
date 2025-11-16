@@ -610,7 +610,7 @@ describe('User Flows Integration Tests', () => {
 
       // Open the status filter dropdown (first combobox, contains "Needs Review")
       const filterDropdowns = screen.getAllByRole('combobox');
-      const statusFilterDropdown = filterDropdowns.find(dropdown => 
+      const statusFilterDropdown = filterDropdowns.find((dropdown) =>
         dropdown.textContent?.includes('Needs Review')
       );
       expect(statusFilterDropdown).toBeDefined();
