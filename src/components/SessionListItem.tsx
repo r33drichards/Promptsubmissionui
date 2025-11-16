@@ -146,35 +146,53 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {(session.prUrl && session.prStatus) || prInfo?.status ? (
-                <>
-                  {/* Use prInfo if available, otherwise fall back to session.prStatus */}
-                  {(prInfo?.status || session.prStatus) === 'open' && (
+              {/* Show PR status icons - prefer live data from GitHub API, fall back to session data */}
+              {(() => {
+                const status = prInfo?.status || session.prStatus;
+                const hasPr = session.prUrl || prInfo?.status;
+
+                if (!hasPr) return null;
+
+                // If we have status info, show the appropriate icon
+                if (status === 'open') {
+                  return (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
                       </TooltipTrigger>
                       <TooltipContent>PR Open</TooltipContent>
                     </Tooltip>
-                  )}
-                  {(prInfo?.status || session.prStatus) === 'closed' && (
+                  );
+                } else if (status === 'closed') {
+                  return (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <X className="w-3.5 h-3.5 text-red-600" />
                       </TooltipTrigger>
                       <TooltipContent>PR Closed</TooltipContent>
                     </Tooltip>
-                  )}
-                  {(prInfo?.status || session.prStatus) === 'merged' && (
+                  );
+                } else if (status === 'merged') {
+                  return (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <GitMerge className="w-3.5 h-3.5 text-purple-600" />
                       </TooltipTrigger>
                       <TooltipContent>PR Merged</TooltipContent>
                     </Tooltip>
-                  )}
-                </>
-              ) : null}
+                  );
+                } else {
+                  // Fallback: if we have a PR URL but no status, assume it's open
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
+                      </TooltipTrigger>
+                      <TooltipContent>PR</TooltipContent>
+                    </Tooltip>
+                  );
+                }
+              })()}
             </div>
           </div>
         </div>
