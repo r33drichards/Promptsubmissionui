@@ -49,6 +49,8 @@ export function CreateTaskForm({
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateTaskFormData, string>>
   >({});
+  // Track if we've initialized the prompt from resubmitSession to avoid overwriting user edits
+  const [hasInitializedPrompt, setHasInitializedPrompt] = useState(false);
 
   // Fetch prompts if resubmitSession is provided
   const { data: prompts = [] } = usePrompts(resubmitSession?.id || '', {
@@ -63,16 +65,17 @@ export function CreateTaskForm({
     error: branchesError,
   } = useGitHubBranches(repo);
 
-  // Populate prompt from resubmitSession when prompts are loaded
+  // Populate prompt from resubmitSession when prompts are loaded (only once)
   useEffect(() => {
-    if (resubmitSession && prompts.length > 0) {
+    if (resubmitSession && prompts.length > 0 && !hasInitializedPrompt) {
       // Get the first prompt's content (the original prompt for this session)
       const firstPrompt = prompts[0];
       if (firstPrompt && firstPrompt.content) {
         setPrompt(firstPrompt.content);
+        setHasInitializedPrompt(true);
       }
     }
-  }, [resubmitSession, prompts]);
+  }, [resubmitSession, prompts, hasInitializedPrompt]);
 
   // Update targetBranch when repository changes and default branch is loaded
   useEffect(() => {
