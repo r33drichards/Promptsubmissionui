@@ -43,13 +43,13 @@ export function SessionListItem({
       case 'Pending':
         return (
           <div className="flex items-center gap-1" title="Pending">
-            <Clock className="w-4 h-4 text-amber-500 animate-pulse" />
+            <Clock className="w-4 h-4 text-amber-500" />
           </div>
         );
       case 'InProgress':
         return (
           <div className="flex items-center gap-1" title="In Progress">
-            <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+            <Loader2 className="w-4 h-4 text-blue-500" />
           </div>
         );
       case 'NeedsReview':
