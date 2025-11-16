@@ -149,47 +149,72 @@ export function SessionListItem({
               {/* Show PR status icons - prefer live data from GitHub API, fall back to session data */}
               {(() => {
                 const status = prInfo?.status || session.prStatus;
-                const hasPr = session.prUrl || prInfo?.status;
+                const prUrl = prInfo?.prUrl || session.prUrl;
+                const hasPr = prUrl || prInfo?.status;
 
                 if (!hasPr) return null;
+
+                // Wrapper for PR icon that links to the PR if URL exists
+                const PrIconLink = ({
+                  children,
+                  tooltip,
+                }: {
+                  children: React.ReactNode;
+                  tooltip: string;
+                }) => {
+                  if (prUrl) {
+                    return (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={prUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:opacity-80 transition-opacity"
+                          >
+                            {children}
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>{tooltip}</TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>{children}</div>
+                      </TooltipTrigger>
+                      <TooltipContent>{tooltip}</TooltipContent>
+                    </Tooltip>
+                  );
+                };
 
                 // If we have status info, show the appropriate icon
                 if (status === 'open') {
                   return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>PR Open</TooltipContent>
-                    </Tooltip>
+                    <PrIconLink tooltip="PR Open">
+                      <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
+                    </PrIconLink>
                   );
                 } else if (status === 'closed') {
                   return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <X className="w-3.5 h-3.5 text-red-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>PR Closed</TooltipContent>
-                    </Tooltip>
+                    <PrIconLink tooltip="PR Closed">
+                      <X className="w-3.5 h-3.5 text-red-600" />
+                    </PrIconLink>
                   );
                 } else if (status === 'merged') {
                   return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <GitMerge className="w-3.5 h-3.5 text-purple-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>PR Merged</TooltipContent>
-                    </Tooltip>
+                    <PrIconLink tooltip="PR Merged">
+                      <GitMerge className="w-3.5 h-3.5 text-purple-600" />
+                    </PrIconLink>
                   );
                 } else {
                   // Fallback: if we have a PR URL but no status, assume it's open
                   return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>PR</TooltipContent>
-                    </Tooltip>
+                    <PrIconLink tooltip="PR">
+                      <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
+                    </PrIconLink>
                   );
                 }
               })()}
