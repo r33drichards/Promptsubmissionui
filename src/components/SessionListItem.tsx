@@ -1,5 +1,4 @@
 import { Session } from '../types/session';
-import { Badge } from './ui/badge';
 import { Button as _Button } from './ui/button';
 import {
   Collapsible,
@@ -15,8 +14,13 @@ import {
   Clock,
   Loader2,
   CheckCircle2,
+  GitPullRequest,
+  GitMerge,
+  X,
 } from 'lucide-react';
 import { useState } from 'react';
+import { usePrStatus } from '../hooks/usePrStatus';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface SessionListItemProps {
   session: Session;
@@ -40,6 +44,9 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
   const isArchived = session.uiStatus === 'Archived';
+
+  // Fetch PR status from GitHub
+  const { prInfo } = usePrStatus(session);
 
   // Render status indicator based on UI status
   const renderStatusIndicator = () => {
@@ -139,23 +146,27 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {session.prUrl && session.prStatus && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${
-                    session.prStatus === 'open'
-                      ? 'bg-green-50 text-green-700 border-green-300'
-                      : session.prStatus === 'closed'
-                        ? 'bg-red-50 text-red-700 border-red-300'
-                        : 'bg-purple-50 text-purple-700 border-purple-300'
-                  }`}
-                >
-                  {session.prStatus === 'open'
-                    ? 'Open'
-                    : session.prStatus === 'closed'
-                      ? 'Closed'
-                      : 'Merged'}
-                </Badge>
+              {prInfo?.status && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center">
+                      {prInfo.status === 'open' && (
+                        <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
+                      )}
+                      {prInfo.status === 'closed' && (
+                        <X className="w-3.5 h-3.5 text-red-600" />
+                      )}
+                      {prInfo.status === 'merged' && (
+                        <GitMerge className="w-3.5 h-3.5 text-purple-600" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {prInfo.status === 'open' && 'PR Open'}
+                    {prInfo.status === 'closed' && 'PR Closed'}
+                    {prInfo.status === 'merged' && 'PR Merged'}
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>
