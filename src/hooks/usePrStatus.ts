@@ -4,14 +4,15 @@ import { Session } from '../types/session';
 import { queryKeys } from './queryKeys';
 
 /**
- * Hook to fetch PR status from GitHub.
+ * Hook to fetch PR status from GitHub API and derive state dynamically.
  * This hook will:
  * 1. Check if a PR exists for the session's branch
- * 2. Fetch the PR status (open, closed, merged)
+ * 2. Fetch the PR status (open, closed, merged) from GitHub
  * 3. Return the PR info for display in the UI
- *
- * Note: This hook does NOT update the session automatically to avoid infinite loops.
- * The PR info is displayed directly from the query data in the component.
+ * 
+ * The PR status is derived from GitHub API in real-time, not from stored state.
+ * This ensures the UI always shows the current state of the PR without storing
+ * it in the session, which could cause infinite loops or stale data.
  *
  * @param session - The session to check PR status for
  * @param options - Query options
