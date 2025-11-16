@@ -254,11 +254,11 @@ describe('SessionDetail', () => {
       expect(screen.getByText('-20 deletions')).toBeInTheDocument();
     });
 
-    it('should not display diff stats for non-completed sessions', () => {
+    it('should display diff stats when diffStats are present regardless of status', () => {
       const mockClient = createMockClient();
       const inProgressSession: Session = {
         ...baseSession,
-        uiStatus: 'in-progress',
+        uiStatus: 'InProgress',
         diffStats: { additions: 50, deletions: 20 },
       };
 
@@ -266,8 +266,8 @@ describe('SessionDetail', () => {
         client: mockClient,
       });
 
-      expect(screen.queryByText('+50 additions')).not.toBeInTheDocument();
-      expect(screen.queryByText('-20 deletions')).not.toBeInTheDocument();
+      expect(screen.getByText('+50 additions')).toBeInTheDocument();
+      expect(screen.getByText('-20 deletions')).toBeInTheDocument();
     });
   });
 
