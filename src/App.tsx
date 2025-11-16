@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Routes,
   Route,
@@ -167,6 +167,9 @@ function AppLayout() {
     }
     return 'date';
   });
+
+  // Track the previous sessionTreeFilter value to detect transitions
+  const prevSessionTreeFilterRef = useRef<string | null>(sessionTreeFilter);
 
   // Fetch sessions using TanStack Query
   const {
@@ -725,9 +728,15 @@ function AppLayout() {
                   onValueChange={(value) => {
                     const newSortOrder = value as SortType;
                     setSortOrder(newSortOrder);
-                    // When user manually changes sort, update their preferred sort order
-                    if (newSortOrder === 'topological' || newSortOrder === 'reverse-topological') {
-                      setPreferredSortOrder(newSortOrder);
+                    // When user manually changes sort to topological, save it for this specific tree
+                    if (
+                      sessionTreeFilter &&
+                      (newSortOrder === 'topological' || newSortOrder === 'reverse-topological')
+                    ) {
+                      setPreferredSortOrderByTree((prev) => ({
+                        ...prev,
+                        [sessionTreeFilter]: newSortOrder,
+                      }));
                     }
                   }}
                 >
