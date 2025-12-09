@@ -593,18 +593,7 @@ function AppLayout() {
           action: {
             label: 'Undo',
             onClick: () => {
-              archiveSessionMutation.mutate(sessionId, {
-                onSuccess: () => {
-                  toast.success('Task archived', {
-                    action: {
-                      label: 'Undo',
-                      onClick: () => {
-                        unarchiveSessionMutation.mutate(sessionId);
-                      },
-                    },
-                  });
-                },
-              });
+              archiveSessionMutation.mutate(sessionId);
             },
           },
         });
