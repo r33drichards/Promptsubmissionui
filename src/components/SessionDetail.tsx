@@ -26,6 +26,7 @@ import { Button } from './ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { ErrorBoundary } from './ErrorBoundary';
+import { getSessionRepo } from '../utils/sessionCompatibility';
 import '@assistant-ui/react-ui/styles/index.css';
 
 interface SessionDetailProps {
@@ -40,6 +41,9 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
     conversation || [],
     isLoading
   );
+
+  // Get repository URL with backwards compatibility support
+  const repoUrl = getSessionRepo(session);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(session.title);
@@ -252,19 +256,19 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <Github className="w-4 h-4 flex-shrink-0" />
                 <a
-                  href={`https://github.com/${session.repo}`}
+                  href={`https://github.com/${repoUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 hover:underline truncate"
                 >
-                  {session.repo}
+                  {repoUrl}
                 </a>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
                 <div className="flex items-center gap-1 min-w-0 flex-shrink">
                   <GitBranch className="w-4 h-4 flex-shrink-0" />
                   <a
-                    href={`https://github.com/${session.repo}/tree/${session.branch}`}
+                    href={`https://github.com/${repoUrl}/tree/${session.branch}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-600 hover:underline"
@@ -308,7 +312,7 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
                 <div className="flex items-center gap-1 min-w-0 flex-shrink">
                   <GitBranch className="w-4 h-4 flex-shrink-0" />
                   <a
-                    href={`https://github.com/${session.repo}/tree/${session.targetBranch}`}
+                    href={`https://github.com/${repoUrl}/tree/${session.targetBranch}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-600 hover:underline"
@@ -378,7 +382,7 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
                 size="sm"
                 onClick={() =>
                   window.open(
-                    `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
+                    `https://github.com/${repoUrl}/compare/${session.targetBranch}...${session.branch}`,
                     '_blank'
                   )
                 }

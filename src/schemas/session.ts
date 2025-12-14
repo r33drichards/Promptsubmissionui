@@ -17,11 +17,19 @@ export const MessageSchema = z.object({
   createdAt: z.coerce.date(), // Coerce strings to Date objects
 });
 
+// Repository info schema for the new repos field
+export const RepoInfoSchema = z.object({
+  url: z.string().min(1, 'Repository URL is required'),
+  branch: z.string().min(1, 'Branch is required'),
+});
+
 // Session schema - matching existing Session interface
+// Now with repos field (new) and repo field (deprecated but maintained for backwards compatibility)
 export const SessionSchema = z.object({
   id: z.string(),
   title: z.string(),
-  repo: z.string().min(1, 'Repository is required'),
+  repo: z.string().optional(), // Deprecated: kept for backwards compatibility
+  repos: z.array(RepoInfoSchema).optional(), // New: array of repository configurations
   branch: z.string().min(1, 'Branch is required'),
   targetBranch: z.string().min(1, 'Target branch is required'),
   uiStatus: UiStatusSchema,
