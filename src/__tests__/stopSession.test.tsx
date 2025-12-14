@@ -42,13 +42,10 @@ describe('Stop Session Functionality', () => {
       createdAt: new Date(),
     };
 
-    mockClient = createMockBackendClient({
-      sessions: {
-        list: vi.fn().mockResolvedValue([inProgressSession]),
-        get: vi.fn().mockResolvedValue(inProgressSession),
-        stop: vi.fn().mockResolvedValue(undefined),
-      },
-    });
+    mockClient = createMockBackendClient();
+    mockClient.sessions.list = vi.fn().mockResolvedValue([inProgressSession]);
+    mockClient.sessions.get = vi.fn().mockResolvedValue(inProgressSession);
+    mockClient.sessions.stop = vi.fn().mockResolvedValue(undefined);
 
     const router = createMemoryRouter(
       [
@@ -70,7 +67,7 @@ describe('Stop Session Functionality', () => {
 
     // Wait for the session to load
     await waitFor(() => {
-      expect(screen.getByText('Running Session')).toBeInTheDocument();
+      expect(screen.getAllByText('Running Session').length).toBeGreaterThan(0);
     });
 
     // Stop button should be visible for InProgress sessions
@@ -94,12 +91,9 @@ describe('Stop Session Functionality', () => {
       createdAt: new Date(),
     };
 
-    mockClient = createMockBackendClient({
-      sessions: {
-        list: vi.fn().mockResolvedValue([completedSession]),
-        get: vi.fn().mockResolvedValue(completedSession),
-      },
-    });
+    mockClient = createMockBackendClient();
+    mockClient.sessions.list = vi.fn().mockResolvedValue([completedSession]);
+    mockClient.sessions.get = vi.fn().mockResolvedValue(completedSession);
 
     const router = createMemoryRouter(
       [
@@ -119,13 +113,17 @@ describe('Stop Session Functionality', () => {
       </QueryClientProvider>
     );
 
-    // Wait for the session to load
+    // Wait for the session to load - use getAllByText since title appears in multiple places
     await waitFor(() => {
-      expect(screen.getByText('Completed Session')).toBeInTheDocument();
+      expect(screen.getAllByText('Completed Session').length).toBeGreaterThan(
+        0
+      );
     });
 
     // Stop button should NOT be visible for completed sessions
-    expect(screen.queryByRole('button', { name: /stop/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /stop/i })
+    ).not.toBeInTheDocument();
   });
 
   it('should call stop endpoint when stop button is clicked', async () => {
@@ -144,13 +142,10 @@ describe('Stop Session Functionality', () => {
 
     const stopMock = vi.fn().mockResolvedValue(undefined);
 
-    mockClient = createMockBackendClient({
-      sessions: {
-        list: vi.fn().mockResolvedValue([inProgressSession]),
-        get: vi.fn().mockResolvedValue(inProgressSession),
-        stop: stopMock,
-      },
-    });
+    mockClient = createMockBackendClient();
+    mockClient.sessions.list = vi.fn().mockResolvedValue([inProgressSession]);
+    mockClient.sessions.get = vi.fn().mockResolvedValue(inProgressSession);
+    mockClient.sessions.stop = stopMock;
 
     const router = createMemoryRouter(
       [
@@ -204,15 +199,14 @@ describe('Stop Session Functionality', () => {
       createdAt: new Date(),
     };
 
-    const stopMock = vi.fn().mockRejectedValue(new Error('Failed to stop session'));
+    const stopMock = vi
+      .fn()
+      .mockRejectedValue(new Error('Failed to stop session'));
 
-    mockClient = createMockBackendClient({
-      sessions: {
-        list: vi.fn().mockResolvedValue([inProgressSession]),
-        get: vi.fn().mockResolvedValue(inProgressSession),
-        stop: stopMock,
-      },
-    });
+    mockClient = createMockBackendClient();
+    mockClient.sessions.list = vi.fn().mockResolvedValue([inProgressSession]);
+    mockClient.sessions.get = vi.fn().mockResolvedValue(inProgressSession);
+    mockClient.sessions.stop = stopMock;
 
     const router = createMemoryRouter(
       [
