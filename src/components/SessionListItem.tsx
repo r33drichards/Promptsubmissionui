@@ -1,4 +1,5 @@
 import { Session } from '../types/session';
+import { Badge } from './ui/badge';
 import { Button as _Button } from './ui/button';
 import {
   Collapsible,
@@ -146,7 +147,7 @@ export function SessionListItem({
                   </span>
                 </>
               )}
-              {/* Small subtle PR status icons */}
+              {/* Show PR status badge (original) and small icons (new) */}
               {(() => {
                 const status = prInfo?.status || session.prStatus;
                 const prUrl = prInfo?.prUrl || session.prUrl;
@@ -155,34 +156,49 @@ export function SessionListItem({
                 if (!hasPr) return null;
 
                 return (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <a
-                        href={prUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="hover:opacity-80 transition-opacity"
-                      >
-                        {status === 'open' && (
-                          <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
-                        )}
-                        {status === 'closed' && (
-                          <X className="w-3.5 h-3.5 text-red-600" />
-                        )}
-                        {status === 'merged' && (
-                          <GitMerge className="w-3.5 h-3.5 text-purple-600" />
-                        )}
-                      </a>
-                    </TooltipTrigger>
-                    <TooltipContent>
+                  <>
+                    {/* Original Badge component */}
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${
+                        status === 'open'
+                          ? 'bg-green-50 text-green-700 border-green-300'
+                          : status === 'closed'
+                            ? 'bg-red-50 text-red-700 border-red-300'
+                            : 'bg-purple-50 text-purple-700 border-purple-300'
+                      }`}
+                    >
                       {status === 'open'
-                        ? 'PR Open'
+                        ? 'Open'
                         : status === 'closed'
-                          ? 'PR Closed'
-                          : 'PR Merged'}
-                    </TooltipContent>
-                  </Tooltip>
+                          ? 'Closed'
+                          : 'Merged'}
+                    </Badge>
+
+                    {/* Small subtle PR icon */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={prUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:opacity-80 transition-opacity"
+                        >
+                          {status === 'open' && (
+                            <GitPullRequest className="w-3.5 h-3.5 text-green-600" />
+                          )}
+                          {status === 'closed' && (
+                            <X className="w-3.5 h-3.5 text-red-600" />
+                          )}
+                          {status === 'merged' && (
+                            <GitMerge className="w-3.5 h-3.5 text-purple-600" />
+                          )}
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>View PR</TooltipContent>
+                    </Tooltip>
+                  </>
                 );
               })()}
             </div>
