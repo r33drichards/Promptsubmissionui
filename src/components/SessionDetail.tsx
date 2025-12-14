@@ -364,27 +364,26 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
               </Button>
             )}
             {prInfo?.prUrl ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open(prInfo.prUrl, '_blank')}
-              >
-                <GitPullRequest className="w-4 h-4 mr-2" />
-                View PR
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={prInfo.prUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <GitPullRequest className="w-4 h-4 mr-2" />
+                  View PR
+                </a>
               </Button>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  window.open(
-                    `https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`,
-                    '_blank'
-                  )
-                }
-              >
-                <GitPullRequest className="w-4 h-4 mr-2" />
-                View Diff on Github
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={`https://github.com/${session.repo}/compare/${session.targetBranch}...${session.branch}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <GitPullRequest className="w-4 h-4 mr-2" />
+                  View Diff on Github
+                </a>
               </Button>
             )}
             {session.sbxConfig?.borrow_token && (
