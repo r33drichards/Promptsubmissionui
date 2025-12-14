@@ -15,6 +15,7 @@ export interface BackendClient {
     delete(id: string): Promise<void>;
     archive(id: string): Promise<Session>;
     unarchive(id: string): Promise<Session>;
+    stop(id: string): Promise<void>;
   };
 
   // Prompt operations
