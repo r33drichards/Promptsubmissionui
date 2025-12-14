@@ -11,6 +11,7 @@ import {
   Copy,
   Share2,
   RotateCcw,
+  Square,
 } from 'lucide-react';
 import { useSessionConversation } from '../hooks/useMessages';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
@@ -19,7 +20,7 @@ import { useAssistantRuntime } from '../hooks/useAssistantRuntime';
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown';
 import { ToolFallback } from './ToolFallback';
 import { truncateBranchName } from '@/utils/stringUtils';
-import { useUpdateSession } from '../hooks/useSessionMutations';
+import { useUpdateSession, useStopSession } from '../hooks/useSessionMutations';
 import { usePrStatus } from '../hooks/usePrStatus';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -50,9 +51,17 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSession = useUpdateSession();
+  const stopSession = useStopSession();
 
   // Fetch PR status from GitHub and update session when it changes
   const { prInfo } = usePrStatus(session);
+
+  // Check if session is running (InProgress status)
+  const isSessionRunning = session.uiStatus === 'InProgress';
+
+  const handleStopSession = () => {
+    stopSession.mutate(session.id);
+  };
 
   // Reset title value when session changes
   useEffect(() => {
@@ -421,7 +430,7 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 min-h-0 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto relative">
         <ErrorBoundary>
           <AssistantRuntimeProvider runtime={runtime}>
             <Thread
@@ -434,6 +443,29 @@ export function SessionDetail({ session, onResubmit }: SessionDetailProps) {
             />
           </AssistantRuntimeProvider>
         </ErrorBoundary>
+
+        {/* Stop Button - appears when session is running */}
+        {isSessionRunning && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={handleStopSession}
+                  disabled={stopSession.isPending}
+                  className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <Square className="w-5 h-5 mr-2 fill-current" />
+                  {stopSession.isPending ? 'Stopping...' : 'Stop'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Stop the running task (sandbox will be preserved for resumption)
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
 
         {session.diffStats && session.uiStatus === 'completed' && (
           <div className="p-4 border-t">
