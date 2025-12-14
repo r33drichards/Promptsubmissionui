@@ -173,23 +173,6 @@ export class PromptBackendClient implements BackendClient {
     unarchive: withErrorHandler(async (id: string): Promise<Session> => {
       return this.sessions.update(id, { uiStatus: 'Pending' });
     }, 'Unarchiving session'),
-
-    stop: withErrorHandler(async (id: string): Promise<void> => {
-      console.log('[PromptBackendClient] Stopping session:', id);
-      // Call the stop endpoint directly since it may not be in the generated SDK yet
-      const basePath =
-        import.meta.env.VITE_BACKEND_URL ||
-        'https://prompt-backend-production.up.railway.app';
-      const response = await fetch(`${basePath}/sessions/${id}/stop`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Failed to stop session');
-      }
-      console.log('[PromptBackendClient] Stop successful');
-    }, 'Stopping session'),
   };
 
   prompts = {

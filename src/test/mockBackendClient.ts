@@ -118,7 +118,6 @@ export function createMockBackendClient(
           ...session,
         });
       }),
-      stop: vi.fn().mockResolvedValue(undefined),
     },
     prompts: {
       list: vi.fn().mockResolvedValue([]),
@@ -183,7 +182,6 @@ export function createErrorMockBackendClient(): BackendClient {
       unarchive: vi
         .fn()
         .mockRejectedValue(new Error('Failed to unarchive session')),
-      stop: vi.fn().mockRejectedValue(new Error('Failed to stop session')),
     },
     prompts: {
       list: vi.fn().mockRejectedValue(new Error('Failed to fetch prompts')),
