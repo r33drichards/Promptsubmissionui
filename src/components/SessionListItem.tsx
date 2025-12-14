@@ -157,23 +157,36 @@ export function SessionListItem({
 
                 return (
                   <>
-                    {/* Original Badge component */}
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${
-                        status === 'open'
-                          ? 'bg-green-50 text-green-700 border-green-300'
-                          : status === 'closed'
-                            ? 'bg-red-50 text-red-700 border-red-300'
-                            : 'bg-purple-50 text-purple-700 border-purple-300'
-                      }`}
-                    >
-                      {status === 'open'
-                        ? 'Open'
-                        : status === 'closed'
-                          ? 'Closed'
-                          : 'Merged'}
-                    </Badge>
+                    {/* PR Badge - now clickable and links to PR */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={prUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:opacity-80 transition-opacity"
+                        >
+                          <Badge
+                            variant="outline"
+                            className={`text-xs cursor-pointer ${
+                              status === 'open'
+                                ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
+                                : status === 'closed'
+                                  ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
+                                  : 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100'
+                            }`}
+                          >
+                            {status === 'open'
+                              ? 'Open'
+                              : status === 'closed'
+                                ? 'Closed'
+                                : 'Merged'}
+                          </Badge>
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>View PR</TooltipContent>
+                    </Tooltip>
 
                     {/* Small subtle PR icon */}
                     <Tooltip>
