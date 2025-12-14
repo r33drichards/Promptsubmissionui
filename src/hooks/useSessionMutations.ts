@@ -180,22 +180,16 @@ export function useUpdateSession(
  * Hook to archive a session.
  *
  * Note: This hook does NOT automatically show a toast notification.
- * The caller should handle toast notifications, including undo functionality.
+ * The caller should handle toast notifications.
  *
  * @example
  * ```tsx
  * const archiveSession = useArchiveSession();
- * const unarchiveSession = useUnarchiveSession();
  *
  * const handleArchive = (id: string) => {
  *   archiveSession.mutate(id, {
  *     onSuccess: (archivedSession) => {
- *       toast.success('Task archived', {
- *         action: {
- *           label: 'Undo',
- *           onClick: () => unarchiveSession.mutate(archivedSession.id),
- *         },
- *       });
+ *       toast.success('Task archived');
  *     },
  *   });
  * };
@@ -262,51 +256,6 @@ export function useArchiveSession(
     ...options,
   });
 }
-
-/**
- * Hook to unarchive a session.
- *
- * @example
- * ```tsx
- * const unarchiveSession = useUnarchiveSession();
- *
- * const handleUnarchive = () => {
- *   unarchiveSession.mutate('session-123');
- * };
- * ```
- */
-export function useUnarchiveSession(
-  options?: Omit<UseMutationOptions<Session, Error, string>, 'mutationFn'>
-) {
-  const api = useApi();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => api.sessions.unarchive(id),
-    onSuccess: (unarchivedSession, id, context) => {
-      queryClient.setQueryData(
-        queryKeys.sessions.detail(unarchivedSession.id),
-        unarchivedSession
-      );
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.sessions.lists(),
-        refetchType: 'active',
-      });
-
-      // Note: Toast notification is handled by the caller to allow for undo functionality
-
-      options?.onSuccess?.(unarchivedSession, id, context);
-    },
-    onError: (error, id, context) => {
-      console.error('Failed to unarchive session:', error);
-      toast.error('Failed to unarchive task');
-
-      options?.onError?.(error, id, context);
-    },
-    ...options,
-  });
-}
-
 /**
  * Hook to delete a session.
  *

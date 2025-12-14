@@ -42,12 +42,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  useSessions,
-  useCreateSession,
-  useArchiveSession,
-  useUnarchiveSession,
-} from './hooks';
+import { useSessions, useCreateSession, useArchiveSession } from './hooks';
 
 type FilterType = 'pending' | 'in-progress' | 'needs-review' | 'archived';
 type SortType = 'date' | 'topological' | 'reverse-topological';
@@ -166,7 +161,6 @@ function AppLayout() {
   // Mutations
   const createSessionMutation = useCreateSession();
   const archiveSessionMutation = useArchiveSession();
-  const unarchiveSessionMutation = useUnarchiveSession();
 
   // Derive selectedSession from URL parameter
   const selectedSession = useMemo(() => {
@@ -510,7 +504,6 @@ function AppLayout() {
       // Archive parent and all children
       const session = sessions.find((s) => s.id === sessionId);
       const childIds = session?.children?.map((c) => c.id) || [];
-      const allIds = [sessionId, ...childIds];
 
       // Archive all children first
       const archivePromises = childIds.map((childId) =>
@@ -528,19 +521,7 @@ function AppLayout() {
               }
               setArchiveDialogOpen(false);
               setSessionToArchive(null);
-
-              // Show toast with undo action
-              toast.success('Task and subtasks archived', {
-                action: {
-                  label: 'Undo',
-                  onClick: () => {
-                    // Unarchive all sessions that were archived
-                    allIds.forEach((id) => {
-                      unarchiveSessionMutation.mutate(id);
-                    });
-                  },
-                },
-              });
+              toast.success('Task and subtasks archived');
             },
           });
         })
@@ -558,16 +539,7 @@ function AppLayout() {
           }
           setArchiveDialogOpen(false);
           setSessionToArchive(null);
-
-          // Show toast with undo action
-          toast.success('Task archived', {
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                unarchiveSessionMutation.mutate(sessionId);
-              },
-            },
-          });
+          toast.success('Task archived');
         },
       });
     }
@@ -582,23 +554,6 @@ function AppLayout() {
   const handleArchiveCancel = () => {
     setArchiveDialogOpen(false);
     setSessionToArchive(null);
-  };
-
-  const handleUnarchive = (sessionId: string) => {
-    console.log('[App] handleUnarchive called for session:', sessionId);
-    unarchiveSessionMutation.mutate(sessionId, {
-      onSuccess: () => {
-        console.log('[App] Unarchive mutation succeeded');
-        toast.success('Task unarchived', {
-          action: {
-            label: 'Undo',
-            onClick: () => {
-              archiveSessionMutation.mutate(sessionId);
-            },
-          },
-        });
-      },
-    });
   };
 
   return (
@@ -738,7 +693,6 @@ function AppLayout() {
                       onSelect={(session) => navigate(`/session/${session.id}`)}
                       onCreateSubtask={handleCreateSubtask}
                       onArchive={handleArchive}
-                      onUnarchive={handleUnarchive}
                     />
                   ))
                 ) : (

@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Plus,
   Archive,
-  ArchiveRestore,
   Clock,
   Loader2,
   CheckCircle2,
@@ -28,7 +27,6 @@ interface SessionListItemProps {
   onSelect: (session: Session) => void;
   onCreateSubtask: (parentId: string) => void;
   onArchive: (sessionId: string) => void;
-  onUnarchive?: (sessionId: string) => void;
   level?: number;
 }
 
@@ -38,7 +36,6 @@ export function SessionListItem({
   onSelect,
   onCreateSubtask,
   onArchive,
-  onUnarchive,
   level = 0,
 }: SessionListItemProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -198,24 +195,7 @@ export function SessionListItem({
           >
             <Plus className="w-3 h-3 text-gray-600" />
           </button>
-          {isArchived ? (
-            onUnarchive && (
-              <button
-                className="flex-shrink-0 hover:bg-gray-200 rounded p-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log(
-                    '[SessionListItem] Unarchive button clicked for session:',
-                    session.id
-                  );
-                  onUnarchive(session.id);
-                }}
-                title="Unarchive"
-              >
-                <ArchiveRestore className="w-3 h-3 text-gray-600" />
-              </button>
-            )
-          ) : (
+          {!isArchived && (
             <button
               className="flex-shrink-0 hover:bg-gray-200 rounded p-1"
               onClick={(e) => {
@@ -244,7 +224,6 @@ export function SessionListItem({
               onSelect={onSelect}
               onCreateSubtask={onCreateSubtask}
               onArchive={onArchive}
-              onUnarchive={onUnarchive}
               level={level + 1}
             />
           ))}

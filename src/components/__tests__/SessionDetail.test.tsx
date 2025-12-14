@@ -75,8 +75,7 @@ describe('SessionDetail', () => {
       create: vi.fn().mockResolvedValue(baseSession),
       update: vi.fn().mockResolvedValue(baseSession),
       delete: vi.fn().mockResolvedValue(undefined),
-      archive: vi.fn().mockResolvedValue(baseSession),
-      unarchive: vi.fn().mockResolvedValue(baseSession),
+      archive: vi.fn().mockResolvedValue(baseSession),,
     },
     prompts: {
       list: vi.fn().mockResolvedValue([mockPrompt]),
@@ -130,8 +129,7 @@ describe('SessionDetail', () => {
           create: vi.fn().mockResolvedValue(baseSession),
           update: vi.fn().mockResolvedValue(baseSession),
           delete: vi.fn().mockResolvedValue(undefined),
-          archive: vi.fn().mockResolvedValue(baseSession),
-          unarchive: vi.fn().mockResolvedValue(baseSession),
+          archive: vi.fn().mockResolvedValue(baseSession),,
         },
         prompts: {
           list: vi.fn().mockResolvedValue([]), // No prompts
@@ -321,8 +319,7 @@ describe('SessionDetail', () => {
           create: vi.fn().mockResolvedValue(baseSession),
           update: vi.fn().mockResolvedValue(baseSession),
           delete: vi.fn().mockResolvedValue(undefined),
-          archive: vi.fn().mockResolvedValue(baseSession),
-          unarchive: vi.fn().mockResolvedValue(baseSession),
+          archive: vi.fn().mockResolvedValue(baseSession),,
         },
         prompts: {
           list: vi.fn().mockResolvedValue(prompts),
