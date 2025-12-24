@@ -266,90 +266,6 @@ describe('User Flows Integration Tests', () => {
       expect(screen.getByText('Test Session 1')).toBeInTheDocument();
       expect(screen.getByText('Test Session 2')).toBeInTheDocument();
     });
-
-    it.skip('should search sessions by title', async () => {
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText(/find a task/i);
-      await user.type(searchInput, 'Session 2');
-
-      // Only Session 2 should be visible
-      await waitFor(() => {
-        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
-        expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-        expect(
-          screen.queryByText('Test Session 3 (Completed)')
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it.skip('should search sessions by repository', async () => {
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText(/find a task/i);
-      await user.type(searchInput, 'another-repo');
-
-      // Only Session 3 with another-repo should be visible
-      await waitFor(() => {
-        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
-        expect(screen.queryByText('Test Session 2')).not.toBeInTheDocument();
-        expect(
-          screen.getByText('Test Session 3 (Completed)')
-        ).toBeInTheDocument();
-      });
-    });
-
-    it.skip('should show "No tasks found" when search has no results', async () => {
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText(/find a task/i);
-      await user.type(searchInput, 'nonexistent task');
-
-      await waitFor(() => {
-        expect(screen.getByText('No tasks found')).toBeInTheDocument();
-      });
-    });
-
-    it.skip('should clear search results when search input is cleared', async () => {
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText(
-        /find a task/i
-      ) as HTMLInputElement;
-      await user.type(searchInput, 'Session 2');
-
-      await waitFor(() => {
-        expect(screen.queryByText('Test Session 1')).not.toBeInTheDocument();
-      });
-
-      await user.clear(searchInput);
-
-      // All sessions should be visible again
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-        expect(screen.getByText('Test Session 2')).toBeInTheDocument();
-      });
-    });
   });
 
   describe('Archiving Sessions', () => {
@@ -546,37 +462,6 @@ describe('User Flows Integration Tests', () => {
 
       // Session should still be visible since archive failed
       expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-    });
-  });
-
-  describe('Replying to Sessions', () => {
-    it.skip('should send a reply', async () => {
-      // Skipped: Multiple Send buttons exist now (one from @assistant-ui/react Thread and one from custom reply textarea)
-      const user = userEvent.setup();
-      render(<App />, { client: mockClient });
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Session 1')).toBeInTheDocument();
-      });
-
-      // Click on a session
-      const sessionItem = screen.getByText('Test Session 1');
-      await user.click(sessionItem);
-
-      // Type a reply using Thread component's input
-      const replyInput = screen.getByPlaceholderText(/write a message/i);
-      await user.type(replyInput, 'Here is my reply');
-
-      const sendButton = screen.getByRole('button', { name: /send/i });
-      await user.click(sendButton);
-
-      // Should call prompts.create to send the message
-      await waitFor(() => {
-        expect(mockClient.prompts.create).toHaveBeenCalledWith(
-          'test-session-1',
-          'Here is my reply'
-        );
-      });
     });
   });
 
