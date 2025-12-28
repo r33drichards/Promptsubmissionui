@@ -33,8 +33,7 @@ describe('useSessionConversation', () => {
         create: vi.fn().mockResolvedValue(mockSession),
         update: vi.fn().mockResolvedValue(mockSession),
         delete: vi.fn().mockResolvedValue(undefined),
-        archive: vi.fn().mockResolvedValue(mockSession),
-        unarchive: vi.fn().mockResolvedValue(mockSession),
+        archive: vi.fn().mockResolvedValue(mockSession),,
       },
       prompts: {
         list: vi.fn().mockResolvedValue(mockPrompts),

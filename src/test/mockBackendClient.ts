@@ -109,15 +109,6 @@ export function createMockBackendClient(
           ...session,
         });
       }),
-      unarchive: vi.fn().mockImplementation((id: string) => {
-        const session = mockSessions.find((s) => s.id === id);
-        if (!session) {
-          return Promise.reject(new Error('Session not found'));
-        }
-        return Promise.resolve({
-          ...session,
-        });
-      }),
     },
     prompts: {
       list: vi.fn().mockResolvedValue([]),
@@ -179,9 +170,6 @@ export function createErrorMockBackendClient(): BackendClient {
       archive: vi
         .fn()
         .mockRejectedValue(new Error('Failed to archive session')),
-      unarchive: vi
-        .fn()
-        .mockRejectedValue(new Error('Failed to unarchive session')),
     },
     prompts: {
       list: vi.fn().mockRejectedValue(new Error('Failed to fetch prompts')),
