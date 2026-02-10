@@ -45,6 +45,22 @@ export function convertConversationToMessages(
         },
       });
 
+      // Build a map of tool_use_id -> tool_result for matching
+      const toolResultMap = new Map<string, any>();
+      for (const msg of item.messages) {
+        if (
+          msg.message &&
+          msg.message.content &&
+          Array.isArray(msg.message.content)
+        ) {
+          for (const c of msg.message.content) {
+            if (c.type === 'tool_result' && c.tool_use_id) {
+              toolResultMap.set(c.tool_use_id, c.content);
+            }
+          }
+        }
+      }
+
       // Add all messages for this prompt
       for (const msg of item.messages) {
         // Skip messages without content (like system/init messages)
@@ -61,22 +77,22 @@ export function convertConversationToMessages(
             return { type: 'text' as const, text: c.text || '' };
           }
           if (c.type === 'tool_use') {
+            // Check if there's a matching result for this tool call
+            const result = toolResultMap.get(c.id || '');
             return {
               type: 'tool-call' as const,
               toolName: c.name || '',
               toolCallId: c.id || '',
               args: c.input,
+              result: result, // Include the result with the tool call
             };
           }
           if (c.type === 'tool_result') {
-            return {
-              type: 'tool-result' as const,
-              toolCallId: c.tool_use_id || '',
-              result: c.content,
-            };
+            // Skip standalone tool results as they're now merged with tool calls
+            return null;
           }
           return { type: 'text' as const, text: '' };
-        });
+        }).filter((c): c is NonNullable<typeof c> => c !== null); // Filter out null entries
 
         messages.push({
           id: msg.uuid,

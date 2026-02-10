@@ -101,24 +101,14 @@ export function MessageContent({ message }: MessageContentProps) {
                 key={`${message.id}-tool-${idx}`}
                 toolName={content.toolName || ''}
                 args={content.args}
+                result={content.result}
               />
             );
           }
 
           if (content.type === 'tool-result') {
-            return (
-              <div
-                key={`${message.id}-result-${idx}`}
-                className="bg-white/50 p-2 rounded border border-gray-200"
-              >
-                <p className="text-xs text-gray-600 mb-1">Tool Result</p>
-                <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words max-w-full">
-                  {typeof content.result === 'string'
-                    ? content.result
-                    : JSON.stringify(content.result, null, 2)}
-                </pre>
-              </div>
-            );
+            // Tool results are now merged with tool calls, so skip standalone results
+            return null;
           }
 
           return null;
