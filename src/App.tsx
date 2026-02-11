@@ -11,6 +11,7 @@ import { useAuth } from './hooks/useAuth';
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 import { Session } from './types/session';
 import { CreateSessionData } from './services/api/types';
+import { getSessionRepo } from './utils/sessionCompatibility';
 import { SessionListItem } from './components/SessionListItem';
 import { SessionDetail } from './components/SessionDetail';
 import { CreateTaskForm } from './components/CreateTaskForm';
@@ -271,9 +272,12 @@ function AppLayout() {
 
     // Track the most recent usage of each repository
     sessions.forEach((session) => {
-      const existing = repoMap.get(session.repo);
-      if (!existing || session.createdAt > existing) {
-        repoMap.set(session.repo, session.createdAt);
+      const repo = getSessionRepo(session);
+      if (repo) {
+        const existing = repoMap.get(repo);
+        if (!existing || session.createdAt > existing) {
+          repoMap.set(repo, session.createdAt);
+        }
       }
     });
 

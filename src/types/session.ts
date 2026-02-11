@@ -1,9 +1,15 @@
 import { UiStatus } from '@wholelottahoopla/prompt-backend-client';
 
+export interface RepoInfo {
+  url: string;
+  branch: string;
+}
+
 export interface Session {
   id: string;
   title: string;
-  repo: string;
+  repo?: string; // Deprecated: kept for backwards compatibility
+  repos?: RepoInfo[]; // New: array of repository configurations
   branch: string;
   targetBranch: string;
   messages: Message[] | null;

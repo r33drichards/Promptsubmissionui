@@ -21,6 +21,7 @@ import {
 import { useState } from 'react';
 import { usePrStatus } from '../hooks/usePrStatus';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { getSessionRepo } from '../utils/sessionCompatibility';
 
 interface SessionListItemProps {
   session: Session;
@@ -44,6 +45,9 @@ export function SessionListItem({
   const [isOpen, setIsOpen] = useState(true);
   const hasChildren = session.children && session.children.length > 0;
   const isArchived = session.uiStatus === 'Archived';
+
+  // Get repository URL with backwards compatibility support
+  const repoUrl = getSessionRepo(session);
 
   // Fetch PR status from GitHub
   const { prInfo } = usePrStatus(session);
@@ -124,13 +128,13 @@ export function SessionListItem({
               </div>
               <p className="text-xs truncate mt-0.5">
                 <a
-                  href={`https://github.com/${session.repo}`}
+                  href={`https://github.com/${repoUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-blue-600 hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {session.repo}
+                  {repoUrl}
                 </a>
               </p>
             </div>
