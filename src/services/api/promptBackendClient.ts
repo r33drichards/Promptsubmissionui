@@ -171,7 +171,10 @@ export class PromptBackendClient implements BackendClient {
     }, 'Archiving session'),
 
     unarchive: withErrorHandler(async (id: string): Promise<Session> => {
-      return this.sessions.update(id, { uiStatus: 'Pending' });
+      console.log('[PromptBackendClient] Unarchiving session:', id);
+      const result = await this.sessions.update(id, { uiStatus: 'Pending' });
+      console.log('[PromptBackendClient] Unarchive successful:', result);
+      return result;
     }, 'Unarchiving session'),
   };
 

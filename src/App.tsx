@@ -586,6 +586,13 @@ function AppLayout() {
 
   const handleUnarchive = (sessionId: string) => {
     console.log('[App] handleUnarchive called for session:', sessionId);
+
+    // Prevent double execution if mutation is already in progress
+    if (unarchiveSessionMutation.isPending) {
+      console.log('[App] Unarchive already in progress, skipping');
+      return;
+    }
+
     unarchiveSessionMutation.mutate(sessionId, {
       onSuccess: () => {
         console.log('[App] Unarchive mutation succeeded');
