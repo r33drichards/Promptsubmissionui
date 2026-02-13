@@ -593,7 +593,7 @@ function AppLayout() {
           action: {
             label: 'Undo',
             onClick: () => {
-              archiveSessionMutation.mutate(sessionId);
+              handleArchive(sessionId);
             },
           },
         });
